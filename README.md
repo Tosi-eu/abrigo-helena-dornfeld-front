@@ -55,11 +55,11 @@ O repositório segue uma estrutura simples e padronizada de branches:
 
 ```mermaid
 gitGraph
-   commit id: "main - estável"
+   commit id: "main"
    branch dev
-   commit id: "dev - desenvolvimento"
+   commit id: "dev"
    branch hotfix
-   commit id: "hotfix - correção"
+   commit id: "hotfix"
    checkout dev
    merge hotfix id: "merge hotfix → dev"
    checkout main
@@ -68,7 +68,7 @@ gitGraph
 
 ---
 
-## 💬 Observações
+## Observações
 
 - Sempre crie uma nova branch local a partir de **dev** antes de iniciar uma feature.
 - Antes de abrir um PR, garanta que o código foi testado e passou nas verificações automáticas (se houver).
@@ -76,7 +76,7 @@ gitGraph
 
 ---
 
-## 📦 Requisitos
+## Requisitos
 
 - Node.js (versão compatível com o projeto)
 - pnpm (para gerenciamento de dependências)
