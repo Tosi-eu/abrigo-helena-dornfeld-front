@@ -51,7 +51,7 @@ O repositório segue uma estrutura simples e padronizada de branches:
 
 ---
 
-## 🧱 Fluxo de Desenvolvimento
+## Fluxo de Desenvolvimento
 
 ```mermaid
 gitGraph
