@@ -1,10 +1,5 @@
 # abrigo-helena-dornfeld-front
 
-
-Este repositório contém o código-fonte do projeto **[Nome do Projeto]**, mantido com controle rigoroso de branches e políticas de PR para garantir estabilidade e organização no fluxo de desenvolvimento.
-
----
-
 ## Como utilizar
 
 1. **Instale as dependências**
