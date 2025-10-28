@@ -81,24 +81,6 @@ export default function RegisterCabinet() {
             </datalist>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Descrição
-            </label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
-              placeholder="Armário de medicamentos controlados"
-            />
-            <datalist id="categories">
-              {Object.values(CabinetCategory).map((label) => (
-                <option key={label} value={label} />
-              ))}
-            </datalist>
-          </div>
-
           <div className="flex justify-between pt-4">
             <button
               type="button"
