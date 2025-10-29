@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Package, Stethoscope, Check, X, Loader2 } from "lucide-react";
@@ -152,7 +151,7 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.4 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
                 className="mt-6 flex flex-col items-center gap-4"
               >
                 <p className="font-bold text-xl text-center">
@@ -161,7 +160,7 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
                     : "Falha ao gerar relatório!"}
                 </p>
                 <Button
-                  className="px-6 py-2 bg-sky-600 hover:bg-sky-700"
+                  className="px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white"
                   onClick={handleClose}
                 >
                   OK

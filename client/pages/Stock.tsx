@@ -1,55 +1,40 @@
-import { useState, useMemo } from "react";
 import Layout from "@/components/Layout";
 import EditableTable from "@/components/EditableTable";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { StockType } from "@/enums/enums";
 import { medicines } from "../../mocks/medicines";
 import { cabinets } from "../../mocks/cabinets";
 import { inputs } from "../../mocks/inputs";
 import { medicineInventory, inputInventory } from "../../mocks/stock";
 import { StockItem } from "@/interfaces/interfaces";
-import { motion, AnimatePresence } from "framer-motion";
-import { Package, Stethoscope, Check, X, Loader2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import ReportModal from "@/components/ReportModal";
 
 export default function Stock() {
-  const [openReport, setOpenReport] = useState(false);
-  const [selectedReports, setSelectedReports] = useState<string[]>([]);
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [selectedCabinet, setSelectedCabinet] = useState(cabinets[0].id);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const filterType = (location.state as any)?.filterType;
 
-  const reportOptions = [
-    { value: "insumos", label: "Insumos", icon: Package },
-    { value: "medicamentos", label: "Medicamentos", icon: Stethoscope },
-    { value: "insumos_medicamentos", label: "Insumos e Medicamentos", icon: Check },
-  ];
+  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState({
+    name: "",
+    description: "",
+    expiry: "",
+    quantity: "",
+    patient: "",
+    cabinet: "",
+    casela: "",
+    stockType: "",
+    origin: "",
+  });
 
-  const handleSelectReport = (value: string) => {
-    setSelectedReports([value]);
-  };
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
-  const handleGenerate = () => {
-    if (!selectedReports.length) return;
-    setStatus("loading");
-
-    setTimeout(() => {
-      const isSuccess = Math.random() > 0.2;
-      setStatus(isSuccess ? "success" : "error");
-    }, 1500);
-  };
-
-  const handleClose = () => {
-    setStatus("idle");
-    setSelectedReports([]);
-    setOpenReport(false);
-  };
-
-  // ---------------- Estoque ----------------
   const meds: StockItem[] = useMemo(() => {
     return medicineInventory.flatMap((inv) => {
       const med = medicines.find((m) => m.id === inv.medicineId);
       const cabinet = cabinets.find((c) => c.id === inv.cabinetId);
+
       return {
         type: "Medicamento",
         name: med?.name || "-",
@@ -60,7 +45,10 @@ export default function Stock() {
         patient: inv.residentId ? `Residente ${inv.residentId}` : "-",
         cabinet: cabinet?.id || "-",
         casela: inv.residentId || "-",
-        stockType: inv.stockType === "individual" ? StockType.INDIVIDUAL : StockType.GERAL,
+        stockType:
+          inv.stockType === "individual"
+            ? StockType.INDIVIDUAL
+            : StockType.GERAL,
         origin: inv.origin,
       };
     });
@@ -87,6 +75,7 @@ export default function Stock() {
     return inputInventory.map((entry) => {
       const eq = inputs.find((e) => e.id === entry.inputId);
       const cabinet = cabinets.find((c) => c.id === entry.cabinetId);
+
       return {
         type: "Insumo",
         name: eq?.name || "-",
@@ -101,13 +90,95 @@ export default function Stock() {
     });
   }, []);
 
-  const items = useMemo(() => [...meds, ...medsWithoutStock, ...eqs], [meds, medsWithoutStock, eqs]);
+  const items = useMemo(
+    () => [...meds, ...medsWithoutStock, ...eqs],
+    [meds, medsWithoutStock, eqs],
+  );
+
+  useEffect(() => {
+    switch (filterType) {
+      case "expired":
+        setFilters((prev) => ({ ...prev, expiry: "expired" }));
+        break;
+      case "belowMin":
+        setFilters((prev) => ({ ...prev, expiry: "belowMin" }));
+        break;
+      case "expiringSoon":
+        setFilters((prev) => ({ ...prev, expiry: "expiringSoon" }));
+        break;
+      case "noStock":
+        setFilters((prev) => ({ ...prev, quantity: "0" }));
+        break;
+    }
+  }, [filterType]);
+
+  const filteredStock = useMemo(() => {
+    let filtered = [...items];
+    const today = new Date();
+
+    if (filters.expiry === "expired") {
+      filtered = filtered.filter(
+        (item) =>
+          item.type === "Medicamento" &&
+          item.expiry !== "-" &&
+          new Date(item.expiry) < today,
+      );
+    } else if (filters.expiry === "belowMin") {
+      filtered = filtered.filter(
+        (item) =>
+          item.type === "Medicamento" &&
+          item.quantity > 0 &&
+          item.minimumStock !== undefined &&
+          item.quantity <= item.minimumStock,
+      );
+    } else if (filters.expiry === "expiringSoon") {
+      const limitDate = new Date();
+      limitDate.setDate(today.getDate() + 60);
+      filtered = filtered.filter(
+        (item) =>
+          item.type === "Medicamento" &&
+          item.expiry !== "-" &&
+          new Date(item.expiry) >= today &&
+          new Date(item.expiry) <= limitDate,
+      );
+    }
+
+    if (filters.quantity === "0") {
+      filtered = filtered.filter(
+        (item) => item.type === "Medicamento" && item.quantity === 0,
+      );
+    }
+
+    const term = search.toLowerCase();
+    if (search) {
+      filtered = filtered.filter((item) =>
+        item.name.toLowerCase().includes(term),
+      );
+    }
+
+    for (const key in filters) {
+      const val = (filters as any)[key];
+      if (val && !["expired", "belowMin", "expiringSoon", "0"].includes(val)) {
+        filtered = filtered.filter((item) =>
+          String(item[key as keyof StockItem] || "")
+            .toLowerCase()
+            .includes(String(val).toLowerCase()),
+        );
+      }
+    }
+
+    return filtered;
+  }, [items, search, filters]);
 
   const columns = [
     { key: "stockType", label: "Tipo de Estoque", editable: false },
     { key: "type", label: "Tipo", editable: false },
     { key: "name", label: "Nome", editable: true },
-    { key: "description", label: "Descrição / Princípio Ativo", editable: true },
+    {
+      key: "description",
+      label: "Descrição / Princípio Ativo",
+      editable: true,
+    },
     { key: "expiry", label: "Validade", editable: true },
     { key: "quantity", label: "Quantidade", editable: true },
     { key: "patient", label: "Residente", editable: false },
@@ -116,76 +187,46 @@ export default function Stock() {
     { key: "origin", label: "Origem", editable: false },
   ];
 
-  const cabinetStock = useMemo(() => {
-    return [
-      ...medicineInventory
-        .filter((inv) => inv.cabinetId === selectedCabinet)
-        .map((inv) => {
-          const med = medicines.find((m) => m.id === inv.medicineId);
-          return {
-            cabinet: inv.cabinetId,
-            type: "Medicamento",
-            name: med?.name || "-",
-            description: med?.substance || "-",
-            quantity: inv.quantity,
-            expiry: inv.expiry,
-          };
-        }),
-      ...inputInventory
-        .filter((inv) => inv.cabinetId === selectedCabinet)
-        .map((inv) => {
-          const inp = inputs.find((i) => i.id === inv.inputId);
-          return {
-            cabinet: inv.cabinetId,
-            type: "Insumo",
-            name: inp?.name || "-",
-            description: inp?.description || "-",
-            quantity: inv.quantity,
-            expiry: "-",
-          };
-        }),
-    ];
-  }, [selectedCabinet]);
-
-  const cabinetColumns = [
-    { key: "cabinet", label: "Armário", editable: false },
-    { key: "type", label: "Tipo", editable: false },
-    { key: "name", label: "Nome", editable: false },
-    { key: "description", label: "Descrição", editable: false },
-    { key: "quantity", label: "Quantidade", editable: true },
-    { key: "expiry", label: "Validade", editable: true },
-  ];
-
   return (
     <Layout title="Estoque de Medicamentos e Insumos">
       <div className="space-y-6">
         <div className="flex flex-wrap gap-3">
-          <Button
+          <button
+            onClick={() => navigate("/stock/in")}
+            className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+          >
+            Entrada de Estoque
+          </button>
+
+          <button
+            onClick={() => navigate("/stock/out")}
+            className="px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
+          >
+            Saída de Estoque
+          </button>
+
+          <button
+            onClick={() => setReportModalOpen(true)}
             className="px-6 py-3 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 transition"
-            onClick={() => setOpenReport(true)}
           >
             Gerar Relatório
-          </Button>
+          </button>
         </div>
-
-        <ReportModal open={openReport} onClose={() => setOpenReport(false)} />
 
         <h2 className="text-lg font-semibold mt-6">Estoque Geral</h2>
-        <EditableTable data={items} columns={columns} onEdit={(row, i) => console.log("Editado:", row, "linha", i)} onDelete={(i) => console.log("Excluído linha:", i)} onAdd={(row) => console.log("Nova linha:", row)} />
-
-        <div className="mt-10">
-          <h2 className="text-lg font-semibold mb-4">Estoque dos Armários</h2>
-          <select className="border rounded p-2 mb-4 bg-white" value={selectedCabinet} onChange={(e) => setSelectedCabinet(Number(e.target.value))}>
-            {cabinets.map((c) => (
-              <option key={c.id} value={c.id}>
-                Armário {c.id}
-              </option>
-            ))}
-          </select>
-
-          <EditableTable data={cabinetStock} columns={cabinetColumns} onEdit={(row, i) => console.log("Editado no armário:", row, "linha", i)} />
-        </div>
+        <EditableTable
+          data={filteredStock}
+          columns={columns}
+          onEdit={(row, i) => console.log("Editado:", row, "linha", i)}
+          onDelete={(i) => console.log("Excluído linha:", i)}
+          onAdd={(row) => console.log("Nova linha:", row)}
+        />
       </div>
+
+      <ReportModal
+        open={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+      />
     </Layout>
   );
 }
