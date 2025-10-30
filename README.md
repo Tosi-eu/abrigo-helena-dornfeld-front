@@ -66,7 +66,6 @@ gitGraph
 ## Observações
 
 - Sempre crie uma nova branch local a partir de **dev** antes de iniciar uma feature.
-- Antes de abrir um PR, garanta que o código foi testado e passou nas verificações automáticas (se houver).
 - Commits devem ser descritivos e seguir boas práticas de versionamento.
 
 ---
