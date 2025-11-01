@@ -8,14 +8,18 @@ export default function Cabinets() {
     { key: "categoria", label: "Categoria", editable: false },
   ];
 
-  const { data: cabinets = [], isLoading, error } = useQuery({
+  const {
+    data: cabinets = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["cabinets"],
     queryFn: async () => {
       const res = await fetch("http://localhost:3001/api/armarios");
       if (!res.ok) throw new Error(`Erro ao buscar armários ${res}`);
       return res.json();
     },
-  }); 
+  });
 
   if (isLoading)
     return (
@@ -34,7 +38,11 @@ export default function Cabinets() {
   return (
     <Layout title="Armários">
       <div className="max-w-3xl mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-        <EditableTable data={cabinets} columns={columns} entityType="cabinets" />
+        <EditableTable
+          data={cabinets}
+          columns={columns}
+          entityType="cabinets"
+        />
       </div>
     </Layout>
   );

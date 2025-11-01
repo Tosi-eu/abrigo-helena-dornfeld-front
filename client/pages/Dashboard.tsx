@@ -136,8 +136,8 @@ export default function Dashboard() {
     return [
       {
         name: "Estoque Geral (medicamentos)",
-        value: Math.round((generalMedicines / total) * 100), 
-        rawValue: generalMedicines, 
+        value: Math.round((generalMedicines / total) * 100),
+        rawValue: generalMedicines,
       },
       {
         name: "Estoque Individual (medicamentos)",

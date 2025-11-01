@@ -8,8 +8,7 @@ import { EquipmentForm } from "@/components/EquipmentForm";
 export default function StockOut() {
   const location = useLocation();
   const previousData = location.state?.previousData;
-  const type = previousData?.filter((item) => item.type === "Insumo")[0]
-    ?.type;
+  const type = previousData?.filter((item) => item.type === "Insumo")[0]?.type;
   const [operationType, setOperationType] = useState<
     OperationType | "Selecione"
   >(type || "Selecione");
@@ -49,9 +48,7 @@ export default function StockOut() {
             <option value={OperationType.MEDICINE}>
               {OperationType.MEDICINE}
             </option>
-            <option value={OperationType.INPUT}>
-              {OperationType.INPUT}
-            </option>
+            <option value={OperationType.INPUT}>{OperationType.INPUT}</option>
           </select>
         </div>
 

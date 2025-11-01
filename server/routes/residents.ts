@@ -8,7 +8,7 @@ router.post("/", async (req, res) => {
   try {
     const result = await pool.query(
       "INSERT INTO paciente (num_casela, nome) VALUES ($1, $2) RETURNING *",
-      [casela, nome]
+      [casela, nome],
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {

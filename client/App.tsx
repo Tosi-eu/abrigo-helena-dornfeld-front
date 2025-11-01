@@ -27,7 +27,6 @@ import Medicines from "./pages/Medicines";
 import Cabinets from "./pages/Cabinets";
 import RegisterCabinet from "./pages/RegisterCabinet";
 import EditCabinet from "./pages/EditCabinet";
-import DeleteCabinet from "./pages/DeleteCabinet";
 import RegisterEquipment from "./pages/RegisterEquipment";
 
 const queryClient = new QueryClient();
@@ -61,7 +60,6 @@ const App = () => (
           <Route path="/cabinets" element={<Cabinets />} />
           <Route path="/cabinets/register" element={<RegisterCabinet />} />
           <Route path="/cabinets/edit" element={<EditCabinet />} />
-          <Route path="/cabinets/delete" element={<DeleteCabinet />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

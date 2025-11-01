@@ -48,9 +48,7 @@ export default function StockIn() {
             <option value={OperationType.MEDICINE}>
               {OperationType.MEDICINE}
             </option>
-            <option value={OperationType.INPUT}>
-              {OperationType.INPUT}
-            </option>
+            <option value={OperationType.INPUT}>{OperationType.INPUT}</option>
           </select>
         </div>
 

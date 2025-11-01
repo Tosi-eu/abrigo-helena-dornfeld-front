@@ -19,7 +19,7 @@ export function createServer() {
 
   app.get("/api/ping", (_req, res) => {
     res.json({ message: process.env.PING_MESSAGE ?? "pong from default" });
-  }); 
+  });
 
   return app;
 }

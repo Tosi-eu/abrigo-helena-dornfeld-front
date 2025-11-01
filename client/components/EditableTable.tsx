@@ -52,10 +52,7 @@ export default function EditableTable({
       const updatedRow: Record<string, any> = {};
       for (const key in row) {
         const value = row[key];
-        if (
-          typeof value === "string" &&
-          /^\d{4}-\d{2}-\d{2}/.test(value)
-        ) {
+        if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
           updatedRow[key] = convertToBRT(value);
         } else {
           updatedRow[key] = value;
@@ -69,7 +66,7 @@ export default function EditableTable({
 
   const handleAddRow = () => {
     if (entityType === "entries") {
-      console.log(rows)
+      console.log(rows);
       navigate("/stock/in", { state: { previousData: rows } });
     } else if (entityType === "exits") {
       navigate("/stock/out", { state: { previousData: rows } });
@@ -97,7 +94,6 @@ export default function EditableTable({
     }
   };
 
-
   const handleChange = (rowIndex: number, key: string, value: string) => {
     const updated = [...rows];
     updated[rowIndex][key] = value;
@@ -106,19 +102,43 @@ export default function EditableTable({
 
   const confirmDelete = (index: number) => setDeleteIndex(index);
 
-  const handleDeleteConfirmed = () => {
+  const handleDeleteConfirmed = async () => {
+    //TODO ajustar para outras entidades
     if (deleteIndex === null) return;
-    const updated = rows.filter((_, i) => i !== deleteIndex);
-    setRows(updated);
-    if (onDelete) onDelete(deleteIndex);
 
-    toast({
-      title: "Item removido",
-      description: "O item foi excluído com sucesso.",
-      variant: "success",
-    });
+    const rowToDelete = rows[deleteIndex];
+    if (!rowToDelete) return;
 
-    setDeleteIndex(null);
+    try {
+      const res = await fetch(
+        `http://localhost:3001/api/armarios/${rowToDelete.num_armario}`,
+        { method: "DELETE" },
+      );
+
+      if (!res.ok) throw new Error("Erro ao deletar item");
+
+      const data = await res.json();
+
+      toast({
+        title: "Item removido",
+        description: data.message || "O item foi excluído com sucesso.",
+        variant: "success",
+      });
+
+      if (onDelete) onDelete(rowToDelete.num_armario);
+
+      const updatedRows = rows.filter((_, i) => i !== deleteIndex);
+      setRows(updatedRows);
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Erro ao deletar item",
+        description: "Não foi possível remover o item.",
+        variant: "error",
+      });
+    } finally {
+      setDeleteIndex(null);
+    }
   };
 
   const handleDeleteCancel = () => setDeleteIndex(null);
@@ -156,7 +176,7 @@ export default function EditableTable({
 
     const today = new Date();
     const diffDays = Math.ceil(
-      (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
     );
 
     let tooltipText = "";
@@ -301,10 +321,11 @@ export default function EditableTable({
                   return (
                     <th
                       key={col.key}
-                      className={`px-4 py-3 text-sm font-semibold text-slate-800 ${index !== columns.length - 1
+                      className={`px-4 py-3 text-sm font-semibold text-slate-800 ${
+                        index !== columns.length - 1
                           ? "border-r border-slate-200"
                           : ""
-                        }`}
+                      }`}
                     >
                       {label}
                     </th>
@@ -327,15 +348,22 @@ export default function EditableTable({
                     {columns.map((col, index) => (
                       <td
                         key={col.key}
-                        className={`px-4 py-3 text-xs text-slate-800 ${index !== columns.length - 1 ? "border-r border-slate-100" : ""
-                          }`}
+                        className={`px-4 py-3 text-xs text-slate-800 ${
+                          index !== columns.length - 1
+                            ? "border-r border-slate-100"
+                            : ""
+                        }`}
                       >
                         {editingIndex === absoluteIndex && col.editable ? (
                           <input
                             type="text"
                             value={row[col.key]}
                             onChange={(e) =>
-                              handleChange(absoluteIndex, col.key, e.target.value)
+                              handleChange(
+                                absoluteIndex,
+                                col.key,
+                                e.target.value,
+                              )
                             }
                             placeholder={col.label}
                             className="border border-slate-300 rounded-md px-2 py-1 text-xs focus:ring-2 focus:ring-sky-300 focus:outline-none bg-white text-center"
@@ -405,7 +433,9 @@ export default function EditableTable({
 
                 <button
                   className="px-2 py-2 border rounded-md hover:bg-slate-50 disabled:opacity-50"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                   disabled={currentPage === totalPages}
                 >
                   Próxima ›

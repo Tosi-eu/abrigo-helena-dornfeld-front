@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
-import { cabinets } from "../../mocks/cabinets";
 import { CabinetCategory } from "@/enums/enums";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
 export default function EditCabinet() {
   const location = useLocation();
   const item = location.state?.item;
+  const navigate = useNavigate();
 
+  const [cabinets, setCabinets] = useState<any[]>([]);
   const [selectedCabinet, setSelectedCabinet] = useState<any>(null);
   const [formData, setFormData] = useState({
     id: 0,
@@ -17,24 +18,37 @@ export default function EditCabinet() {
   });
 
   useEffect(() => {
+    fetch("http://localhost:3001/api/armarios")
+      .then((res) => res.json())
+      .then((data) => setCabinets(data))
+      .catch(() => {
+        toast({
+          title: "Erro ao carregar armários",
+          description: "Não foi possível buscar os armários do servidor.",
+          variant: "error",
+        });
+      });
+  }, []);
+
+  useEffect(() => {
     if (item) {
       setSelectedCabinet(item);
       setFormData({
-        id: item.id,
-        category: item.category,
-        description: item.description || "",
+        id: item.num_armario,
+        category: item.categoria,
+        description: "",
       });
     }
   }, [item]);
 
   const handleSelectChange = (value: string) => {
-    const cabinet = cabinets.find((c) => c.id === parseInt(value));
+    const cabinet = cabinets.find((c) => c.num_armario === parseInt(value, 10));
     if (cabinet) {
       setSelectedCabinet(cabinet);
       setFormData({
-        id: cabinet.id,
-        category: cabinet.category,
-        description: cabinet.description || "",
+        id: cabinet.num_armario,
+        category: cabinet.categoria,
+        description: "",
       });
     } else {
       setSelectedCabinet(null);
@@ -49,22 +63,44 @@ export default function EditCabinet() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedCabinet) {
       toast({
         title: "Campos obrigatórios",
-        description: "Preencha todos os campos para cadastrar o Insumo.",
+        description: "Selecione um armário para editar.",
         variant: "warning",
       });
       return;
     }
 
-    toast({
-      title: "Campos obrigatórios",
-      description: `Armário ${formData.id} atualizado com sucesso!`,
-      variant: "success",
-    });
-    return;
+    try {
+      const res = await fetch(
+        `http://localhost:3001/api/armarios/${formData.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ categoria: formData.category }),
+        },
+      );
+
+      if (!res.ok) throw new Error("Erro ao editar armário");
+      const updated = await res.json();
+
+      toast({
+        title: "Armário atualizado",
+        description: `O armário ${updated.num_armario} foi atualizado com sucesso!`,
+        variant: "success",
+      });
+
+      navigate("/cabinets");
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Erro ao editar armário",
+        description: "Não foi possível atualizar o armário.",
+        variant: "error",
+      });
+    }
   };
 
   return (
@@ -79,14 +115,14 @@ export default function EditCabinet() {
             Selecionar Armário
           </label>
           <select
-            value={selectedCabinet?.id || ""}
+            value={selectedCabinet?.num_armario || ""}
             onChange={(e) => handleSelectChange(e.target.value)}
-            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
+            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
             <option value="">Escolha</option>
             {cabinets.map((c) => (
-              <option key={c.id} value={c.id}>
-                Armário {c.id} ({c.category})
+              <option key={c.num_armario} value={c.num_armario}>
+                Armário {c.num_armario} ({c.categoria})
               </option>
             ))}
           </select>
@@ -104,6 +140,7 @@ export default function EditCabinet() {
                 value={formData.id}
                 onChange={handleChange}
                 className="w-full border bg-white rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+                disabled
               />
             </div>
 
@@ -123,19 +160,6 @@ export default function EditCabinet() {
                   </option>
                 ))}
               </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Descrição
-              </label>
-              <input
-                type="text"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-              />
             </div>
 
             <div className="flex justify-between pt-4">
