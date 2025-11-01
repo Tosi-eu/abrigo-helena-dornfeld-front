@@ -28,74 +28,74 @@ export default function EditableTable({
   const [filterType, setFilterType] = useState("Todos");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(1); 
+  const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-  if (!data) return;
+    if (!data) return;
 
-  const convertToBRT = (dateString: string) => {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString; 
-    // converte para UTC-3
-    const brtDate = new Date(date.getTime() - 3 * 60 * 60 * 1000);
-    return brtDate.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
+    const convertToBRT = (dateString: string) => {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      // converte para UTC-3
+      const brtDate = new Date(date.getTime() - 3 * 60 * 60 * 1000);
+      return brtDate.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    };
+
+    const formatted = data.map((row) => {
+      const updatedRow: Record<string, any> = {};
+      for (const key in row) {
+        const value = row[key];
+        if (
+          typeof value === "string" &&
+          /^\d{4}-\d{2}-\d{2}/.test(value)
+        ) {
+          updatedRow[key] = convertToBRT(value);
+        } else {
+          updatedRow[key] = value;
+        }
+      }
+      return updatedRow;
     });
-  };
 
-  const formatted = data.map((row) => {
-    const updatedRow: Record<string, any> = {};
-    for (const key in row) {
-      const value = row[key];
-      if (
-        typeof value === "string" &&
-        /^\d{4}-\d{2}-\d{2}/.test(value)
-      ) {
-        updatedRow[key] = convertToBRT(value);
+    setRows(formatted);
+  }, [data]);
+
+  const handleAddRow = () => {
+    if (entityType === "entries") {
+      console.log(rows)
+      navigate("/stock/in", { state: { previousData: rows } });
+    } else if (entityType === "exits") {
+      navigate("/stock/out", { state: { previousData: rows } });
+    } else if (entityType === "medicines") {
+      navigate("/medicines/register");
+    } else if (entityType === "residents") {
+      navigate("/residents/register");
+    } else if (entityType === "equipments") {
+      navigate("/inputs/register");
+    } else if (entityType === "cabinets") {
+      navigate("/cabinets/register");
+    } else if (entityType === "transactions") {
+      if (filterType === "Medicamento") {
+        navigate("/medicines/register");
+      } else if (filterType === "Insumo") {
+        navigate("/inputs/register");
       } else {
-        updatedRow[key] = value;
+        toast({
+          title: "Seleção inválida",
+          description:
+            'Selecione "Medicamento" ou "Insumo" antes de adicionar.',
+          variant: "error",
+        });
       }
     }
-    return updatedRow;
-  });
-
-  setRows(formatted);
-}, [data]);
-
-const handleAddRow = () => {
-  if (entityType === "entries") {
-    console.log(rows)
-    navigate("/stock/in", { state: { previousData: rows } });
-  } else if (entityType === "exits") {
-    navigate("/stock/out", { state: { previousData: rows } });
-  } else if (entityType === "medicines") {
-    navigate("/medicines/register");
-  } else if (entityType === "residents") {
-    navigate("/residents/register");
-  } else if (entityType === "equipments") {
-    navigate("/inputs/register");
-  } else if (entityType === "cabinets") {
-    navigate("/cabinets/register");
-  } else if (entityType === "transactions") {
-    if (filterType === "Medicamento") {
-      navigate("/medicines/register");
-    } else if (filterType === "Insumo") {
-      navigate("/inputs/register");
-    } else {
-      toast({
-        title: "Seleção inválida",
-        description:
-          'Selecione "Medicamento" ou "Insumo" antes de adicionar.',
-        variant: "error",
-      });
-    }
-  }
-};
+  };
 
 
   const handleChange = (rowIndex: number, key: string, value: string) => {
@@ -237,7 +237,7 @@ const handleAddRow = () => {
   const hasType = rows.some((r) => r.type);
 
   useEffect(() => {
-  setCurrentPage(1);
+    setCurrentPage(1);
   }, [filterType, rows.length]);
 
   const totalItems = rowsFiltered.length;
@@ -301,11 +301,10 @@ const handleAddRow = () => {
                   return (
                     <th
                       key={col.key}
-                      className={`px-4 py-3 text-sm font-semibold text-slate-800 ${
-                        index !== columns.length - 1
+                      className={`px-4 py-3 text-sm font-semibold text-slate-800 ${index !== columns.length - 1
                           ? "border-r border-slate-200"
                           : ""
-                      }`}
+                        }`}
                     >
                       {label}
                     </th>
@@ -328,9 +327,8 @@ const handleAddRow = () => {
                     {columns.map((col, index) => (
                       <td
                         key={col.key}
-                        className={`px-4 py-3 text-xs text-slate-800 ${
-                          index !== columns.length - 1 ? "border-r border-slate-100" : ""
-                        }`}
+                        className={`px-4 py-3 text-xs text-slate-800 ${index !== columns.length - 1 ? "border-r border-slate-100" : ""
+                          }`}
                       >
                         {editingIndex === absoluteIndex && col.editable ? (
                           <input
@@ -382,46 +380,46 @@ const handleAddRow = () => {
               )}
             </tbody>
           </table>
-          
-              <div className="overflow-x-auto relative">
-                <div className="flex items-center justify-center gap-2 px-4 py-3 border-t border-slate-200 bg-white">
-                  <div className="flex items-center gap-1">
-                    <button
-                      className="px-2 py-1 text-sm border rounded-md hover:bg-slate-50 disabled:opacity-50"
-                      onClick={() => setCurrentPage(1)}
-                      disabled={currentPage === 1}
-                    >
-                      « Primeira
-                    </button>
-                    <button
-                      className="px-2 py-1 text-sm border rounded-md hover:bg-slate-50 disabled:opacity-50"
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                    >
-                      ‹ Anterior
-                    </button>
 
-                    <span className="px-3 text-sm text-slate-700">
-                      Página {currentPage} de {totalPages}
-                    </span>
+          <div className="overflow-x-auto relative">
+            <div className="flex items-center justify-center gap-2 px-4 py-3 border-t border-slate-200 bg-white text-xs">
+              <div className="flex items-center gap-1">
+                <button
+                  className="px-2 py-2 border rounded-md hover:bg-slate-50 disabled:opacity-50"
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                >
+                  « Primeira
+                </button>
+                <button
+                  className="px-2 py-2 border rounded-md hover:bg-slate-50 disabled:opacity-50"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  ‹ Anterior
+                </button>
 
-                    <button
-                      className="px-2 py-1 text-sm border rounded-md hover:bg-slate-50 disabled:opacity-50"
-                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                    >
-                      Próxima ›
-                    </button>
-                    <button
-                      className="px-2 py-1 text-sm border rounded-md hover:bg-slate-50 disabled:opacity-50"
-                      onClick={() => setCurrentPage(totalPages)}
-                      disabled={currentPage === totalPages}
-                    >
-                      Última »
-                    </button>
-                  </div>
-                </div>
+                <span className="px-3 text-slate-700">
+                  Página {currentPage} de {totalPages}
+                </span>
+
+                <button
+                  className="px-2 py-2 border rounded-md hover:bg-slate-50 disabled:opacity-50"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Próxima ›
+                </button>
+                <button
+                  className="px-2 py-2 border rounded-md hover:bg-slate-50 disabled:opacity-50"
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                >
+                  Última »
+                </button>
               </div>
+            </div>
+          </div>
         </div>
       </div>
 
