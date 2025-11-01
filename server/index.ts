@@ -1,23 +1,25 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import { handleDemo } from "./routes/demo";
+import medicines from "./routes/medicines";
+import cabinets from "./routes/cabinets";
+import residents from "./routes/residents";
+import inputs from "./routes/inputs";
 
 export function createServer() {
   const app = express();
 
-  // Middleware
   app.use(cors());
   app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
 
-  // Example API routes
+  app.use("/api/medicamentos", medicines);
+  app.use("/api/armarios", cabinets);
+  app.use("/api/idoso", residents);
+  app.use("/api/insumos", inputs);
+
   app.get("/api/ping", (_req, res) => {
-    const ping = process.env.PING_MESSAGE ?? "ping";
-    res.json({ message: ping });
-  });
-
-  app.get("/api/demo", handleDemo);
+    res.json({ message: process.env.PING_MESSAGE ?? "pong from default" });
+  }); 
 
   return app;
 }

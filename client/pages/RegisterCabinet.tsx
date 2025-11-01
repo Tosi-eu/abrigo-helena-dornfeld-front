@@ -7,36 +7,56 @@ import { toast } from "@/hooks/use-toast";
 export default function RegisterCabinet() {
   const [id, setId] = useState<number | "">("");
   const [category, setCategory] = useState<CabinetCategory | "">("");
-  const [description, setDescription] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (id === "" || id <= 0) {
       toast({
-        title: "Campos obrigaórios",
-        description: "Selecione um armário",
+        title: "Campos obrigatórios",
+        description: "Informe um número de armário válido.",
         variant: "warning",
       });
       return;
     }
+
     if (!category) {
       toast({
         title: "Campos obrigatórios",
-        description: "Selecione ou digite uma categoria.",
+        description: "Informe uma categoria.",
         variant: "warning",
       });
       return;
     }
 
-    toast({
-      title: "Armário Criado",
-      description: `O armário ${id} foi criado com sucesso!`,
-      variant: "success",
-    });
+    try {
+      const res = await fetch("http://localhost:3001/api/armarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          numero: id,
+          categoria: category,
+        }),
+      });
 
-    navigate("/cabinets");
+      if (!res.ok) throw new Error("Erro ao cadastrar armário");
+
+      toast({
+        title: "Armário criado",
+        description: `O armário ${id} foi cadastrado com sucesso.`,
+        variant: "success",
+      });
+
+      navigate("/cabinets");
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Erro ao cadastrar",
+        description: "Não foi possível cadastrar o armário.",
+        variant: "error",
+      });
+    }
   };
 
   return (
@@ -51,7 +71,7 @@ export default function RegisterCabinet() {
               Número do Armário
             </label>
             <input
-              type="text"
+              type="number"
               value={id}
               onChange={(e) => {
                 const v = e.target.value;
