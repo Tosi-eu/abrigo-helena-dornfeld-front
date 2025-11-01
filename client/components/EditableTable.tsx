@@ -29,7 +29,7 @@ export default function EditableTable({
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1); 
-  const [recordsPerPage, setRecordsPerPage] = useState(10);
+  const recordsPerPage = 10;
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -384,33 +384,7 @@ const handleAddRow = () => {
           </table>
           
               <div className="overflow-x-auto relative">
-                <table className="w-full text-center border-collapse">
-                  {/* thead / tbody */}
-                </table>
-
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-slate-200 bg-white">
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-slate-700">Itens por página:</span>
-                    <select
-                      value={recordsPerPage}
-                      onChange={(e) => {
-                        setRecordsPerPage(Number(e.target.value));
-                        setCurrentPage(1);
-                      }}
-                      className="border border-slate-300 rounded-md px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
-                    >
-                      {[5, 10, 20, 50, 100].map((n) => (
-                        <option key={n} value={n}>{n}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="text-xs text-slate-600">
-                    {totalItems === 0
-                      ? "Nenhum registro"
-                      : `Mostrando ${startIndex + 1}–${Math.min(endIndex, totalItems)} de ${totalItems}`}
-                  </div>
-
+                <div className="flex items-center justify-center gap-2 px-4 py-3 border-t border-slate-200 bg-white">
                   <div className="flex items-center gap-1">
                     <button
                       className="px-2 py-1 text-sm border rounded-md hover:bg-slate-50 disabled:opacity-50"
