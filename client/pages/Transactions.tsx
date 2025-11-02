@@ -11,7 +11,7 @@ import { prepareMovements } from "@/utils/utils";
 import { medicines } from "../../mocks/medicines";
 import { MovementType } from "@/enums/enums";
 
-export default function EquipmentMovements() {
+export default function InputMovements() {
   const navigate = useNavigate();
 
   const [entryFilter, setEntryFilter] = useState("");

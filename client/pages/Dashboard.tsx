@@ -126,12 +126,12 @@ export default function Dashboard() {
       .filter((m) => m.stockType === StockType.INDIVIDUAL)
       .reduce((acc, m) => acc + m.quantity, 0);
 
-    const equipmentCount = inputInventory.reduce(
+    const inputCount = inputInventory.reduce(
       (acc, e) => acc + e.quantity,
       0,
     );
 
-    const total = generalMedicines + individualMedicines + equipmentCount;
+    const total = generalMedicines + individualMedicines + inputCount;
 
     return [
       {
@@ -146,8 +146,8 @@ export default function Dashboard() {
       },
       {
         name: "Insumos",
-        value: Math.round((equipmentCount / total) * 100),
-        rawValue: equipmentCount,
+        value: Math.round((inputCount / total) * 100),
+        rawValue: inputCount,
       },
     ];
   }, []);

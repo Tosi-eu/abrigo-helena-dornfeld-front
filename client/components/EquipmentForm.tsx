@@ -3,7 +3,7 @@ import { ptBR } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import { useState } from "react";
 
-export function EquipmentForm({ onSubmit }: { onSubmit: (data: any) => void }) {
+export function InputForm({ onSubmit }: { onSubmit: (data: any) => void }) {
   const [formData, setFormData] = useState({
     name: "",
     category: "",

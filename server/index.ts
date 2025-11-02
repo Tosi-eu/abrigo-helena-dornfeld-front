@@ -5,6 +5,7 @@ import medicines from "./routes/medicines";
 import cabinets from "./routes/cabinets";
 import residents from "./routes/residents";
 import inputs from "./routes/inputs";
+import login from "./routes/login";
 
 export function createServer() {
   const app = express();
@@ -16,6 +17,7 @@ export function createServer() {
   app.use("/api/armarios", cabinets);
   app.use("/api/idoso", residents);
   app.use("/api/insumos", inputs);
+  app.use("/api/login", login);
 
   app.get("/api/ping", (_req, res) => {
     res.json({ message: process.env.PING_MESSAGE ?? "pong from default" });

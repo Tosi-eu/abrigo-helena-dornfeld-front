@@ -74,7 +74,7 @@ export default function EditableTable({
       navigate("/medicines/register");
     } else if (entityType === "residents") {
       navigate("/residents/register");
-    } else if (entityType === "equipments") {
+    } else if (entityType === "inputs") {
       navigate("/inputs/register");
     } else if (entityType === "cabinets") {
       navigate("/cabinets/register");
@@ -110,10 +110,23 @@ export default function EditableTable({
     if (!rowToDelete) return;
 
     try {
-      const res = await fetch(
-        `http://localhost:3001/api/armarios/${rowToDelete.num_armario}`,
-        { method: "DELETE" },
-      );
+      let endpoint = "";
+      if (entityType === "inputs") {
+        endpoint = `http://localhost:3001/api/insumos/${rowToDelete.id}`;
+      } else if (entityType === "cabinets") {
+        endpoint = `http://localhost:3001/api/armarios/${rowToDelete.num_armario}`;
+      }
+
+      if (!endpoint) {
+        toast({
+          title: "Erro",
+          description: "Entidade não suportada para deleção.",
+          variant: "error",
+        });
+        return;
+      }
+
+      const res = await fetch(endpoint, { method: "DELETE" });
 
       if (!res.ok) throw new Error("Erro ao deletar item");
 
@@ -147,7 +160,7 @@ export default function EditableTable({
     let type = typeMap[row?.type];
 
     if (
-      ["equipments", "medicines", "residents", "cabinets"].includes(entityType)
+      ["inputs", "medicines", "residents", "cabinets"].includes(entityType)
     ) {
       type = entityType;
     }
@@ -271,7 +284,7 @@ export default function EditableTable({
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden font-[Inter]">
         <div className="flex justify-between items-center px-4 py-3 border-b border-slate-200 bg-sky-50 text-sm">
           <div className="flex items-center gap-4">
-            {hasType && entityType !== "equipments" && (
+            {hasType && entityType !== "inputs" && (
               <div className="flex items-center gap-2 border-l border-slate-200 pl-4">
                 <span className="text-slate-700">Tipo:</span>
                 <select
@@ -304,7 +317,7 @@ export default function EditableTable({
 
                   if (
                     col.key === "description" &&
-                    entityType !== "equipments"
+                    entityType !== "inputs"
                   ) {
                     if (filterType === "Todos") {
                       label = "Princípio Ativo / Descrição";

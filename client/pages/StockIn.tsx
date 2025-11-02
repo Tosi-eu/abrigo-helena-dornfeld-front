@@ -1,7 +1,7 @@
 import Layout from "@/components/Layout";
 import { useState } from "react";
 import { MedicineForm } from "@/components/MedicineForm";
-import { EquipmentForm } from "@/components/EquipmentForm";
+import { InputForm } from "@/components/EquipmentForm";
 import { OperationType } from "@/enums/enums";
 import { useLocation } from "react-router-dom";
 
@@ -68,7 +68,7 @@ export default function StockIn() {
             <h3 className="text-md font-semibold text-slate-800 mb-3">
               Insumo
             </h3>
-            <EquipmentForm
+            <InputForm
               onSubmit={(data) => console.log("Entrada de Insumo:", data)}
             />
           </div>

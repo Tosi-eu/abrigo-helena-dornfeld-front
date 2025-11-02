@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { OperationType } from "@/enums/enums";
 import { MedicineForm } from "@/components/MedicineForm";
-import { EquipmentForm } from "@/components/EquipmentForm";
+import { InputForm } from "@/components/EquipmentForm";
 
 export default function StockOut() {
   const location = useLocation();
@@ -66,7 +66,7 @@ export default function StockOut() {
             <h3 className="text-md font-semibold text-slate-800 mb-3">
               Insumo
             </h3>
-            <EquipmentForm onSubmit={() => navigate("/stock")} />
+            <InputForm onSubmit={() => navigate("/stock")} />
           </div>
         )}
       </div>

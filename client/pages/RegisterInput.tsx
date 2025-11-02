@@ -3,14 +3,14 @@ import Layout from "@/components/Layout";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
-export default function RegisterEquipment() {
+export default function RegisterInput() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     category: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.name || !formData.category) {
@@ -22,14 +22,36 @@ export default function RegisterEquipment() {
       return;
     }
 
-    toast({
-      title: "Insumo cadastrado",
-      description: `${formData.name} foi adicionado ao sistema.`,
-      variant: "success",
-    });
+    try {
+      const response = await fetch("http://localhost:3001/api/insumos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: formData.name,
+          descricao: formData.category,
+        }),
+      });
 
-    setFormData({ name: "", category: "" });
-    navigate("/inputs");
+      if (!response.ok) throw new Error("Erro ao cadastrar insumo");
+
+      const data = await response.json();
+
+      toast({
+        title: "Insumo cadastrado",
+        description: `${data.nome} foi adicionado ao sistema.`,
+        variant: "success",
+      });
+
+      setFormData({ name: "", category: "" });
+      navigate("/inputs");
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Erro ao cadastrar insumo",
+        description: "Não foi possível salvar o insumo no banco.",
+        variant: "error",
+      });
+    }
   };
 
   return (
