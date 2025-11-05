@@ -1,5 +1,3 @@
-import DatePicker from "react-datepicker";
-import { ptBR } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import { useState } from "react";
 
@@ -9,7 +7,6 @@ export function InputForm({ onSubmit }: { onSubmit: (data: any) => void }) {
     category: "",
     quantity: "",
     unit: "",
-    expiry: null as Date | null,
   });
 
   return (
@@ -68,22 +65,6 @@ export function InputForm({ onSubmit }: { onSubmit: (data: any) => void }) {
             className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
           />
         </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Validade
-        </label>
-        <DatePicker
-          selected={formData.expiry}
-          onChange={(date: Date | null) =>
-            setFormData({ ...formData, expiry: date })
-          }
-          locale={ptBR}
-          dateFormat="dd/MM/yyyy"
-          placeholderText="Selecione a data"
-          className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-        />
       </div>
 
       <div className="flex justify-end">

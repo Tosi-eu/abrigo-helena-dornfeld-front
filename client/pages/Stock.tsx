@@ -1,12 +1,8 @@
 import Layout from "@/components/Layout";
 import EditableTable from "@/components/EditableTable";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { StockType } from "@/enums/enums";
-import { medicines } from "../../mocks/medicines";
-import { cabinets } from "../../mocks/cabinets";
-import { inputs } from "../../mocks/inputs";
-import { medicineInventory, inputInventory } from "../../mocks/stock";
 import { StockItem } from "@/interfaces/interfaces";
 import ReportModal from "@/components/ReportModal";
 
@@ -29,71 +25,51 @@ export default function Stock() {
   });
 
   const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [items, setItems] = useState<StockItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const meds: StockItem[] = useMemo(() => {
-    return medicineInventory.flatMap((inv) => {
-      const med = medicines.find((m) => m.id === inv.medicineId);
-      const cabinet = cabinets.find((c) => c.id === inv.cabinetId);
+  useEffect(() => {
+    async function fetchStock() {
+      try {
+        const res = await fetch("http://localhost:3001/api/estoque"); 
+        const data = await res.json();
 
-      return {
-        type: "Medicamento",
-        name: med?.name || "-",
-        description: med?.substance || "-",
-        expiry: inv.expiry,
-        quantity: inv.quantity,
-        minimumStock: med?.minimumStock,
-        patient: inv.residentId ? `Residente ${inv.residentId}` : "-",
-        cabinet: cabinet?.id || "-",
-        casela: inv.residentId || "-",
-        stockType:
-          inv.stockType === "individual"
-            ? StockType.INDIVIDUAL
-            : StockType.GERAL,
-        origin: inv.origin,
-      };
-    });
+        const medicamentos: StockItem[] = data.medicamentos.map((m: any) => ({
+          type: "Medicamento",
+          name: m.nome_medicamento,
+          description: m.principio_ativo,
+          expiry: m.validade,
+          quantity: m.quantidade,
+          cabinet: m.armario_id,
+          casela: m.casela_id,
+          stockType: StockType.GERAL, 
+          patient: "-",
+          origin: m.origem,
+        }));
+
+        const insumos: StockItem[] = data.insumos.map((i: any) => ({
+          type: "Insumo",
+          name: i.nome_insumo,
+          description: i.descricao,
+          expiry: "-",
+          quantity: i.quantidade,
+          cabinet: i.armario_id,
+          casela: "-",
+          stockType: StockType.GERAL,
+          patient: "-",
+          origin: "-",
+        }));
+
+        setItems([...medicamentos, ...insumos]);
+      } catch (err) {
+        console.error("Erro ao buscar estoque:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchStock();
   }, []);
-
-  const medsWithoutStock: StockItem[] = useMemo(() => {
-    return medicines
-      .filter((m) => !medicineInventory.some((inv) => inv.medicineId === m.id))
-      .map((med) => ({
-        type: "Medicamento",
-        name: med.name,
-        description: med.substance,
-        expiry: "-",
-        quantity: 0,
-        minimumStock: med.minimumStock,
-        patient: "-",
-        cabinet: "-",
-        casela: "-",
-        stockType: StockType.GERAL,
-      }));
-  }, []);
-
-  const eqs: StockItem[] = useMemo(() => {
-    return inputInventory.map((entry) => {
-      const eq = inputs.find((e) => e.id === entry.inputId);
-      const cabinet = cabinets.find((c) => c.id === entry.cabinetId);
-
-      return {
-        type: "Insumo",
-        name: eq?.name || "-",
-        description: eq?.description || "-",
-        expiry: "-",
-        quantity: entry.quantity,
-        stockType: StockType.GERAL,
-        patient: "-",
-        cabinet: cabinet?.id || "-",
-        casela: "-",
-      };
-    });
-  }, []);
-
-  const items = useMemo(
-    () => [...meds, ...medsWithoutStock, ...eqs],
-    [meds, medsWithoutStock, eqs],
-  );
 
   useEffect(() => {
     switch (filterType) {
@@ -213,14 +189,20 @@ export default function Stock() {
           </button>
         </div>
 
-        <h2 className="text-lg font-semibold mt-6">Estoque Geral</h2>
-        <EditableTable
-          data={filteredStock}
-          columns={columns}
-          onEdit={(row, i) => console.log("Editado:", row, "linha", i)}
-          onDelete={(i) => console.log("Excluído linha:", i)}
-          onAdd={(row) => console.log("Nova linha:", row)}
-        />
+        {loading ? (
+          <p className="text-center text-slate-500 mt-6">Carregando...</p>
+        ) : (
+          <>
+            <h2 className="text-lg font-semibold mt-6">Estoque Geral</h2>
+            <EditableTable
+              data={filteredStock}
+              columns={columns}
+              onEdit={(row, i) => console.log("Editado:", row, "linha", i)}
+              onDelete={(i) => console.log("Excluído linha:", i)}
+              onAdd={(row) => console.log("Nova linha:", row)}
+            />
+          </>
+        )}
       </div>
 
       <ReportModal

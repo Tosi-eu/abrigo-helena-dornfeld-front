@@ -119,7 +119,6 @@ export default function EditCabinet() {
             onChange={(e) => handleSelectChange(e.target.value)}
             className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
-            <option value="">Escolha</option>
             {cabinets.map((c) => (
               <option key={c.num_armario} value={c.num_armario}>
                 Armário {c.num_armario} ({c.categoria})

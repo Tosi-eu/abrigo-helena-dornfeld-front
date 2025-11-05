@@ -148,7 +148,6 @@ export default function SignUpMedicine() {
                 }
                 className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
               >
-                <option value="">Selecione</option>
                 <option value="mg">mg</option>
                 <option value="ml">ml</option>
                 <option value="g">g</option>

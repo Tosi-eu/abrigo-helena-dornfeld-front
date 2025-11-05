@@ -125,7 +125,6 @@ export default function EditMedicine() {
               onChange={(e) => setSelectedMedicine(e.target.value)}
               className="w-full border bg-white rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
             >
-              <option value="">Escolha</option>
               {medicines.map((m) => (
                 <option key={m.id} value={m.name}>
                   {m.name}
@@ -169,7 +168,6 @@ export default function EditMedicine() {
                 }
                 className="w-full border bg-white border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
               >
-                <option value="">Selecione</option>
                 <option value="mg">mg</option>
                 <option value="g">g</option>
                 <option value="mcg">mcg</option>

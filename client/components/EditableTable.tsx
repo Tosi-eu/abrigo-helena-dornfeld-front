@@ -115,6 +115,8 @@ export default function EditableTable({
         endpoint = `http://localhost:3001/api/insumos/${rowToDelete.id}`;
       } else if (entityType === "cabinets") {
         endpoint = `http://localhost:3001/api/armarios/${rowToDelete.num_armario}`;
+      } else if(entityType === "residents") {
+        endpoint = `http://localhost:3001/api/residentes/${rowToDelete.num_casela}`
       }
 
       if (!endpoint) {

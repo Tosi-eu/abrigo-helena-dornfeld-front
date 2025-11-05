@@ -2,7 +2,6 @@ import {
   CabinetCategory,
   MovementType,
   OriginType,
-  SectorType,
   StockType,
 } from "@/enums/enums";
 import { ReactNode } from "react";
@@ -93,8 +92,6 @@ export interface Movement {
   inputId?: number;
   cabinetId: number;
   patientId?: number;
-  originSector?: SectorType;
-  destinationSector?: SectorType;
 }
 
 export interface InputMovementRow {
