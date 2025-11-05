@@ -1,13 +1,28 @@
 import "react-datepicker/dist/react-datepicker.css";
 import { useState } from "react";
 
-export function InputForm({ onSubmit }: { onSubmit: (data: any) => void }) {
+type InputFormProps = {
+  inputs: { id: string; nome: string; categoria: string; unidade: string }[];
+  cabinets: { value: string; label: string }[];
+  onSubmit: (data: any) => void;
+};
+
+export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
   const [formData, setFormData] = useState({
-    name: "",
+    insumoId: "",
     category: "",
     quantity: "",
-    unit: "",
+    cabinet: "",
   });
+
+  const handleInputChange = (id: string) => {
+    const selected = inputs.find((i) => i.id === id);
+    setFormData({
+      ...formData,
+      insumoId: id,
+      category: selected ? selected.categoria : "",
+    });
+  };
 
   return (
     <div className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
@@ -15,28 +30,17 @@ export function InputForm({ onSubmit }: { onSubmit: (data: any) => void }) {
         <label className="block text-sm font-medium text-slate-700 mb-1">
           Nome do Insumo
         </label>
-        <input
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          placeholder="Seringa 5ml"
-          className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Categoria
-        </label>
-        <input
-          type="text"
-          value={formData.category}
-          onChange={(e) =>
-            setFormData({ ...formData, category: e.target.value })
-          }
-          placeholder="Material Hospitalar"
-          className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-        />
+        <select
+          value={formData.insumoId}
+          onChange={(e) => handleInputChange(e.target.value)}
+          className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+        >
+          {inputs.map((insumo) => (
+            <option key={insumo.id} value={insumo.id}>
+              {insumo.nome}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="flex gap-4">
@@ -50,21 +54,29 @@ export function InputForm({ onSubmit }: { onSubmit: (data: any) => void }) {
             onChange={(e) =>
               setFormData({ ...formData, quantity: e.target.value })
             }
+            placeholder="10"
             className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
           />
         </div>
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Unidade
-          </label>
-          <input
-            type="text"
-            value={formData.unit}
-            onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-            placeholder="Caixa / Unidade / Par..."
-            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-          />
-        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">
+          Armário
+        </label>
+        <select
+          value={formData.cabinet}
+          onChange={(e) =>
+            setFormData({ ...formData, cabinet: e.target.value })
+          }
+          className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+        >
+          {cabinets.map((cab) => (
+            <option key={cab.value} value={cab.value}>
+              {cab.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="flex justify-end">

@@ -6,7 +6,7 @@ const router = Router();
 router.post("/", async (req, res) => {
   const { login, password } = req.body;
 
-  console.log(req)
+  console.log(req);
 
   if (!login || !password) {
     return res.status(400).json({ error: "E-mail e senha são obrigatórios" });
@@ -15,7 +15,7 @@ router.post("/", async (req, res) => {
   try {
     const result = await pool.query(
       "INSERT INTO login (login, password) VALUES ($1, $2) RETURNING id, login",
-      [login, password]
+      [login, password],
     );
 
     res.status(201).json(result.rows[0]);
@@ -31,7 +31,7 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   const { login, password } = req.query;
 
-    console.log(req)
+  console.log(req);
 
   if (!login || !password) {
     return res.status(400).json({ error: "E-mail e senha são obrigatórios" });
@@ -40,7 +40,7 @@ router.get("/", async (req, res) => {
   try {
     const result = await pool.query(
       "SELECT id, login FROM login WHERE login = $1 AND password = $2",
-      [login, password]
+      [login, password],
     );
 
     if (result.rowCount === 0) {

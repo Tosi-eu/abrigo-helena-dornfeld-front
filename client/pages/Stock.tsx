@@ -31,7 +31,7 @@ export default function Stock() {
   useEffect(() => {
     async function fetchStock() {
       try {
-        const res = await fetch("http://localhost:3001/api/estoque"); 
+        const res = await fetch("http://localhost:3001/api/estoque");
         const data = await res.json();
 
         const medicamentos: StockItem[] = data.medicamentos.map((m: any) => ({
@@ -42,7 +42,7 @@ export default function Stock() {
           quantity: m.quantidade,
           cabinet: m.armario_id,
           casela: m.casela_id,
-          stockType: StockType.GERAL, 
+          stockType: StockType.GERAL,
           patient: "-",
           origin: m.origem,
         }));

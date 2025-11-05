@@ -42,9 +42,7 @@ export default function Resident() {
   if (error) {
     return (
       <Layout title="Residentes">
-        <div className="text-center mt-10 text-red-500">
-          {error}
-        </div>
+        <div className="text-center mt-10 text-red-500">{error}</div>
       </Layout>
     );
   }

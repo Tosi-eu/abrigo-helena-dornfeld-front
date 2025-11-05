@@ -120,7 +120,6 @@ export default function SignUpMedicine() {
             />
           </div>
 
-          {/* Dosagem e unidade */}
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <label className="block text-sm font-medium text-slate-700 mb-1">

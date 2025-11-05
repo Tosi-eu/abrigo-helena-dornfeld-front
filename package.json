@@ -10,21 +10,19 @@
       "dist/server/**/*.js"
     ]
   },
-"scripts": {
-  "dev": "vite",
-  "dev:server": "tsx watch server/server.ts",
-  "build": "npm run build:client && npm run build:server",
-  "build:client": "vite build",
-  "build:server": "vite build --config vite.config.server.ts",
-  "start": "node dist/server/node-build.mjs",
-
-  "db:up": "docker compose up -d",
-  "db:down": "docker compose down",
-  "db:reset": "docker compose down -v && docker compose up -d",
-  
-  "test": "vitest --run",
-  "format.fix": "prettier --write .",
-  "typecheck": "tsc"
+  "scripts": {
+    "dev": "vite",
+    "dev:server": "tsx watch server/server.ts",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "vite build",
+    "build:server": "vite build --config vite.config.server.ts",
+    "start": "node dist/server/node-build.mjs",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d",
+    "test": "vitest --run",
+    "format.fix": "prettier --write .",
+    "typecheck": "tsc"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

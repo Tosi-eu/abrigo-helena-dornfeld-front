@@ -19,7 +19,7 @@ export function createServer() {
   app.use("/api/residentes", residents);
   app.use("/api/insumos", inputs);
   app.use("/api/login", login);
-  app.use("/api/estoque", stock)
+  app.use("/api/estoque", stock);
 
   app.get("/api/ping", (_req, res) => {
     res.json({ message: process.env.PING_MESSAGE ?? "pong from default" });

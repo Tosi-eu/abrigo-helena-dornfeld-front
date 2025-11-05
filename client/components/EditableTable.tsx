@@ -115,8 +115,8 @@ export default function EditableTable({
         endpoint = `http://localhost:3001/api/insumos/${rowToDelete.id}`;
       } else if (entityType === "cabinets") {
         endpoint = `http://localhost:3001/api/armarios/${rowToDelete.num_armario}`;
-      } else if(entityType === "residents") {
-        endpoint = `http://localhost:3001/api/residentes/${rowToDelete.num_casela}`
+      } else if (entityType === "residents") {
+        endpoint = `http://localhost:3001/api/residentes/${rowToDelete.num_casela}`;
       }
 
       if (!endpoint) {
@@ -161,9 +161,7 @@ export default function EditableTable({
   const handleEditClick = (row: any) => {
     let type = typeMap[row?.type];
 
-    if (
-      ["inputs", "medicines", "residents", "cabinets"].includes(entityType)
-    ) {
+    if (["inputs", "medicines", "residents", "cabinets"].includes(entityType)) {
       type = entityType;
     }
 
@@ -317,10 +315,7 @@ export default function EditableTable({
                 {columns.map((col, index) => {
                   let label = col.label;
 
-                  if (
-                    col.key === "description" &&
-                    entityType !== "inputs"
-                  ) {
+                  if (col.key === "description" && entityType !== "inputs") {
                     if (filterType === "Todos") {
                       label = "Princípio Ativo / Descrição";
                     } else {

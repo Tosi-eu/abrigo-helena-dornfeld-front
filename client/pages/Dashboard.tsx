@@ -126,10 +126,7 @@ export default function Dashboard() {
       .filter((m) => m.stockType === StockType.INDIVIDUAL)
       .reduce((acc, m) => acc + m.quantity, 0);
 
-    const inputCount = inputInventory.reduce(
-      (acc, e) => acc + e.quantity,
-      0,
-    );
+    const inputCount = inputInventory.reduce((acc, e) => acc + e.quantity, 0);
 
     const total = generalMedicines + individualMedicines + inputCount;
 

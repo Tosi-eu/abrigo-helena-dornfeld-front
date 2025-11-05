@@ -17,7 +17,7 @@ export default function EditInput() {
   useEffect(() => {
     const item = location.state?.item;
 
-    console.log(item)
+    console.log(item);
 
     if (!item || !item.id) {
       toast({
@@ -55,14 +55,17 @@ export default function EditInput() {
     }
 
     try {
-      const res = await fetch(`http://localhost:3001/api/insumos/${formData.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nome: formData.nome,
-          descricao: formData.descricao,
-        }),
-      });
+      const res = await fetch(
+        `http://localhost:3001/api/insumos/${formData.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nome: formData.nome,
+            descricao: formData.descricao,
+          }),
+        },
+      );
 
       if (!res.ok) throw new Error("Erro ao atualizar insumo");
 

@@ -53,7 +53,7 @@ export default function EditResident() {
           body: JSON.stringify({
             nome: formData.nome,
           }),
-        }
+        },
       );
 
       if (!res.ok) throw new Error("Erro ao editar residente");

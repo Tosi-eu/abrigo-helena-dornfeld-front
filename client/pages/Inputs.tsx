@@ -50,11 +50,7 @@ export default function Inputs() {
   return (
     <Layout title="Insumos">
       <div className="space-y-6">
-        <EditableTable
-          data={data}
-          columns={columns}
-          entityType="inputs"
-        />
+        <EditableTable data={data} columns={columns} entityType="inputs" />
       </div>
     </Layout>
   );

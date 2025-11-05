@@ -20,7 +20,9 @@ export default function Auth() {
     try {
       if (isLogin) {
         const query = new URLSearchParams({ login, password });
-        const res = await fetch(`http://localhost:3001/api/login?${query.toString()}`);
+        const res = await fetch(
+          `http://localhost:3001/api/login?${query.toString()}`,
+        );
         const data = await res.json();
 
         if (!res.ok) throw new Error(data.error || "Erro ao fazer login");
@@ -121,7 +123,9 @@ export default function Auth() {
                       onChange={(e) => setRememberMe(e.target.checked)}
                       className="w-4 h-4 text-sky-600 border-slate-300 rounded focus:ring-sky-300"
                     />
-                    <span className="text-sm text-slate-700">Lembrar de mim</span>
+                    <span className="text-sm text-slate-700">
+                      Lembrar de mim
+                    </span>
                   </label>
 
                   <a href="#" className="text-sm text-sky-600 hover:underline">
