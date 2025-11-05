@@ -6,8 +6,6 @@ const router = Router();
 router.post("/", async (req, res) => {
   const { login, password } = req.body;
 
-  console.log(req);
-
   if (!login || !password) {
     return res.status(400).json({ error: "E-mail e senha são obrigatórios" });
   }
@@ -30,8 +28,6 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   const { login, password } = req.query;
-
-  console.log(req);
 
   if (!login || !password) {
     return res.status(400).json({ error: "E-mail e senha são obrigatórios" });

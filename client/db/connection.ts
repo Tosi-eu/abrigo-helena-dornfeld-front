@@ -9,8 +9,6 @@ const connectionString = isProd
   ? process.env.PROD_DATABASE_URL
   : process.env.HML_DATABASE_URL;
 
-console.log(connectionString);
-
 export const pool = new Pool({ connectionString });
 
 (async () => {

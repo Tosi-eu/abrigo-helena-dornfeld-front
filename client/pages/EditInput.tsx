@@ -17,8 +17,6 @@ export default function EditInput() {
   useEffect(() => {
     const item = location.state?.item;
 
-    console.log(item);
-
     if (!item || !item.id) {
       toast({
         title: "Erro",

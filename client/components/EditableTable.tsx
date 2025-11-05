@@ -66,7 +66,6 @@ export default function EditableTable({
 
   const handleAddRow = () => {
     if (entityType === "entries") {
-      console.log(rows);
       navigate("/stock/in", { state: { previousData: rows } });
     } else if (entityType === "exits") {
       navigate("/stock/out", { state: { previousData: rows } });

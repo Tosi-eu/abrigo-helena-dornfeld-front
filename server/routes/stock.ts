@@ -117,7 +117,6 @@ router.post("/entrada", async (req, res) => {
 router.post("/saida", async (req, res) => {
   const { tipo, itemId, quantidade, armarioId } = req.body;
 
-  console.log(tipo, itemId, quantidade, armarioId);
   try {
     if (tipo === "medicamento") {
       await pool.query(
