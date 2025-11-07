@@ -88,9 +88,33 @@ export default function StockOut() {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "Erro ao registrar saída");
 
+      console.log(payload);
+
+      await fetch("http://localhost:3001/api/movimentacoes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "saida",
+          login_id: 1,
+          armario_id: Number(payload.armarioId),
+          quantidade: Number(payload.quantity),
+          casela_id: Number(payload.caselaId),
+          ...(type === OperationType.MEDICINE
+            ? {
+                medicamento_id: Number(payload.itemId),
+                validade_medicamento: payload.expirationDate
+                  ? new Date(payload.expirationDate).toISOString()
+                  : null,
+              }
+            : { insumo_id: Number(payload.itemId) }),
+        }),
+      });
+
       toast({
         title: "Saída registrada com sucesso!",
-        description: `${type === OperationType.MEDICINE ? "Medicamento" : "Insumo"} removido do estoque.`,
+        description: `${
+          type === OperationType.MEDICINE ? "Medicamento" : "Insumo"
+        } removido do estoque.`,
         variant: "success",
       });
     } catch (err: any) {

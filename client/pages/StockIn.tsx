@@ -27,7 +27,7 @@ export default function StockIn() {
   useEffect(() => {
     const fetchMedicines = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/medicines");
+        const res = await fetch("http://localhost:3001/api/medicamentos");
         const data = await res.json();
         if (Array.isArray(data)) setMedicines(data);
       } catch (err) {
@@ -37,7 +37,7 @@ export default function StockIn() {
 
     const fetchInputs = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/inputs");
+        const res = await fetch("http://localhost:3001/api/insumos");
         const data = await res.json();
         if (Array.isArray(data)) setInputs(data);
       } catch (err) {
@@ -116,6 +116,21 @@ export default function StockIn() {
       });
 
       const result = await res.json();
+
+      await fetch("http://localhost:3001/api/movimentacoes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "entrada",
+          login_id: 1,
+          medicamento_id: Number(data.id),
+          armario_id: Number(data.cabinet),
+          casela_id: Number(data.casela) ?? null,
+          quantidade: Number(data.quantity),
+          validade_medicamento: new Date(data.expirationDate),
+        }),
+      });
+
       if (!res.ok) throw new Error(result.error || "Erro ao registrar entrada");
 
       toast({
@@ -149,6 +164,17 @@ export default function StockIn() {
 
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "Erro ao registrar entrada");
+
+      await fetch("http://localhost:3001/api/movimentacoes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "entrada",
+          login_id: 1,
+          insumo_id: Number(data.insumoId),
+          armario_id: Number(data.cabinet),
+        }),
+      });
 
       toast({
         title: "Entrada registrada com sucesso!",

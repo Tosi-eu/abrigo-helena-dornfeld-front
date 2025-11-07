@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type StockOutFormProps = {
   items: { id: string; nome: string; detalhes?: string }[];
@@ -6,6 +6,7 @@ type StockOutFormProps = {
   onSubmit: (data: {
     itemId: string;
     armarioId: string;
+    caselaId?: string;
     quantity: number;
   }) => void;
 };
@@ -14,8 +15,34 @@ export function StockOutForm({ items, cabinets, onSubmit }: StockOutFormProps) {
   const [formData, setFormData] = useState({
     itemId: "",
     armarioId: "",
+    caselaId: "",
     quantity: "",
   });
+
+  const [caselas, setCaselas] = useState<{ value: string; label: string }[]>(
+    [],
+  );
+
+  useEffect(() => {
+    const fetchCaselas = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/api/residentes");
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setCaselas(
+            data.map((r: any) => ({
+              value: String(r.num_casela),
+              label: `Casela ${r.num_casela} - ${r.nome}`,
+            })),
+          );
+        }
+      } catch (err) {
+        console.error("Erro ao buscar caselas:", err);
+      }
+    };
+
+    fetchCaselas();
+  }, []);
 
   return (
     <div className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
@@ -59,6 +86,26 @@ export function StockOutForm({ items, cabinets, onSubmit }: StockOutFormProps) {
 
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">
+          Casela
+        </label>
+        <select
+          value={formData.caselaId}
+          onChange={(e) =>
+            setFormData({ ...formData, caselaId: e.target.value })
+          }
+          className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+        >
+          <option value="">Selecione...</option>
+          {caselas.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Quantidade
         </label>
         <input
@@ -79,6 +126,7 @@ export function StockOutForm({ items, cabinets, onSubmit }: StockOutFormProps) {
             onSubmit({
               itemId: formData.itemId,
               armarioId: formData.armarioId,
+              caselaId: formData.caselaId || undefined,
               quantity: Number(formData.quantity),
             })
           }

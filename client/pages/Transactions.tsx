@@ -1,68 +1,108 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useMemo } from "react";
 import Layout from "@/components/Layout";
 import EditableTable from "@/components/EditableTable";
-import { movements } from "../../mocks/movements";
-import { inputs } from "../../mocks/inputs";
-import { cabinets } from "../../mocks/cabinets";
-import { users } from "../../mocks/users";
-import { medicineInventory, inputInventory } from "../../mocks/stock";
-import { prepareMovements } from "@/utils/utils";
-import { medicines } from "../../mocks/medicines";
-import { MovementType } from "@/enums/enums";
 
 export default function InputMovements() {
-  const navigate = useNavigate();
-
   const [entryFilter, setEntryFilter] = useState("");
   const [exitFilter, setExitFilter] = useState("");
+  const [medicineMovements, setMedicineMovements] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [medicinesRes, inputsRes] = await Promise.all([
+          fetch("http://localhost:3001/api/movimentacoes/medicamentos"),
+          fetch("http://localhost:3001/api/movimentacoes/insumos"),
+        ]);
+
+        const [medicamentos, insumos] = await Promise.all([
+          medicinesRes.json(),
+          inputsRes.json(),
+        ]);
+
+        console.log(insumos);
+
+        const normalizedMovements = [
+          ...medicamentos.map((m: any) => ({
+            id: m.id,
+            name: m.medicamento_nome,
+            operator: m.operador,
+            movementDate: new Date(m.data).toLocaleDateString("pt-BR"),
+            cabinet: m.armario_id,
+            type: m.tipo.toUpperCase(),
+          })),
+          ...insumos.map((i: any) => ({
+            id: i.id,
+            name: i.insumo_nome,
+            operator: i.operador,
+            movementDate: new Date(i.data).toLocaleDateString("pt-BR"),
+            cabinet: i.armario_id,
+            type: i.tipo.toUpperCase(),
+          })),
+        ];
+
+        setMedicineMovements(
+          normalizedMovements.filter((m) => m.name && m.type && m.operator),
+        );
+      } catch (error) {
+        console.error("Erro ao carregar movimentações:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
 
   const columnsBase = [
-    { key: "name", label: "Nome do Produto", editable: false },
-    { key: "description", label: "Descrição", editable: false },
+    { key: "name", label: "Produto", editable: false },
+    {
+      key: "additionalData",
+      label: "Princípio Ativo / Descrição",
+      editable: false,
+    },
     { key: "quantity", label: "Quantidade", editable: false },
     { key: "operator", label: "Operador", editable: false },
     { key: "movementDate", label: "Data da Transação", editable: false },
     { key: "cabinet", label: "Armário", editable: false },
+    { key: "origem", label: "Origem", editable: false },
   ];
 
-  const entryColumns = [
-    ...columnsBase,
-    { key: "originSector", label: "Setor de Origem", editable: false },
-  ];
-  const exitColumns = [
-    ...columnsBase,
-    { key: "destinationSector", label: "Setor de Destino", editable: false },
-  ];
+  const entries = useMemo(
+    () =>
+      medicineMovements.filter(
+        (m) =>
+          m.type === "ENTRADA" &&
+          (!entryFilter ||
+            m.name.toLowerCase().includes(entryFilter.toLowerCase())),
+      ),
+    [medicineMovements, entryFilter],
+  );
 
-  const allMovements = prepareMovements({
-    movements,
-    medicines,
-    inputs,
-    patients: [],
-    cabinets,
-    users,
-    medicineInventory,
-    inputInventory,
-  });
+  const exits = useMemo(
+    () =>
+      medicineMovements.filter(
+        (m) =>
+          m.type === "SAIDA" &&
+          (!exitFilter ||
+            m.name.toLowerCase().includes(exitFilter.toLowerCase())),
+      ),
+    [medicineMovements, exitFilter],
+  );
 
-  const entries = allMovements
-    .filter((m) => m.movementType === MovementType.IN)
-    .filter((m) =>
-      entryFilter
-        ? m.name.toLowerCase().includes(entryFilter.toLowerCase())
-        : true,
+  const uniqueNames = useMemo(
+    () => Array.from(new Set(medicineMovements.map((m) => m.name))),
+    [medicineMovements],
+  );
+
+  if (loading) {
+    return (
+      <Layout title="Movimentações">
+        <p className="text-gray-500 text-center mt-10">Carregando dados...</p>
+      </Layout>
     );
-
-  const exits = allMovements
-    .filter((m) => m.movementType === MovementType.OUT)
-    .filter((m) =>
-      exitFilter
-        ? m.name.toLowerCase().includes(exitFilter.toLowerCase())
-        : true,
-    );
-
-  const uniqueNames = Array.from(new Set(allMovements.map((m) => m.name)));
+  }
 
   return (
     <Layout title="Movimentações">
@@ -98,7 +138,7 @@ export default function InputMovements() {
 
           <EditableTable
             data={entries}
-            columns={entryColumns}
+            columns={columnsBase}
             entityType="entries"
           />
         </div>
@@ -134,7 +174,7 @@ export default function InputMovements() {
 
           <EditableTable
             data={exits}
-            columns={exitColumns}
+            columns={columnsBase}
             entityType="exits"
           />
         </div>
