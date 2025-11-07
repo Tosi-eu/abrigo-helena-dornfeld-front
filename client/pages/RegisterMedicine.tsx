@@ -15,7 +15,7 @@ export default function SignUpMedicine() {
     minimumStock: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const { name, substance, dosageValue, measuremeUnit, minimumStock } =
@@ -36,13 +36,41 @@ export default function SignUpMedicine() {
       return;
     }
 
-    toast({
-      title: "Medicamento cadastrado!",
-      description: `${name} (${dosageValue}${measuremeUnit}) foi registrado com sucesso.`,
-      variant: "success",
-    });
+    try {
+      const response = await fetch("http://localhost:3001/api/medicamentos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nome: name,
+          principio_ativo: substance,
+          dosagem: `${dosageValue}`,
+          unidade_medida: measuremeUnit,
+          estoque_minimo: Number(minimumStock),
+        }),
+      });
 
-    navigate("/transactions");
+      if (!response.ok) {
+        throw new Error("Erro ao cadastrar o medicamento");
+      }
+
+      toast({
+        title: "Medicamento cadastrado!",
+        description: `${name} (${dosageValue}${measuremeUnit}) foi registrado com sucesso.`,
+        variant: "success",
+      });
+
+      navigate("/medicines");
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Erro ao cadastrar",
+        description:
+          "Não foi possível registrar o medicamento. Tente novamente.",
+        variant: "error",
+      });
+    }
   };
 
   const clearForm = () => {
@@ -173,7 +201,7 @@ export default function SignUpMedicine() {
           <div className="flex justify-between pt-4">
             <button
               type="button"
-              onClick={() => navigate("/transactions")}
+              onClick={() => navigate("/medicines")}
               className="px-5 py-2 border border-slate-400 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-100 transition"
             >
               Cancelar

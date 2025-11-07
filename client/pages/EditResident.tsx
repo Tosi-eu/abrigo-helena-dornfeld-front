@@ -107,7 +107,7 @@ export default function EditResident() {
               value={formData.num_casela}
               onChange={handleChange}
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-              disabled // normalmente não se muda o número da casela
+              disabled
             />
           </div>
 

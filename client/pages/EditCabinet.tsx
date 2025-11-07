@@ -164,7 +164,7 @@ export default function EditCabinet() {
             <div className="flex justify-between pt-4">
               <button
                 type="button"
-                onClick={() => setSelectedCabinet(null)}
+                onClick={() => navigate("/cabinets")}
                 className="px-5 py-2 border border-slate-400 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-100 transition"
               >
                 Cancelar

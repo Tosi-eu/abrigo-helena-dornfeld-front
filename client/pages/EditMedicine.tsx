@@ -2,110 +2,80 @@ import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
-import { medicines } from "../../mocks/medicines";
 
 export default function EditMedicine() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [selectedMedicine, setSelectedMedicine] = useState<string>("");
+  const [medicineId, setMedicineId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
-    name: "",
-    substance: "",
-    dosage: "",
-    measuremeUnit: "",
-    minimumStock: 0,
+    nome: "",
+    principio_ativo: "",
+    dosagem: "",
+    unidade_medida: "",
+    estoque_minimo: 0,
   });
 
   useEffect(() => {
     if (location.state?.item) {
       const item = location.state.item;
-      const { dosageNumber, dosageUnit } = parseDosage(
-        item.dosage || item.dose || "",
-      );
 
-      const normalized = {
-        name: item.name || item.itemName || "",
-        substance: item.substance || item.active || "",
-        dosage: dosageNumber,
-        measuremeUnit: dosageUnit || item.measurementUnit || item.unit || "",
-        minimumStock: item.minimumStock || 0,
-      };
-
-      setSelectedMedicine(normalized.name);
-      setFormData(normalized);
-    }
-  }, [location.state]);
-
-  useEffect(() => {
-    if (selectedMedicine) {
-      const med = medicines.find((m) => m.name === selectedMedicine);
-      if (med) {
-        const { dosageNumber, dosageUnit } = parseDosage(med.dosage || "");
-        setFormData({
-          name: med.name,
-          substance: med.substance,
-          dosage: dosageNumber,
-          measuremeUnit: dosageUnit || med.measuremeUnit,
-          minimumStock: med.minimumStock,
-        });
-      }
-    } else {
+      setMedicineId(item.id);
       setFormData({
-        name: "",
-        substance: "",
-        dosage: "",
-        measuremeUnit: "",
-        minimumStock: 0,
+        nome: item.nome || "",
+        principio_ativo: item.principio_ativo || "",
+        dosagem: item.dosagem || "",
+        unidade_medida: item.unidade_medida || "",
+        estoque_minimo: item.estoque_minimo || 0,
       });
     }
-  }, [selectedMedicine]);
-
-  const parseDosage = (value: string) => {
-    const match = value.trim().match(/^(\d+(?:[.,]\d+)?)([a-zA-Zμµ]*)$/);
-    if (match) {
-      return {
-        dosageNumber: match[1],
-        dosageUnit: match[2] || "",
-      };
-    }
-    return { dosageNumber: value, dosageUnit: "" };
-  };
+  }, [location.state]);
 
   const handleChange = (field: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleMedicineSelect = (value: string) => {
-    const med = medicines.find((m) => m.name === value);
-    if (med) {
-      setSelectedMedicine(med.name);
-      setFormData(med);
-    } else {
-      setSelectedMedicine(value);
-      setFormData({ ...formData, name: value });
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name) {
+    if (!medicineId) {
       toast({
-        title: "Seleção obrigatória",
-        description: "Escolha ou digite um medicamento.",
-        variant: "warning",
+        title: "Erro",
+        description: "Medicamento não identificado.",
+        variant: "error",
       });
       return;
     }
 
-    toast({
-      title: "Medicamento atualizado",
-      description: `${formData.name} foi atualizado com sucesso.`,
-      variant: "success",
-    });
+    try {
+      const res = await fetch(
+        `http://localhost:3001/api/medicamentos/${medicineId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        },
+      );
 
-    navigate("/transactions");
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Falha ao atualizar medicamento");
+      }
+
+      toast({
+        title: "Medicamento atualizado",
+        description: `${formData.nome} foi atualizado com sucesso.`,
+        variant: "success",
+      });
+
+      navigate("/medicines");
+    } catch (err: any) {
+      toast({
+        title: "Erro ao atualizar",
+        description: err.message || "Erro inesperado ao salvar alterações.",
+        variant: "error",
+      });
+    }
   };
 
   return (
@@ -120,17 +90,12 @@ export default function EditMedicine() {
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Nome do medicamento
             </label>
-            <select
-              value={selectedMedicine}
-              onChange={(e) => setSelectedMedicine(e.target.value)}
-              className="w-full border bg-white rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-            >
-              {medicines.map((m) => (
-                <option key={m.id} value={m.name}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
+            <input
+              type="text"
+              value={formData.nome}
+              onChange={(e) => handleChange("nome", e.target.value)}
+              className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+            />
           </div>
 
           <div>
@@ -139,8 +104,8 @@ export default function EditMedicine() {
             </label>
             <input
               type="text"
-              value={formData.substance}
-              onChange={(e) => handleChange("substance", e.target.value)}
+              value={formData.principio_ativo}
+              onChange={(e) => handleChange("principio_ativo", e.target.value)}
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
             />
           </div>
@@ -152,8 +117,8 @@ export default function EditMedicine() {
               </label>
               <input
                 type="number"
-                value={formData.dosage}
-                onChange={(e) => handleChange("dosage", e.target.value)}
+                value={formData.dosagem}
+                onChange={(e) => handleChange("dosagem", e.target.value)}
                 className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
               />
             </div>
@@ -162,10 +127,8 @@ export default function EditMedicine() {
                 Unidade de medida
               </label>
               <select
-                value={formData.measuremeUnit}
-                onChange={(e) =>
-                  handleChange("measurementUnit", e.target.value)
-                }
+                value={formData.unidade_medida}
+                onChange={(e) => handleChange("unidade_medida", e.target.value)}
                 className="w-full border bg-white border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
               >
                 <option value="mg">mg</option>
@@ -182,9 +145,9 @@ export default function EditMedicine() {
             </label>
             <input
               type="number"
-              value={formData.minimumStock}
+              value={formData.estoque_minimo}
               onChange={(e) =>
-                handleChange("minimumStock", Number(e.target.value))
+                handleChange("estoque_minimo", Number(e.target.value))
               }
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
             />
@@ -193,7 +156,7 @@ export default function EditMedicine() {
           <div className="flex justify-between pt-4">
             <button
               type="button"
-              onClick={() => navigate("/transactions")}
+              onClick={() => navigate("/medicines")}
               className="px-5 py-2 border border-slate-400 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-100 transition"
             >
               Cancelar

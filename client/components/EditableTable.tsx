@@ -19,9 +19,6 @@ const typeMap: Record<string, string> = {
 export default function EditableTable({
   data,
   columns,
-  onAdd,
-  onEdit,
-  onDelete,
   entityType,
 }: EditableTableProps & { entityType?: string }) {
   const [rows, setRows] = useState(data);
@@ -108,6 +105,8 @@ export default function EditableTable({
     const rowToDelete = rows[deleteIndex];
     if (!rowToDelete) return;
 
+    console.log(rowToDelete);
+
     try {
       let endpoint = "";
       if (entityType === "inputs") {
@@ -116,6 +115,8 @@ export default function EditableTable({
         endpoint = `http://localhost:3001/api/armarios/${rowToDelete.num_armario}`;
       } else if (entityType === "residents") {
         endpoint = `http://localhost:3001/api/residentes/${rowToDelete.num_casela}`;
+      } else if (entityType === "medicines") {
+        endpoint = `http://localhost:3001/api/medicamentos/${rowToDelete.id}`;
       }
 
       if (!endpoint) {
@@ -138,8 +139,6 @@ export default function EditableTable({
         description: data.message || "O item foi excluído com sucesso.",
         variant: "success",
       });
-
-      if (onDelete) onDelete(rowToDelete.num_armario);
 
       const updatedRows = rows.filter((_, i) => i !== deleteIndex);
       setRows(updatedRows);
