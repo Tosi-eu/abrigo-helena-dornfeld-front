@@ -21,29 +21,38 @@ export default function InputMovements() {
           inputsRes.json(),
         ]);
 
-        console.log(insumos);
-
         const normalizedMovements = [
           ...medicamentos.map((m: any) => ({
             id: m.id,
-            name: m.medicamento_nome,
-            operator: m.operador,
-            movementDate: new Date(m.data).toLocaleDateString("pt-BR"),
-            cabinet: m.armario_id,
-            type: m.tipo.toUpperCase(),
+            name: m.name,
+            additionalData: m.additionalData || "",
+            quantity: m.quantity ?? "",
+            operator: m.operator,
+            movementDate: new Date(m.movementDate).toLocaleDateString("pt-BR"),
+            cabinet: m.cabinet,
+            type: m.type.toUpperCase(),
+            resident: m.resident || "",
+            validade: m.validade_medicamento
+              ? new Date(m.validade_medicamento).toLocaleDateString("pt-BR")
+              : "",
           })),
+
           ...insumos.map((i: any) => ({
             id: i.id,
-            name: i.insumo_nome,
-            operator: i.operador,
-            movementDate: new Date(i.data).toLocaleDateString("pt-BR"),
-            cabinet: i.armario_id,
-            type: i.tipo.toUpperCase(),
+            name: i.name,
+            additionalData: i.additionalData || "",
+            quantity: i.quantity ?? "",
+            operator: i.operator,
+            movementDate: new Date(i.movementDate).toLocaleDateString("pt-BR"),
+            cabinet: i.cabinet,
+            type: i.type.toUpperCase(),
+            resident: "",
+            validade: "",
           })),
         ];
 
         setMedicineMovements(
-          normalizedMovements.filter((m) => m.name && m.type && m.operator),
+          normalizedMovements.filter((m) => m.name && m.type && m.operator)
         );
       } catch (error) {
         console.error("Erro ao carregar movimentações:", error);
@@ -66,7 +75,8 @@ export default function InputMovements() {
     { key: "operator", label: "Operador", editable: false },
     { key: "movementDate", label: "Data da Transação", editable: false },
     { key: "cabinet", label: "Armário", editable: false },
-    { key: "origem", label: "Origem", editable: false },
+    { key: "resident", label: "Residente", editable: false },
+    { key: "validade", label: "Validade", editable: false },
   ];
 
   const entries = useMemo(
@@ -75,9 +85,9 @@ export default function InputMovements() {
         (m) =>
           m.type === "ENTRADA" &&
           (!entryFilter ||
-            m.name.toLowerCase().includes(entryFilter.toLowerCase())),
+            m.name.toLowerCase().includes(entryFilter.toLowerCase()))
       ),
-    [medicineMovements, entryFilter],
+    [medicineMovements, entryFilter]
   );
 
   const exits = useMemo(
@@ -86,14 +96,14 @@ export default function InputMovements() {
         (m) =>
           m.type === "SAIDA" &&
           (!exitFilter ||
-            m.name.toLowerCase().includes(exitFilter.toLowerCase())),
+            m.name.toLowerCase().includes(exitFilter.toLowerCase()))
       ),
-    [medicineMovements, exitFilter],
+    [medicineMovements, exitFilter]
   );
 
   const uniqueNames = useMemo(
     () => Array.from(new Set(medicineMovements.map((m) => m.name))),
-    [medicineMovements],
+    [medicineMovements]
   );
 
   if (loading) {
@@ -136,11 +146,7 @@ export default function InputMovements() {
             )}
           </div>
 
-          <EditableTable
-            data={entries}
-            columns={columnsBase}
-            entityType="entries"
-          />
+          <EditableTable data={entries} columns={columnsBase} entityType="entries" />
         </div>
 
         <div>
@@ -172,11 +178,7 @@ export default function InputMovements() {
             )}
           </div>
 
-          <EditableTable
-            data={exits}
-            columns={columnsBase}
-            entityType="exits"
-          />
+          <EditableTable data={exits} columns={columnsBase} entityType="exits" />
         </div>
       </div>
     </Layout>

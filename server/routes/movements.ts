@@ -6,24 +6,27 @@ const router = Router();
 router.get("/medicamentos", async (_req, res) => {
   try {
     const query = `
-      SELECT
-        mv.id,
-        m.nome AS name,
-        m.principio_ativo AS "additionalData",
-        em.quantidade AS quantity,
-        l.login AS operator,
-        TO_CHAR(mv.data, 'DD/MM/YYYY') AS "movementDate",
-        a.num_armario AS cabinet,
-        mv.tipo AS origem
-      FROM MOVIMENTACAO mv
-      JOIN login l ON l.id = mv.login_id
-      JOIN medicamento m ON m.id = mv.medicamento_id
-      JOIN armario a ON a.num_armario = mv.armario_id
-      JOIN ESTOQUE_MEDICAMENTO em 
-        ON em.medicamento_id = mv.medicamento_id 
-       AND em.armario_id = mv.armario_id
-      WHERE mv.medicamento_id IS NOT NULL
-      ORDER BY mv.data DESC;
+            SELECT
+            mv.id,
+            m.nome AS name,
+            m.principio_ativo AS "additionalData",
+            em.quantidade AS quantity,
+            l.login AS operator,
+            mv.data AS "movementDate",
+            a.num_armario AS cabinet,
+            p.nome AS resident,
+            mv.tipo AS type,
+            mv.validade_medicamento
+        FROM MOVIMENTACAO mv
+        JOIN login l ON l.id = mv.login_id
+        JOIN medicamento m ON m.id = mv.medicamento_id
+        JOIN armario a ON a.num_armario = mv.armario_id
+        LEFT JOIN paciente p ON p.num_casela = mv.casela_id
+        LEFT JOIN ESTOQUE_MEDICAMENTO em 
+            ON em.medicamento_id = mv.medicamento_id
+        AND em.armario_id = mv.armario_id
+        WHERE mv.medicamento_id IS NOT NULL
+        ORDER BY mv.data DESC;
     `;
 
     const result = await pool.query(query);
@@ -39,24 +42,24 @@ router.get("/medicamentos", async (_req, res) => {
 router.get("/insumos", async (_req, res) => {
   try {
     const query = `
-      SELECT
-        mv.id,
-        i.nome AS name,
-        i.descricao AS "additionalData",
-        ei.quantidade AS quantity,
-        l.login AS operator,
-        TO_CHAR(mv.data, 'DD/MM/YYYY') AS "movementDate",
-        a.num_armario AS cabinet,
-        mv.tipo AS origem
-      FROM MOVIMENTACAO mv
-      JOIN login l ON l.id = mv.login_id
-      JOIN insumo i ON i.id = mv.insumo_id
-      JOIN armario a ON a.num_armario = mv.armario_id
-      JOIN ESTOQUE_INSUMO ei 
-        ON ei.insumo_id = mv.insumo_id 
-       AND ei.armario_id = mv.armario_id
-      WHERE mv.insumo_id IS NOT NULL
-      ORDER BY mv.data DESC;
+        SELECT
+            mv.id,
+            i.nome AS name,
+            i.descricao AS "additionalData",
+            mv.quantidade AS quantity,
+            l.login AS operator,
+            mv.data AS "movementDate",
+            a.num_armario AS cabinet,
+            mv.tipo AS type
+        FROM MOVIMENTACAO mv
+        JOIN login l ON l.id = mv.login_id
+        JOIN insumo i ON i.id = mv.insumo_id
+        JOIN armario a ON a.num_armario = mv.armario_id
+        LEFT JOIN ESTOQUE_INSUMO ei 
+            ON ei.insumo_id = mv.insumo_id
+        AND ei.armario_id = mv.armario_id
+        WHERE mv.insumo_id IS NOT NULL
+        ORDER BY mv.data DESC;
     `;
 
     const result = await pool.query(query);
