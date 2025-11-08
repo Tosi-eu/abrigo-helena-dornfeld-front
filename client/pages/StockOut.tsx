@@ -9,9 +9,9 @@ export default function StockOut() {
     OperationType | "Selecione"
   >("Selecione");
 
-  const [medicamentos, setMedicines] = useState([]);
-  const [insumos, setInputs] = useState([]);
-  const [armarios, setArmarios] = useState([]);
+  const [medicines, setMedicines] = useState([]);
+  const [inputs, setInputs] = useState([]);
+  const [cabinets, setArmarios] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function StockOut() {
         const data = await res.json();
         if (Array.isArray(data)) setMedicines(data);
       } catch (err) {
-        console.error("Erro ao buscar medicamentos:", err);
+        console.error("Erro ao buscar medicines:", err);
       }
     };
 
@@ -31,7 +31,7 @@ export default function StockOut() {
         const data = await res.json();
         if (Array.isArray(data)) setInputs(data);
       } catch (err) {
-        console.error("Erro ao buscar insumos:", err);
+        console.error("Erro ao buscar inputs:", err);
       }
     };
 
@@ -152,20 +152,20 @@ export default function StockOut() {
 
         {operationType === OperationType.MEDICINE && (
           <StockOutForm
-            items={medicamentos.map((m) => ({
+            items={medicines.map((m) => ({
               id: m.id,
               nome: m.nome,
               detalhes: `${m.dosagem} ${m.unidade_medida}`,
             }))}
-            cabinets={armarios}
+            cabinets={cabinets}
             onSubmit={(data) => handleStockOut(data, OperationType.MEDICINE)}
           />
         )}
 
         {operationType === OperationType.INPUT && (
           <StockOutForm
-            items={insumos.map((i) => ({ id: i.id, nome: i.nome }))}
-            cabinets={armarios}
+            items={inputs.map((i) => ({ id: i.id, nome: i.nome }))}
+            cabinets={cabinets}
             onSubmit={(data) => handleStockOut(data, OperationType.INPUT)}
           />
         )}

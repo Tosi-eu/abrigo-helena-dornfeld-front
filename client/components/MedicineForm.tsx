@@ -55,6 +55,7 @@ export function MedicineForm({
 
   return (
     <div className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+      {/* Medicamento */}
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">
           Medicamento
@@ -64,6 +65,7 @@ export function MedicineForm({
           onChange={(e) => setFormData({ ...formData, id: e.target.value })}
           className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >
+          <option value="">Selecione</option>
           {medicines.map((med) => (
             <option key={med.id} value={med.id}>
               {med.nome} {med.dosagem} {med.unidade_medida}
@@ -141,6 +143,7 @@ export function MedicineForm({
             onChange={(e) => handleCaselaChange(e.target.value)}
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
+            <option value="">Selecione</option>
             {caselas.map((c) => (
               <option key={c.value} value={c.value}>
                 {c.label}
@@ -162,6 +165,7 @@ export function MedicineForm({
           />
         </div>
       </div>
+
       <div className="flex gap-4">
         <div className="flex-1">
           <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -174,6 +178,7 @@ export function MedicineForm({
             }
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
+            <option value="">Selecione</option>
             {cabinets.map((c) => (
               <option key={c.value} value={c.value}>
                 {c.label}
@@ -193,6 +198,7 @@ export function MedicineForm({
             }
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
+            <option value="">Selecione</option>
             {Object.values(OriginType).map((type) => (
               <option key={type} value={type}>
                 {type.charAt(0) + type.slice(1).toLowerCase()}
@@ -202,6 +208,7 @@ export function MedicineForm({
         </div>
       </div>
 
+      {/* Botões */}
       <div className="flex justify-end">
         <button
           type="button"

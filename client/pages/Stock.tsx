@@ -34,6 +34,8 @@ export default function Stock() {
         const res = await fetch("http://localhost:3001/api/estoque");
         const data = await res.json();
 
+        console.log(data)
+
         const medicamentos: StockItem[] = data.medicamentos.map((m: any) => ({
           type: "Medicamento",
           name: m.nome_medicamento,
@@ -43,7 +45,7 @@ export default function Stock() {
           cabinet: m.armario_id,
           casela: m.casela_id,
           stockType: StockType.GERAL,
-          patient: "-",
+          patient: m.paciente,
           origin: m.origem,
         }));
 

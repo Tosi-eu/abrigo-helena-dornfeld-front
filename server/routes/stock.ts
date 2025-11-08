@@ -8,27 +8,29 @@ router.get("/", async (_req, res) => {
     const [medRows, insRows] = await Promise.all([
       pool.query(`
         SELECT 
-          em.id,
           m.nome AS nome_medicamento,
           m.principio_ativo,
           em.validade,
-          em.quantidade,
+          SUM(em.quantidade) AS quantidade,
           em.origem,
           em.tipo,
+          p.nome AS paciente,
           em.armario_id,
           em.casela_id
         FROM ESTOQUE_MEDICAMENTO em
-        JOIN MEDICAMENTO m ON m.id = em.medicamento_id;
+        JOIN MEDICAMENTO m ON m.id = em.medicamento_id
+        LEFT JOIN PACIENTE p ON p.num_casela = em.casela_id
+        GROUP BY 1,2,3,5,6,7,8,9
       `),
       pool.query(`
         SELECT 
-          ei.id,
           i.nome AS nome_insumo,
           i.descricao,
-          ei.quantidade,
+          SUM(ei.quantidade) as quantidade,
           ei.armario_id
         FROM ESTOQUE_INSUMO ei
-        JOIN INSUMO i ON i.id = ei.insumo_id;
+        JOIN INSUMO i ON i.id = ei.insumo_id
+        GROUP BY 1,2,4;
       `),
     ]);
 

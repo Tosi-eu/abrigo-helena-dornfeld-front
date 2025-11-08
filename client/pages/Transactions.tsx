@@ -16,13 +16,13 @@ export default function InputMovements() {
           fetch("http://localhost:3001/api/movimentacoes/insumos"),
         ]);
 
-        const [medicamentos, insumos] = await Promise.all([
+        const [medicines, inputs] = await Promise.all([
           medicinesRes.json(),
           inputsRes.json(),
         ]);
 
         const normalizedMovements = [
-          ...medicamentos.map((m: any) => ({
+          ...medicines.map((m: any) => ({
             id: m.id,
             name: m.name,
             additionalData: m.additionalData || "",
@@ -37,7 +37,7 @@ export default function InputMovements() {
               : "",
           })),
 
-          ...insumos.map((i: any) => ({
+          ...inputs.map((i: any) => ({
             id: i.id,
             name: i.name,
             additionalData: i.additionalData || "",
@@ -146,7 +146,7 @@ export default function InputMovements() {
             )}
           </div>
 
-          <EditableTable data={entries} columns={columnsBase} entityType="entries" />
+          <EditableTable data={entries} columns={columnsBase} showAddons={false} entityType="entries" />
         </div>
 
         <div>
@@ -178,7 +178,7 @@ export default function InputMovements() {
             )}
           </div>
 
-          <EditableTable data={exits} columns={columnsBase} entityType="exits" />
+          <EditableTable data={exits} columns={columnsBase} showAddons={false} entityType="exits" />
         </div>
       </div>
     </Layout>

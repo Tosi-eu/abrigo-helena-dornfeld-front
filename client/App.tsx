@@ -13,7 +13,6 @@ import Transactions from "./pages/Transactions";
 import Stock from "./pages/Stock";
 import StockEntry from "./pages/StockIn";
 import Resident from "./pages/Residents";
-import NotFound from "./pages/NotFound";
 import RegisterResident from "./pages/RegisterResident";
 import EditResident from "./pages/EditResident";
 import StockOut from "./pages/StockOut";
@@ -53,8 +52,7 @@ const App = () => (
           <Route path="/inputs/edit" element={<EditInput />} />
           <Route path="/cabinets" element={<Cabinets />} />
           <Route path="/cabinets/register" element={<RegisterCabinet />} />
-          <Route path="/cabinets/edit" element={<EditCabinet />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="/cabinets/edit" element={<EditCabinet />}></Route>
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

@@ -20,7 +20,8 @@ export default function EditableTable({
   data,
   columns,
   entityType,
-}: EditableTableProps & { entityType?: string }) {
+  showAddons = true,
+}: EditableTableProps & { entityType?: string, showAddons?: boolean }) {
   const [rows, setRows] = useState(data);
   const [filterType, setFilterType] = useState("Todos");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -36,12 +37,11 @@ export default function EditableTable({
     const convertToBRT = (dateString: string) => {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return dateString;
-      // converte para UTC-3
-      const brtDate = new Date(date.getTime() - 3 * 60 * 60 * 1000);
-      return brtDate.toLocaleDateString("pt-BR", {
+      return date.toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
+        timeZone: "America/Sao_Paulo",
       });
     };
 
@@ -49,7 +49,11 @@ export default function EditableTable({
       const updatedRow: Record<string, any> = {};
       for (const key in row) {
         const value = row[key];
-        if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+        // converte apenas datas ISO ou timestamps
+        if (
+          typeof value === "string" &&
+          (/^\d{4}-\d{2}-\d{2}/.test(value) || /^\d{4}\/\d{2}\/\d{2}/.test(value))
+        ) {
           updatedRow[key] = convertToBRT(value);
         } else {
           updatedRow[key] = value;
@@ -281,29 +285,13 @@ export default function EditableTable({
     <>
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden font-[Inter]">
         <div className="flex justify-between items-center px-4 py-3 border-b border-slate-200 bg-sky-50 text-sm">
-          <div className="flex items-center gap-4">
-            {hasType && entityType !== "inputs" && (
-              <div className="flex items-center gap-2 border-l border-slate-200 pl-4">
-                <span className="text-slate-700">Tipo:</span>
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="border border-slate-300 rounded-md px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
-                >
-                  {["Todos", "Medicamento", "Insumo"].map((t) => (
-                    <option key={t}>{t}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
 
-          <button
+          { showAddons &&<button
             onClick={handleAddRow}
             className="flex items-center gap-1 text-sky-700 text-sm font-medium hover:text-sky-800 transition"
           >
             <Plus size={16} /> Adicionar linha
-          </button>
+          </button> }
         </div>
 
         <div className="overflow-x-auto relative">
@@ -339,9 +327,9 @@ export default function EditableTable({
                     </th>
                   );
                 })}
-                <th className="px-4 py-3 text-sm font-semibold text-slate-800 border-l border-slate-200">
+                { showAddons && <th className="px-4 py-3 text-sm font-semibold text-slate-800 border-l border-slate-200">
                   Ações
-                </th>
+                </th> }
               </tr>
             </thead>
 
@@ -386,20 +374,22 @@ export default function EditableTable({
                       </td>
                     ))}
 
-                    <td className="px-3 py-2 flex justify-center gap-3 border-l border-slate-200">
-                      <button
-                        onClick={() => handleEditClick(row)}
-                        className="text-sky-700 hover:text-sky-900 transition-colors"
-                      >
-                        <Pencil size={16} />
-                      </button>
-                      <button
-                        onClick={() => confirmDelete(absoluteIndex)}
-                        className="text-red-600 hover:text-red-800 transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </td>
+                    {showAddons && (
+                      <td className="px-3 py-2 flex justify-center gap-3 border-l border-slate-200">
+                        <button
+                          onClick={() => handleEditClick(row)}
+                          className="text-sky-700 hover:text-sky-900 transition-colors"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={() => confirmDelete(absoluteIndex)}
+                          className="text-red-600 hover:text-red-800 transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 );
               })}
