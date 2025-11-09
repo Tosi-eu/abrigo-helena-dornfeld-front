@@ -54,8 +54,7 @@ router.get("/", async (req, res) => {
         GROUP BY a.num_armario
         ORDER BY a.num_armario
       `;
-    } 
-    else {
+    } else {
       return res
         .status(400)
         .json({ error: "Tipo inválido. Use medicamento, insumo ou armarios." });
@@ -233,7 +232,8 @@ router.get("/proporcao", async (req, res) => {
     };
 
     const totalMedicamentosGerais = Number(row.total_medicamentos_gerais) || 0;
-    const totalMedicamentosIndividuais = Number(row.total_medicamentos_individuais) || 0;
+    const totalMedicamentosIndividuais =
+      Number(row.total_medicamentos_individuais) || 0;
     const totalInsumos = Number(row.total_insumos) || 0;
     const totalGeral = Number(row.total_geral) || 0;
 
@@ -245,7 +245,9 @@ router.get("/proporcao", async (req, res) => {
 
     res.json({
       medicamentos_geral: parseFloat(pctMedicamentosGerais.toFixed(2)),
-      medicamentos_individual: parseFloat(pctMedicamentosIndividuais.toFixed(2)),
+      medicamentos_individual: parseFloat(
+        pctMedicamentosIndividuais.toFixed(2),
+      ),
       insumos: parseFloat(pctInsumos.toFixed(2)),
       totais: {
         medicamentos_geral: totalMedicamentosGerais,
@@ -259,6 +261,5 @@ router.get("/proporcao", async (req, res) => {
     res.status(500).json({ error: "Erro ao calcular proporções" });
   }
 });
-
 
 export default router;

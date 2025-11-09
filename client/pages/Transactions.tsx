@@ -14,8 +14,12 @@ export default function InputMovements() {
         setLoading(true);
 
         const [entriesRes, exitsRes, inputsRes] = await Promise.all([
-          fetch("http://localhost:3001/api/movimentacoes/medicamentos?type=entrada"),
-          fetch("http://localhost:3001/api/movimentacoes/medicamentos?type=saida"),
+          fetch(
+            "http://localhost:3001/api/movimentacoes/medicamentos?type=entrada",
+          ),
+          fetch(
+            "http://localhost:3001/api/movimentacoes/medicamentos?type=saida",
+          ),
           fetch("http://localhost:3001/api/movimentacoes/insumos"),
         ]);
 
@@ -25,20 +29,22 @@ export default function InputMovements() {
           inputsRes.json(),
         ]);
 
-        const normalizedMedicines = [...entriesData, ...exitsData].map((m: any) => ({
-          id: m.id,
-          name: m.name,
-          additionalData: m.additionalData || "",
-          quantity: m.quantity ?? "",
-          operator: m.operator,
-          movementDate: new Date(m.movementDate).toLocaleDateString("pt-BR"),
-          cabinet: m.cabinet,
-          type: m.type.toUpperCase(),
-          resident: m.patient || "",
-          validade: m.validade_medicamento
-            ? new Date(m.validade_medicamento).toLocaleDateString("pt-BR")
-            : "",
-        }));
+        const normalizedMedicines = [...entriesData, ...exitsData].map(
+          (m: any) => ({
+            id: m.id,
+            name: m.name,
+            additionalData: m.additionalData || "",
+            quantity: m.quantity ?? "",
+            operator: m.operator,
+            movementDate: new Date(m.movementDate).toLocaleDateString("pt-BR"),
+            cabinet: m.cabinet,
+            type: m.type.toUpperCase(),
+            resident: m.patient || "",
+            validade: m.validade_medicamento
+              ? new Date(m.validade_medicamento).toLocaleDateString("pt-BR")
+              : "",
+          }),
+        );
 
         const normalizedInputs = inputsData.map((i: any) => ({
           id: i.id,
@@ -75,7 +81,7 @@ export default function InputMovements() {
     { key: "operator", label: "Operador", editable: false },
     { key: "movementDate", label: "Data da Transação", editable: false },
     { key: "cabinet", label: "Armário", editable: false },
-    { key: "resident", label: "Residente", editable: false }
+    { key: "resident", label: "Residente", editable: false },
   ];
 
   const entries = useMemo(

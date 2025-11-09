@@ -70,7 +70,7 @@ export default function StockOut() {
     );
   }
 
-      console.log(operationType)
+  console.log(operationType);
 
   const handleStockOut = async (payload: any, type: OperationType) => {
     try {

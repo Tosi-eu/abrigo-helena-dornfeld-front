@@ -5,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 
 export default function EditResident() {
   const location = useLocation();
-  const item = location.state?.item; // vem como { num_casela, nome }
+  const item = location.state?.item;
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({

@@ -1,26 +1,26 @@
-  import { Router } from "express";
-  import { pool } from "../../client/db/connection";
+import { Router } from "express";
+import { pool } from "../../client/db/connection";
 
-  const router = Router();
+const router = Router();
 
-  router.get("/medicamentos", async (req, res) => {
-    try {
-      const days = Number(req.query.days) || 0;
-      const type = req.query.type as string | undefined;
+router.get("/medicamentos", async (req, res) => {
+  try {
+    const days = Number(req.query.days) || 0;
+    const type = req.query.type as string | undefined;
 
-      const params: any[] = [];
-      let whereClause = "WHERE mv.medicamento_id IS NOT NULL";
+    const params: any[] = [];
+    let whereClause = "WHERE mv.medicamento_id IS NOT NULL";
 
-      if (days > 0) {
-        whereClause += ` AND mv.data >= NOW() - INTERVAL '${days} DAYS'`;
-      }
+    if (days > 0) {
+      whereClause += ` AND mv.data >= NOW() - INTERVAL '${days} DAYS'`;
+    }
 
-      if (type && (type === "entrada" || type === "saida")) {
-        params.push(type);
-        whereClause += ` AND mv.tipo = $${params.length}`;
-      }
+    if (type && (type === "entrada" || type === "saida")) {
+      params.push(type);
+      whereClause += ` AND mv.tipo = $${params.length}`;
+    }
 
-      const query = `
+    const query = `
         SELECT
           mv.id,
           m.nome AS name,
@@ -45,24 +45,24 @@
         ORDER BY mv.data DESC;
       `;
 
-      const result = await pool.query(query, params);
-      res.status(200).json(result.rows);
-    } catch (err: any) {
-      console.error("Erro ao buscar movimentações de medicamentos:", err);
-      res.status(500).json({ error: err.message });
+    const result = await pool.query(query, params);
+    res.status(200).json(result.rows);
+  } catch (err: any) {
+    console.error("Erro ao buscar movimentações de medicamentos:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/insumos", async (req, res) => {
+  try {
+    const days = Number(req.query.days) || 0;
+    let dateFilter = "";
+
+    if (days > 0) {
+      dateFilter = `AND mv.data >= NOW() - INTERVAL '${days} DAYS'`;
     }
-  });
 
-  router.get("/insumos", async (req, res) => {
-    try {
-      const days = Number(req.query.days) || 0;
-      let dateFilter = "";
-
-      if (days > 0) {
-        dateFilter = `AND mv.data >= NOW() - INTERVAL '${days} DAYS'`;
-      }
-
-      const query = `
+    const query = `
         SELECT
           mv.id,
           i.nome AS name,
@@ -84,30 +84,30 @@
         ORDER BY mv.data DESC;
       `;
 
-      const result = await pool.query(query);
-      res.status(200).json(result.rows);
-    } catch (err: any) {
-      console.error("Erro ao buscar movimentações de insumos:", err);
-      res.status(500).json({
-        error: `Erro ao buscar movimentações de insumos: ${err.message ?? err}`,
-      });
-    }
-  });
+    const result = await pool.query(query);
+    res.status(200).json(result.rows);
+  } catch (err: any) {
+    console.error("Erro ao buscar movimentações de insumos:", err);
+    res.status(500).json({
+      error: `Erro ao buscar movimentações de insumos: ${err.message ?? err}`,
+    });
+  }
+});
 
-  router.post("/", async (req, res) => {
-    try {
-      const {
-        tipo, // 'entrada' ou 'saida'
-        medicamento_id,
-        insumo_id,
-        quantidade,
-        armario_id,
-        casela_id,
-        login_id,
-        validade_medicamento,
-      } = req.body;
+router.post("/", async (req, res) => {
+  try {
+    const {
+      tipo, // 'entrada' ou 'saida'
+      medicamento_id,
+      insumo_id,
+      quantidade,
+      armario_id,
+      casela_id,
+      login_id,
+      validade_medicamento,
+    } = req.body;
 
-      const query = `
+    const query = `
         INSERT INTO movimentacao (
           tipo, medicamento_id, insumo_id, quantidade,
           armario_id, casela_id, login_id, data, validade_medicamento
@@ -116,23 +116,23 @@
         RETURNING *;
       `;
 
-      const values = [
-        tipo,
-        medicamento_id,
-        insumo_id,
-        quantidade,
-        armario_id,
-        casela_id,
-        login_id,
-        validade_medicamento,
-      ];
+    const values = [
+      tipo,
+      medicamento_id,
+      insumo_id,
+      quantidade,
+      armario_id,
+      casela_id,
+      login_id,
+      validade_medicamento,
+    ];
 
-      const result = await pool.query(query, values);
-      res.status(201).json(result.rows[0]);
-    } catch (err: any) {
-      console.error("Erro ao inserir movimentação:", err);
-      res.status(500).json({ error: err.message });
-    }
-  });
+    const result = await pool.query(query, values);
+    res.status(201).json(result.rows[0]);
+  } catch (err: any) {
+    console.error("Erro ao inserir movimentação:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
-  export default router;
+export default router;

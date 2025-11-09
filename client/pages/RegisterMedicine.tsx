@@ -1,8 +1,7 @@
 import Layout from "@/components/Layout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
-import { medicines } from "../../mocks/medicines";
 
 export default function SignUpMedicine() {
   const navigate = useNavigate();
@@ -15,19 +14,65 @@ export default function SignUpMedicine() {
     minimumStock: "",
   });
 
+  const [medicines, setMedicines] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchMedicines() {
+      try {
+        const res = await fetch("http://localhost:3001/api/medicamentos");
+        if (!res.ok) throw new Error("Erro ao buscar medicamentos");
+        const data = await res.json();
+        setMedicines(data);
+      } catch (err) {
+        console.error(err);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os medicamentos.",
+          variant: "error",
+        });
+      }
+    }
+
+    fetchMedicines();
+  }, []);
+
+  const handleMedicineSelect = (value: string) => {
+    if (value.trim() === "") {
+      setFormData({
+        name: "",
+        substance: "",
+        dosageValue: "",
+        measuremeUnit: "",
+        minimumStock: "",
+      });
+      return;
+    }
+
+    const selected = medicines.find((m) => m.name === value);
+    if (selected) {
+      const match = selected.dosagem?.match(/^(\d+(?:,\d+)?)([a-zA-Z]+)$/);
+      const dosageValue = match ? match[1] : "";
+      const measuremeUnit = match ? match[2] : "";
+
+      setFormData({
+        name: selected.name,
+        substance: selected.principio_ativo || "",
+        dosageValue,
+        measuremeUnit,
+        minimumStock: selected.estoque_minimo?.toString() || "",
+      });
+    } else {
+      setFormData({ ...formData, name: value });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const { name, substance, dosageValue, measuremeUnit, minimumStock } =
       formData;
 
-    if (
-      !name ||
-      !substance ||
-      !dosageValue ||
-      !measuremeUnit ||
-      !minimumStock
-    ) {
+    if (!name || !substance || !dosageValue || !measuremeUnit || !minimumStock) {
       toast({
         title: "Campos obrigatórios",
         description: "Preencha todos os campos antes de continuar.",
@@ -39,21 +84,17 @@ export default function SignUpMedicine() {
     try {
       const response = await fetch("http://localhost:3001/api/medicamentos", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nome: name,
           principio_ativo: substance,
-          dosagem: `${dosageValue}`,
+          dosagem: dosageValue,
           unidade_medida: measuremeUnit,
           estoque_minimo: Number(minimumStock),
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Erro ao cadastrar o medicamento");
-      }
+      if (!response.ok) throw new Error("Erro ao cadastrar o medicamento");
 
       toast({
         title: "Medicamento cadastrado!",
@@ -66,44 +107,9 @@ export default function SignUpMedicine() {
       console.error(error);
       toast({
         title: "Erro ao cadastrar",
-        description:
-          "Não foi possível registrar o medicamento. Tente novamente.",
+        description: "Não foi possível registrar o medicamento. Tente novamente.",
         variant: "error",
       });
-    }
-  };
-
-  const clearForm = () => {
-    setFormData({
-      name: "",
-      substance: "",
-      dosageValue: "",
-      measuremeUnit: "",
-      minimumStock: "",
-    });
-  };
-
-  const handleMedicineSelect = (value: string) => {
-    if (value.trim() === "") {
-      clearForm();
-      return;
-    }
-
-    const selected = medicines.find((m) => m.name === value);
-    if (selected) {
-      const match = selected.dosage.match(/^(\d+(?:,\d+)?)([a-zA-Z]+)$/);
-      const dosageValue = match ? match[1] : "";
-      const measuremeUnit = match ? match[2] : "";
-
-      setFormData({
-        name: selected.name,
-        substance: selected.substance,
-        dosageValue,
-        measuremeUnit,
-        minimumStock: selected.minimumStock.toString(),
-      });
-    } else {
-      setFormData({ ...formData, name: value });
     }
   };
 

@@ -87,7 +87,7 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
         <button
           type="button"
           className="px-5 py-2 border border-slate-400 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-100 transition mr-2"
-          onClick={() => navigate('/stock')}
+          onClick={() => navigate("/stock")}
         >
           Cancelar
         </button>

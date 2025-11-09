@@ -34,7 +34,7 @@ export function MedicineForm({
     origin: "",
   });
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleCaselaChange = (value: string) => {
     const selected = caselas.find((c) => c.value === value);
@@ -214,7 +214,7 @@ export function MedicineForm({
         <button
           type="button"
           className="px-5 py-2 border border-slate-400 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-100 transition mr-2"
-          onClick={() => navigate('/stock')}
+          onClick={() => navigate("/stock")}
         >
           Cancelar
         </button>
