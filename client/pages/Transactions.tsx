@@ -11,49 +11,49 @@ export default function InputMovements() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [medicinesRes, inputsRes] = await Promise.all([
-          fetch("http://localhost:3001/api/movimentacoes/medicamentos"),
+        setLoading(true);
+
+        const [entriesRes, exitsRes, inputsRes] = await Promise.all([
+          fetch("http://localhost:3001/api/movimentacoes/medicamentos?type=entrada"),
+          fetch("http://localhost:3001/api/movimentacoes/medicamentos?type=saida"),
           fetch("http://localhost:3001/api/movimentacoes/insumos"),
         ]);
 
-        const [medicines, inputs] = await Promise.all([
-          medicinesRes.json(),
+        const [entriesData, exitsData, inputsData] = await Promise.all([
+          entriesRes.json(),
+          exitsRes.json(),
           inputsRes.json(),
         ]);
 
-        const normalizedMovements = [
-          ...medicines.map((m: any) => ({
-            id: m.id,
-            name: m.name,
-            additionalData: m.additionalData || "",
-            quantity: m.quantity ?? "",
-            operator: m.operator,
-            movementDate: new Date(m.movementDate).toLocaleDateString("pt-BR"),
-            cabinet: m.cabinet,
-            type: m.type.toUpperCase(),
-            resident: m.resident || "",
-            validade: m.validade_medicamento
-              ? new Date(m.validade_medicamento).toLocaleDateString("pt-BR")
-              : "",
-          })),
+        const normalizedMedicines = [...entriesData, ...exitsData].map((m: any) => ({
+          id: m.id,
+          name: m.name,
+          additionalData: m.additionalData || "",
+          quantity: m.quantity ?? "",
+          operator: m.operator,
+          movementDate: new Date(m.movementDate).toLocaleDateString("pt-BR"),
+          cabinet: m.cabinet,
+          type: m.type.toUpperCase(),
+          resident: m.patient || "",
+          validade: m.validade_medicamento
+            ? new Date(m.validade_medicamento).toLocaleDateString("pt-BR")
+            : "",
+        }));
 
-          ...inputs.map((i: any) => ({
-            id: i.id,
-            name: i.name,
-            additionalData: i.additionalData || "",
-            quantity: i.quantity ?? "",
-            operator: i.operator,
-            movementDate: new Date(i.movementDate).toLocaleDateString("pt-BR"),
-            cabinet: i.cabinet,
-            type: i.type.toUpperCase(),
-            resident: "",
-            validade: "",
-          })),
-        ];
+        const normalizedInputs = inputsData.map((i: any) => ({
+          id: i.id,
+          name: i.name,
+          additionalData: i.additionalData || "",
+          quantity: i.quantity ?? "",
+          operator: i.operator,
+          movementDate: new Date(i.movementDate).toLocaleDateString("pt-BR"),
+          cabinet: i.cabinet,
+          type: i.type.toUpperCase(),
+          resident: "",
+          validade: "",
+        }));
 
-        setMedicineMovements(
-          normalizedMovements.filter((m) => m.name && m.type && m.operator)
-        );
+        setMedicineMovements([...normalizedMedicines, ...normalizedInputs]);
       } catch (error) {
         console.error("Erro ao carregar movimentações:", error);
       } finally {
@@ -75,8 +75,7 @@ export default function InputMovements() {
     { key: "operator", label: "Operador", editable: false },
     { key: "movementDate", label: "Data da Transação", editable: false },
     { key: "cabinet", label: "Armário", editable: false },
-    { key: "resident", label: "Residente", editable: false },
-    { key: "validade", label: "Validade", editable: false },
+    { key: "resident", label: "Residente", editable: false }
   ];
 
   const entries = useMemo(
@@ -85,9 +84,9 @@ export default function InputMovements() {
         (m) =>
           m.type === "ENTRADA" &&
           (!entryFilter ||
-            m.name.toLowerCase().includes(entryFilter.toLowerCase()))
+            m.name.toLowerCase().includes(entryFilter.toLowerCase())),
       ),
-    [medicineMovements, entryFilter]
+    [medicineMovements, entryFilter],
   );
 
   const exits = useMemo(
@@ -96,14 +95,14 @@ export default function InputMovements() {
         (m) =>
           m.type === "SAIDA" &&
           (!exitFilter ||
-            m.name.toLowerCase().includes(exitFilter.toLowerCase()))
+            m.name.toLowerCase().includes(exitFilter.toLowerCase())),
       ),
-    [medicineMovements, exitFilter]
+    [medicineMovements, exitFilter],
   );
 
   const uniqueNames = useMemo(
     () => Array.from(new Set(medicineMovements.map((m) => m.name))),
-    [medicineMovements]
+    [medicineMovements],
   );
 
   if (loading) {
@@ -146,7 +145,12 @@ export default function InputMovements() {
             )}
           </div>
 
-          <EditableTable data={entries} columns={columnsBase} showAddons={false} entityType="entries" />
+          <EditableTable
+            data={entries}
+            columns={columnsBase}
+            showAddons={false}
+            entityType="entries"
+          />
         </div>
 
         <div>
@@ -178,7 +182,12 @@ export default function InputMovements() {
             )}
           </div>
 
-          <EditableTable data={exits} columns={columnsBase} showAddons={false} entityType="exits" />
+          <EditableTable
+            data={exits}
+            columns={columnsBase}
+            showAddons={false}
+            entityType="exits"
+          />
         </div>
       </div>
     </Layout>

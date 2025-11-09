@@ -21,7 +21,7 @@ export default function EditableTable({
   columns,
   entityType,
   showAddons = true,
-}: EditableTableProps & { entityType?: string, showAddons?: boolean }) {
+}: EditableTableProps & { entityType?: string; showAddons?: boolean }) {
   const [rows, setRows] = useState(data);
   const [filterType, setFilterType] = useState("Todos");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -51,7 +51,8 @@ export default function EditableTable({
         const value = row[key];
         if (
           typeof value === "string" &&
-          (/^\d{4}-\d{2}-\d{2}/.test(value) || /^\d{4}\/\d{2}\/\d{2}/.test(value))
+          (/^\d{4}-\d{2}-\d{2}/.test(value) ||
+            /^\d{4}\/\d{2}\/\d{2}/.test(value))
         ) {
           updatedRow[key] = convertToBRT(value);
         } else {
@@ -323,9 +324,11 @@ export default function EditableTable({
                     </th>
                   );
                 })}
-                { showAddons && <th className="px-4 py-3 text-sm font-semibold text-slate-800 border-l border-slate-200">
-                  Ações
-                </th> }
+                {showAddons && (
+                  <th className="px-4 py-3 text-sm font-semibold text-slate-800 border-l border-slate-200">
+                    Ações
+                  </th>
+                )}
               </tr>
             </thead>
 

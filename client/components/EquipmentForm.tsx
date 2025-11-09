@@ -1,5 +1,6 @@
 import "react-datepicker/dist/react-datepicker.css";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 type InputFormProps = {
   inputs: { id: string; nome: string; categoria: string; unidade: string }[];
@@ -14,6 +15,8 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
     quantity: "",
     cabinet: "",
   });
+
+  const navigate = useNavigate();
 
   const handleInputChange = (id: string) => {
     const selected = inputs.find((i) => i.id === id);
@@ -35,6 +38,7 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
           onChange={(e) => handleInputChange(e.target.value)}
           className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >
+          <option value="">Selecione</option>
           {inputs.map((insumo) => (
             <option key={insumo.id} value={insumo.id}>
               {insumo.nome}
@@ -80,6 +84,13 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
       </div>
 
       <div className="flex justify-end">
+        <button
+          type="button"
+          className="px-5 py-2 border border-slate-400 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-100 transition mr-2"
+          onClick={() => navigate('/stock')}
+        >
+          Cancelar
+        </button>
         <button
           type="button"
           onClick={() => onSubmit(formData)}

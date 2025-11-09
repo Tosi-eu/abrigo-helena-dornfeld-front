@@ -11,7 +11,7 @@ export default function Stock() {
   const location = useLocation();
   const { filter, data } = location.state || {};
 
-  console.log(filter,data);
+  console.log(filter, data);
 
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({
@@ -49,7 +49,7 @@ export default function Stock() {
             minimumStock: item.minimo ?? 0,
           }));
           setItems(mapped);
-          return; 
+          return;
         }
 
         const [medRes, insRes] = await Promise.all([
@@ -144,7 +144,11 @@ export default function Stock() {
   const columns = [
     { key: "stockType", label: "Tipo de Estoque", editable: false },
     { key: "name", label: "Nome", editable: true },
-    { key: "description", label: "Descrição / Princípio Ativo", editable: true },
+    {
+      key: "description",
+      label: "Descrição / Princípio Ativo",
+      editable: true,
+    },
     { key: "expiry", label: "Validade", editable: true },
     { key: "quantity", label: "Quantidade", editable: true },
     { key: "patient", label: "Residente", editable: false },
@@ -183,9 +187,7 @@ export default function Stock() {
           <p className="text-center text-slate-500 mt-6">Carregando...</p>
         ) : (
           <>
-            <h2 className="text-lg font-semibold mt-6">
-              Estoque Geral
-            </h2>
+            <h2 className="text-lg font-semibold mt-6">Estoque Geral</h2>
             <EditableTable
               data={filteredStock}
               columns={columns}

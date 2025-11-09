@@ -29,7 +29,7 @@ export default function Auth() {
 
         toast({ title: "Login realizado!", variant: "success" });
         navigate("/dashboard");
-      }else {
+      } else {
         const res = await fetch("http://localhost:3001/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
