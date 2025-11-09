@@ -79,17 +79,27 @@ export default function Dashboard() {
 
         setRecentMovements(recentMovementsRes);
 
-        console.log(proportionRes)
-
         setStockDistribution([
-          { name: "Estoque Geral (medicamentos)", value: parseFloat(proportionRes.medicamentos_geral.toFixed(2)), rawValue: proportionRes.medicamentos_geral },
-          { name: "Estoque Individual (medicamentos)", value: parseFloat(proportionRes.medicamentos_individual.toFixed(2)), rawValue: proportionRes.medicamentos_individual },
-          { name: "Insumos", value: proportionRes.insumos, rawValue: proportionRes.insumos },
+          {
+            name: "Estoque Geral (medicamentos)",
+            value: parseFloat(proportionRes.medicamentos_geral.toFixed(2)), 
+            rawValue: proportionRes.totais.medicamentos_geral,              
+          },
+          {
+            name: "Estoque Individual (medicamentos)",
+            value: parseFloat(proportionRes.medicamentos_individual.toFixed(2)),
+            rawValue: proportionRes.totais.medicamentos_individual,
+          },
+          {
+            name: "Insumos",
+            value: proportionRes.insumos,
+            rawValue: proportionRes.totais.insumos,
+          },
         ]);
 
         const formattedCabinetData = cabinetRes.map((arm: any) => ({
           cabinet: arm.armario_nome || `Armário ${arm.armario_id}`,
-          total: Number(arm.total_geral) || 0,
+          total: Number(arm.total_geral) || 0,  
         }));
         setCabinetStockData(formattedCabinetData);
       } catch (err) {
