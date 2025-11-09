@@ -6,6 +6,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import SignUpMedicine from "./pages/RegisterMedicine";
@@ -25,6 +26,9 @@ import EditCabinet from "./pages/EditCabinet";
 import RegisterInput from "./pages/RegisterInput";
 import Inputs from "./pages/Inputs";
 
+import { AuthProvider } from "./context/auth-context";
+import PrivateRoute from "./pages/PrivateRoute";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -32,29 +36,151 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/user/login" replace />} />
-          <Route path="/user/login" element={<Auth />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/transactions" element={<Transactions />} />
-          <Route path="/medicines" element={<Medicines />} />
-          <Route path="/medicines/register" element={<SignUpMedicine />} />
-          <Route path="/medicines/edit" element={<EditMedicine />} />
-          <Route path="/stock" element={<Stock />} />
-          <Route path="/stock/in" element={<StockEntry />} />
-          <Route path="/stock/out" element={<StockOut />} />
-          <Route path="/residents" element={<Resident />} />
-          <Route path="/residents/register" element={<RegisterResident />} />
-          <Route path="/residents/edit" element={<EditResident />} />
-          <Route path="/inputs" element={<Inputs />} />
-          <Route path="/inputs/register" element={<RegisterInput />} />
-          <Route path="/inputs/edit" element={<EditInput />} />
-          <Route path="/cabinets" element={<Cabinets />} />
-          <Route path="/cabinets/register" element={<RegisterCabinet />} />
-          <Route path="/cabinets/edit" element={<EditCabinet />}></Route>
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Navigate to="/user/login" replace />} />
+            <Route path="/user/login" element={<Auth />} />
+
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/transactions"
+              element={
+                <PrivateRoute>
+                  <Transactions />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/medicines"
+              element={
+                <PrivateRoute>
+                  <Medicines />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/medicines/register"
+              element={
+                <PrivateRoute>
+                  <SignUpMedicine />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/medicines/edit"
+              element={
+                <PrivateRoute>
+                  <EditMedicine />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/stock"
+              element={
+                <PrivateRoute>
+                  <Stock />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/stock/in"
+              element={
+                <PrivateRoute>
+                  <StockEntry />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/stock/out"
+              element={
+                <PrivateRoute>
+                  <StockOut />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/residents"
+              element={
+                <PrivateRoute>
+                  <Resident />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/residents/register"
+              element={
+                <PrivateRoute>
+                  <RegisterResident />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/residents/edit"
+              element={
+                <PrivateRoute>
+                  <EditResident />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/inputs"
+              element={
+                <PrivateRoute>
+                  <Inputs />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/inputs/register"
+              element={
+                <PrivateRoute>
+                  <RegisterInput />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/inputs/edit"
+              element={
+                <PrivateRoute>
+                  <EditInput />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/cabinets"
+              element={
+                <PrivateRoute>
+                  <Cabinets />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/cabinets/register"
+              element={
+                <PrivateRoute>
+                  <RegisterCabinet />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/cabinets/edit"
+              element={
+                <PrivateRoute>
+                  <EditCabinet />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

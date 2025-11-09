@@ -1,9 +1,12 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "/logo.png";
 import { LayoutProps } from "@/interfaces/interfaces";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Layout({ children, title }: LayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const navigation = [
     { name: "Painel", href: "/dashboard" },
@@ -14,6 +17,11 @@ export default function Layout({ children, title }: LayoutProps) {
     { name: "Residentes", href: "/residents" },
     { name: "Armários", href: "/cabinets" },
   ];
+
+  const handleLogout = () => {
+    logout();
+    navigate("/user/login");
+  };
 
   return (
     <div className="min-h-screen bg-white text-slate-800">
@@ -49,6 +57,15 @@ export default function Layout({ children, title }: LayoutProps) {
                   </Link>
                 );
               })}
+
+              {user && (
+                <button
+                  onClick={handleLogout}
+                  className="ml-6 px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+                >
+                  Deslogar
+                </button>
+              )}
             </nav>
           </div>
         </div>

@@ -72,7 +72,13 @@ export default function SignUpMedicine() {
     const { name, substance, dosageValue, measurementUnit, minimumStock } =
       formData;
 
-    if (!name || !substance || !dosageValue || !measurementUnit || !minimumStock) {
+    if (
+      !name ||
+      !substance ||
+      !dosageValue ||
+      !measurementUnit ||
+      !minimumStock
+    ) {
       toast({
         title: "Campos obrigatórios",
         description: "Preencha todos os campos antes de continuar.",
@@ -107,7 +113,8 @@ export default function SignUpMedicine() {
       console.error(error);
       toast({
         title: "Erro ao cadastrar",
-        description: "Não foi possível registrar o medicamento. Tente novamente.",
+        description:
+          "Não foi possível registrar o medicamento. Tente novamente.",
         variant: "error",
       });
     }

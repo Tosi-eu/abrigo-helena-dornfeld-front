@@ -39,6 +39,17 @@ export interface User {
   password: string;
 }
 
+export interface LoggedUser {
+  id: number;
+  login: string;
+}
+
+export interface AuthContextType {
+  user: LoggedUser | null;
+  login: (login: string, password: string) => Promise<void>;
+  logout: () => void;
+}
+
 export interface Patient {
   casela: number;
   name: string;
@@ -163,7 +174,7 @@ export interface StockOutFormProps {
 }
 
 export interface InputFormProps {
-  inputs: Input[]; 
+  inputs: Input[];
   cabinets: Cabinet[];
   onSubmit: (data: {
     inputId: number;

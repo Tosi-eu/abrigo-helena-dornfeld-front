@@ -73,7 +73,7 @@ router.get("/", async (req, res) => {
         break;
       case "expiringSoon":
         if (type === "medicamento")
-          havingClause = `HAVING MIN(em.validade) BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '60 days'`;
+          havingClause = `HAVING SUM(em.quantidade) > 0 AND MIN(em.validade) BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '60 days'`;
         break;
     }
 

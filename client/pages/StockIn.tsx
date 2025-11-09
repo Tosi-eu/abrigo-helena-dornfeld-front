@@ -7,7 +7,9 @@ import { toast } from "@/hooks/use-toast";
 import { Input, Medicine, Patient, Cabinet } from "@/interfaces/interfaces";
 
 export default function StockIn() {
-  const [operationType, setOperationType] = useState<OperationType | "Selecione">("Selecione");
+  const [operationType, setOperationType] = useState<
+    OperationType | "Selecione"
+  >("Selecione");
 
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [inputs, setInputs] = useState<Input[]>([]);
@@ -45,7 +47,7 @@ export default function StockIn() {
             data.map((p) => ({
               casela: p.num_casela,
               name: p.nome,
-            }))
+            })),
           );
         }
       } catch (err) {
@@ -62,7 +64,7 @@ export default function StockIn() {
             data.map((a) => ({
               id: a.num_armario,
               category: `Armário ${a.num_armario}`,
-            }))
+            })),
           );
         }
       } catch (err) {
@@ -72,7 +74,12 @@ export default function StockIn() {
 
     const fetchAll = async () => {
       setLoading(true);
-      await Promise.all([fetchMedicines(), fetchInputs(), fetchCaselas(), fetchCabinets()]);
+      await Promise.all([
+        fetchMedicines(),
+        fetchInputs(),
+        fetchCaselas(),
+        fetchCabinets(),
+      ]);
       setLoading(false);
     };
 
@@ -155,9 +162,9 @@ export default function StockIn() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      
-      console.log(JSON.stringify(data))
-      console.log(JSON.stringify(payload))
+
+      console.log(JSON.stringify(data));
+      console.log(JSON.stringify(payload));
       if (!res.ok) throw new Error(`Erro ao registrar entrada ${res}`);
 
       await fetch("http://localhost:3001/api/movimentacoes", {
@@ -196,7 +203,7 @@ export default function StockIn() {
     );
   }
 
-    const canonicalMedicines: Medicine[] = medicines.map((m: any) => ({
+  const canonicalMedicines: Medicine[] = medicines.map((m: any) => ({
     id: m.id,
     name: m.nome,
     dosage: m.dosagem,
@@ -211,12 +218,14 @@ export default function StockIn() {
     description: i.descricao,
   }));
 
-  console.log(inputs)
+  console.log(inputs);
 
   return (
     <Layout title="Entrada de Estoque">
       <div className="max-w-lg mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm space-y-6">
-        <h2 className="text-lg font-semibold text-slate-800">Registrar Entrada</h2>
+        <h2 className="text-lg font-semibold text-slate-800">
+          Registrar Entrada
+        </h2>
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -228,7 +237,9 @@ export default function StockIn() {
             className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
           >
             <option value="Selecione">Selecione</option>
-            <option value={OperationType.MEDICINE}>{OperationType.MEDICINE}</option>
+            <option value={OperationType.MEDICINE}>
+              {OperationType.MEDICINE}
+            </option>
             <option value={OperationType.INPUT}>{OperationType.INPUT}</option>
           </select>
         </div>

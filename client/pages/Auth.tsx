@@ -2,10 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import logo from "/logo.png";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login: authLogin } = useAuth();
 
   const [isLogin, setIsLogin] = useState(true);
   const [login, setLogin] = useState("");
@@ -19,14 +21,7 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        const query = new URLSearchParams({ login, password });
-        const res = await fetch(
-          `http://localhost:3001/api/login?${query.toString()}`,
-        );
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(data.error || "Erro ao fazer login");
-
+        await authLogin(login, password);
         toast({ title: "Login realizado!", variant: "success" });
         navigate("/dashboard");
       } else {
@@ -40,7 +35,6 @@ export default function Auth() {
         if (!res.ok) throw new Error(data.error || "Erro ao cadastrar usuário");
 
         toast({ title: "Cadastro realizado!", variant: "success" });
-
         navigate("/dashboard");
       }
     } catch (err: any) {

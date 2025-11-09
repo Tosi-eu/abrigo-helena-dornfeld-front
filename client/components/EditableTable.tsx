@@ -300,7 +300,7 @@ export default function EditableTable({
 
                   if (col.key === "description" && entityType !== "inputs") {
                     if (filterType === "Todos") {
-                      label = "Princípio Ativo / Descrição";
+                      label = "Princípio Ativo";
                     } else {
                       label =
                         filterType === "Medicamento"

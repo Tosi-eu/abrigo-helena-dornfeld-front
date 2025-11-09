@@ -74,7 +74,7 @@ export default function InputMovements() {
     { key: "name", label: "Produto", editable: false },
     {
       key: "additionalData",
-      label: "Princípio Ativo / Descrição",
+      label: "Princípio Ativo",
       editable: false,
     },
     { key: "quantity", label: "Quantidade", editable: false },

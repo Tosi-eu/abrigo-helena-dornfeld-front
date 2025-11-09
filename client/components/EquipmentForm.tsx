@@ -78,7 +78,10 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
             type="text"
             value={formData.quantity}
             onChange={(e) =>
-              setFormData({ ...formData, quantity: parseInt(e.target.value) || 0 })
+              setFormData({
+                ...formData,
+                quantity: parseInt(e.target.value) || 0,
+              })
             }
             placeholder="10"
             className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
@@ -93,7 +96,10 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
         <select
           value={formData.cabinetId}
           onChange={(e) =>
-            setFormData({ ...formData, cabinetId: parseInt(e.target.value) || 0 })
+            setFormData({
+              ...formData,
+              cabinetId: parseInt(e.target.value) || 0,
+            })
           }
           className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >

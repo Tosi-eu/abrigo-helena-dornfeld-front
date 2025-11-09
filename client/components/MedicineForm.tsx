@@ -120,10 +120,15 @@ export function MedicineForm({
                 type="checkbox"
                 id={type}
                 checked={formData.stockType[type as "geral" | "individual"]}
-                onChange={() => handleStockTypeChange(type as "geral" | "individual")}
+                onChange={() =>
+                  handleStockTypeChange(type as "geral" | "individual")
+                }
                 className="w-5 h-5 border-slate-400 rounded text-sky-600 focus:ring-sky-300"
               />
-              <label htmlFor={type} className="text-sm text-slate-700 capitalize">
+              <label
+                htmlFor={type}
+                className="text-sm text-slate-700 capitalize"
+              >
                 {type}
               </label>
             </div>
@@ -191,7 +196,9 @@ export function MedicineForm({
           </label>
           <select
             value={formData.origin}
-            onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, origin: e.target.value })
+            }
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
             <option value="">Selecione</option>
