@@ -3,15 +3,22 @@ import { pool } from "../../client/db/connection";
 
 const router = Router();
 
-router.get("/", async (_req, res) => {
+router.get("/", async (req, res) => {
+  const { filter, type = "medicamento" } = req.query;
+
   try {
-    const [medRows, insRows] = await Promise.all([
-      pool.query(`
+    let baseQuery = "";
+    let havingClause = "";
+
+    if (type === "medicamento") {
+      baseQuery = `
         SELECT 
-          m.nome AS nome_medicamento,
+          m.id AS item_id,
+          m.nome AS nome,
           m.principio_ativo,
-          em.validade,
+          MIN(em.validade) AS validade,
           SUM(em.quantidade) AS quantidade,
+          m.estoque_minimo AS minimo,
           em.origem,
           em.tipo,
           p.nome AS paciente,
@@ -20,26 +27,46 @@ router.get("/", async (_req, res) => {
         FROM ESTOQUE_MEDICAMENTO em
         JOIN MEDICAMENTO m ON m.id = em.medicamento_id
         LEFT JOIN PACIENTE p ON p.num_casela = em.casela_id
-        GROUP BY 1,2,3,5,6,7,8,9
-      `),
-      pool.query(`
+        GROUP BY m.id, m.nome, m.principio_ativo, m.estoque_minimo,
+                 em.origem, em.tipo, p.nome, em.armario_id, em.casela_id
+      `;
+    } else if (type === "insumo") {
+      baseQuery = `
         SELECT 
-          i.nome AS nome_insumo,
-          i.descricao,
-          SUM(ei.quantidade) as quantidade,
+          i.id AS item_id,
+          i.nome AS nome,
+          SUM(ei.quantidade) AS quantidade,
           ei.armario_id
         FROM ESTOQUE_INSUMO ei
         JOIN INSUMO i ON i.id = ei.insumo_id
-        GROUP BY 1,2,4;
-      `),
-    ]);
+        GROUP BY i.id, i.nome, ei.armario_id
+      `;
+    } else {
+      return res.status(400).json({ error: "Tipo inválido. Use medicamento ou insumo." });
+    }
 
-    res.json({
-      medicamentos: medRows.rows,
-      insumos: insRows.rows,
-    });
+    switch (filter) {
+      case "noStock":
+        havingClause = `HAVING SUM(em.quantidade) = 0`;
+        break;
+      case "belowMin":
+        havingClause = `HAVING SUM(em.quantidade) > 0 AND SUM(em.quantidade) <= COALESCE(m.estoque_minimo, 0)`;
+        break;
+      case "expired":
+        if (type === "medicamento") havingClause = `HAVING MIN(em.validade) < CURRENT_DATE`;
+        break;
+      case "expiringSoon":
+        if (type === "medicamento")
+          havingClause = `HAVING MIN(em.validade) BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '60 days'`;
+        break;
+    }
+
+    const finalQuery = `${baseQuery} ${havingClause}`;
+    const { rows } = await pool.query(finalQuery);
+
+    res.json(rows);
   } catch (err) {
-    console.error(err);
+    console.error("Erro ao buscar estoque:", err);
     res.status(500).json({ error: "Erro ao buscar estoque" });
   }
 });
@@ -89,7 +116,7 @@ router.post("/entrada", async (req, res) => {
           validMedicamentoId,
           validCaselaId,
           validArmarioId,
-          validadeFormatada,
+          validadeFormatada,  
           validQuantidade,
           origem,
           tipo,

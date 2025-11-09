@@ -5,7 +5,7 @@ import { users } from "../../mocks/users";
 import { patients } from "../../mocks/patients";
 import { cabinets } from "../../mocks/cabinets";
 import { StockType } from "@/enums/enums";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { inputInventory, medicineInventory } from "../../mocks/stock";
 import { prepareMovements } from "@/utils/utils";
 import { inputs } from "../../mocks/inputs";
@@ -34,7 +34,78 @@ export default function Dashboard() {
   const today = new Date().toISOString().split("T")[0];
   const navigate = useNavigate();
   const [activePieIndex, setActivePieIndex] = useState<number | null>(null);
+    const [noStock, setNoStock] = useState<number>(0);
+  const [belowMin, setBelowMin] = useState<number>(0);
+  const [expired, setExpired] = useState<number>(0);
+  const [expiringSoon, setExpiringSoon] = useState<any[]>([]);
+  const [cabinetData, setCabinetStockData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [noStockData, setNoStockData] = useState<any[]>([]);
+  const [belowMinData, setBelowMinData] = useState<any[]>([]);
+  const [expiredData, setExpiredData] = useState<any[]>([]);
+  const [expiringSoonData, setExpiringSoonData] = useState<any[]>([]);
 
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const [noStockRes, belowMinRes, expiredRes, expiringSoonRes] =
+            await Promise.all([
+              fetch("http://localhost:3001/api/estoque?filter=noStock").then((r) => r.json()),
+              fetch("http://localhost:3001/api/estoque?filter=belowMin").then((r) => r.json()),
+              fetch("http://localhost:3001/api/estoque?filter=expired").then((r) => r.json()),
+              fetch("http://localhost:3001/api/estoque?filter=expiringSoon").then((r) => r.json()),
+            ]);
+
+          setNoStock(noStockRes.length);
+          setBelowMin(belowMinRes.length);
+          setExpired(expiredRes.length);
+          setExpiringSoon(expiringSoonRes);
+
+          setNoStockData(noStockRes);
+          setBelowMinData(belowMinRes);
+          setExpiredData(expiredRes);
+          setExpiringSoonData(expiringSoonRes);
+        } catch (err) {
+          console.error("Erro ao carregar dados do estoque:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchData();
+    }, []);
+
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const [noStockRes, belowMinRes, expiredRes, expiringSoonRes] =
+            await Promise.all([
+              fetch("http://localhost:3001/api/estoque?filter=noStock").then((r) => r.json()),
+              fetch("http://localhost:3001/api/estoque?filter=belowMin").then((r) => r.json()),
+              fetch("http://localhost:3001/api/estoque?filter=expired").then((r) => r.json()),
+              fetch("http://localhost:3001/api/estoque?filter=expiringSoon").then((r) => r.json()),
+            ]);
+
+          setNoStock(noStockRes.length);
+          setBelowMin(belowMinRes.length);
+          setExpired(expiredRes.length);
+          setExpiringSoon(expiringSoonRes);
+        } catch (err) {
+          console.error("Erro ao carregar dados do estoque:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchData();
+
+      setCabinetStockData([
+        { cabinet: "Armário 1", total: 180 },
+        { cabinet: "Armário 2", total: 120 },
+        { cabinet: "Armário 3", total: 75 },
+      ]);
+    }, []);
+  
   const expiringMedicines = useMemo(() => {
     return medicineInventory
       .filter((m) => {
@@ -74,48 +145,40 @@ export default function Dashboard() {
     });
   }, []);
 
-  const stats = useMemo(() => {
-    const medicinesWithoutStock = medicines.filter((m) => {
-      const inv = medicineInventory.find((mi) => mi.medicineId === m.id);
-      return !inv || inv.quantity === 0;
-    }).length;
-
-    const medicinesLowStock = medicineInventory.filter((m) => {
-      const med = medicines.find((x) => x.id === m.medicineId);
-      return med?.minimumStock !== undefined && m.quantity <= med.minimumStock;
-    }).length;
-
-    const expiredMedicines = medicineInventory.filter(
-      (m) => new Date(m.expiry) < new Date(),
-    ).length;
-
-    const expiringSoon = expiringMedicines.length;
-
-    return [
-      {
-        label: "Medicamentos sem estoque",
-        value: medicinesWithoutStock.toString(),
-        onClick: () => navigate("/stock", { state: { filterType: "noStock" } }),
-      },
-      {
-        label: "Medicamentos com baixo estoque",
-        value: medicinesLowStock.toString(),
-        onClick: () =>
-          navigate("/stock", { state: { filterType: "belowMin" } }),
-      },
-      {
-        label: "Medicamentos vencidos",
-        value: expiredMedicines.toString(),
-        onClick: () => navigate("/stock", { state: { filterType: "expired" } }),
-      },
-      {
-        label: "Medicamentos próximos do vencimento",
-        value: expiringSoon.toString(),
-        onClick: () =>
-          navigate("/stock", { state: { filterType: "expiringSoon" } }),
-      },
-    ];
-  }, [navigate, expiringMedicines]);
+  const stats = [
+    {
+      label: "Sem Estoque",
+      value: noStock,
+      onClick: () =>
+        navigate("/stock", {
+          state: { filter: "noStock", data: noStockData },
+        }),
+    },
+    {
+      label: "Abaixo do Mínimo",
+      value: belowMin,
+      onClick: () =>
+        navigate("/stock", {
+          state: { filter: "belowMin", data: belowMinData },
+        }),
+    },
+    {
+      label: "Vencidos",
+      value: expired,
+      onClick: () =>
+        navigate("/stock", {
+          state: { filter: "expired", data: expiredData },
+        }),
+    },
+    {
+      label: "Vencendo em Breve",
+      value: expiringSoon.length,
+      onClick: () =>
+        navigate("/stock", {
+          state: { filter: "expiringSoon", data: expiringSoonData },
+        }),
+    },
+  ];
 
   const stockDistribution = useMemo(() => {
     const generalMedicines = medicineInventory
@@ -445,3 +508,4 @@ export default function Dashboard() {
     </Layout>
   );
 }
+

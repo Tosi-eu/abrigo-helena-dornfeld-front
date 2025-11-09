@@ -11,7 +11,6 @@ export default function NotifyDispatch() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ medicamento, destino, paciente, data });
     navigate("/notify");
   };
 

@@ -29,7 +29,7 @@ export default function Auth() {
 
         toast({ title: "Login realizado!", variant: "success" });
         navigate("/dashboard");
-      } else {
+      }else {
         const res = await fetch("http://localhost:3001/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -40,9 +40,8 @@ export default function Auth() {
         if (!res.ok) throw new Error(data.error || "Erro ao cadastrar usuário");
 
         toast({ title: "Cadastro realizado!", variant: "success" });
-        setIsLogin(true);
-        setLogin("");
-        setPassword("");
+
+        navigate("/dashboard");
       }
     } catch (err: any) {
       toast({ title: "Erro", description: err.message, variant: "error" });

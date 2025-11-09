@@ -134,7 +134,6 @@ export interface PrepareMovementsParams {
 }
 
 export interface StockItem {
-  type: "Medicamento" | "Insumo";
   name: string;
   description: string;
   expiry: string;

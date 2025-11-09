@@ -88,8 +88,6 @@ export default function StockOut() {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "Erro ao registrar saída");
 
-      console.log(payload);
-
       await fetch("http://localhost:3001/api/movimentacoes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

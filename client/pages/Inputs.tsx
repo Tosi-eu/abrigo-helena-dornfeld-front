@@ -20,8 +20,6 @@ export default function Inputs() {
         if (!res.ok) throw new Error("Erro ao buscar insumos");
 
         const result = await res.json();
-        console.log(result);
-
         setData(result);
       } catch (err) {
         console.error(err);

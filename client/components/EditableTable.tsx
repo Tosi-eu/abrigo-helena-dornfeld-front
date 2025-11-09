@@ -49,7 +49,6 @@ export default function EditableTable({
       const updatedRow: Record<string, any> = {};
       for (const key in row) {
         const value = row[key];
-        // converte apenas datas ISO ou timestamps
         if (
           typeof value === "string" &&
           (/^\d{4}-\d{2}-\d{2}/.test(value) || /^\d{4}\/\d{2}\/\d{2}/.test(value))
@@ -103,13 +102,10 @@ export default function EditableTable({
   const confirmDelete = (index: number) => setDeleteIndex(index);
 
   const handleDeleteConfirmed = async () => {
-    //TODO ajustar para outras entidades
     if (deleteIndex === null) return;
 
     const rowToDelete = rows[deleteIndex];
     if (!rowToDelete) return;
-
-    console.log(rowToDelete);
 
     try {
       let endpoint = "";
@@ -284,16 +280,16 @@ export default function EditableTable({
   return (
     <>
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden font-[Inter]">
-        <div className="flex justify-between items-center px-4 py-3 border-b border-slate-200 bg-sky-50 text-sm">
-
-          { showAddons &&<button
-            onClick={handleAddRow}
-            className="flex items-center gap-1 text-sky-700 text-sm font-medium hover:text-sky-800 transition"
-          >
-            <Plus size={16} /> Adicionar linha
-          </button> }
+        <div className="flex items-center justify-end px-4 py-3 border-b border-slate-200 bg-sky-50 text-sm">
+          {showAddons && (
+            <button
+              onClick={handleAddRow}
+              className="flex items-center gap-1 text-sky-700 text-sm font-medium hover:text-sky-800 transition"
+            >
+              <Plus size={16} /> Adicionar linha
+            </button>
+          )}
         </div>
-
         <div className="overflow-x-auto relative">
           <table className="w-full text-center border-collapse">
             <thead>
