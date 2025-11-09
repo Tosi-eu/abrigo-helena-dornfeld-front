@@ -5,13 +5,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { StockType } from "@/enums/enums";
 import { StockItem } from "@/interfaces/interfaces";
 import ReportModal from "@/components/ReportModal";
+import LoadingModal from "@/components/LoadingModal";
 
 export default function Stock() {
   const navigate = useNavigate();
   const location = useLocation();
   const { filter, data } = location.state || {};
-
-  console.log(filter, data);
 
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({
@@ -61,8 +60,6 @@ export default function Stock() {
           medRes.json(),
           insRes.json(),
         ]);
-
-        console.log(medData);
 
         const medicamentos: StockItem[] = medData.map((m: any) => ({
           name: m.nome,
@@ -121,8 +118,8 @@ export default function Stock() {
 
   const filteredStock = useMemo(() => {
     let filtered = [...items];
-
     const term = search.toLowerCase();
+
     if (search) {
       filtered = filtered.filter((item) =>
         item.name.toLowerCase().includes(term),
@@ -161,11 +158,19 @@ export default function Stock() {
 
   return (
     <Layout title="Estoque de Medicamentos e Insumos">
+      {/* Modal de Loading */}
+      <LoadingModal
+        open={loading}
+        title="Aguarde"
+        description="Carregando estoque..."
+      />
+
       <div className="space-y-6">
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => navigate("/stock/in")}
             className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+            disabled={loading}
           >
             Entrada de Estoque
           </button>
@@ -173,6 +178,7 @@ export default function Stock() {
           <button
             onClick={() => navigate("/stock/out")}
             className="px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
+            disabled={loading}
           >
             Saída de Estoque
           </button>
@@ -180,14 +186,13 @@ export default function Stock() {
           <button
             onClick={() => setReportModalOpen(true)}
             className="px-6 py-3 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 transition"
+            disabled={loading}
           >
             Gerar Relatório
           </button>
         </div>
 
-        {loading ? (
-          <p className="text-center text-slate-500 mt-6">Carregando...</p>
-        ) : (
+        {!loading && (
           <>
             <h2 className="text-lg font-semibold mt-6">Estoque Geral</h2>
             <EditableTable

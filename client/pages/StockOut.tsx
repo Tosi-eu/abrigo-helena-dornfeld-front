@@ -3,15 +3,17 @@ import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import { OperationType } from "@/enums/enums";
 import { StockOutForm } from "@/components/StockOutForm";
+import LoadingModal from "@/components/LoadingModal";
 
 export default function StockOut() {
   const [operationType, setOperationType] = useState<
     OperationType | "Selecione"
   >("Selecione");
-
-  const [medicines, setMedicines] = useState([]);
-  const [inputs, setInputs] = useState([]);
-  const [cabinets, setArmarios] = useState([]);
+  const [medicines, setMedicines] = useState<any[]>([]);
+  const [inputs, setInputs] = useState<any[]>([]);
+  const [cabinets, setCabinets] = useState<{ value: string; label: string }[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,13 +41,14 @@ export default function StockOut() {
       try {
         const res = await fetch("http://localhost:3001/api/armarios");
         const data = await res.json();
-        if (Array.isArray(data))
-          setArmarios(
+        if (Array.isArray(data)) {
+          setCabinets(
             data.map((a: any) => ({
               value: String(a.num_armario),
               label: `Armário ${a.num_armario}`,
             })),
           );
+        }
       } catch (err) {
         console.error("Erro ao buscar armários:", err);
       }
@@ -59,18 +62,6 @@ export default function StockOut() {
 
     fetchAll();
   }, []);
-
-  if (loading) {
-    return (
-      <Layout title="Saída de Estoque">
-        <div className="max-w-lg mx-auto mt-10 text-center text-slate-600">
-          Carregando dados...
-        </div>
-      </Layout>
-    );
-  }
-
-  console.log(operationType);
 
   const handleStockOut = async (payload: any, type: OperationType) => {
     try {
@@ -112,9 +103,7 @@ export default function StockOut() {
 
       toast({
         title: "Saída registrada com sucesso!",
-        description: `${
-          type === OperationType.MEDICINE ? "Medicamento" : "Insumo"
-        } removido do estoque.`,
+        description: `${type === OperationType.MEDICINE ? "Medicamento" : "Insumo"} removido do estoque.`,
         variant: "success",
       });
     } catch (err: any) {
@@ -128,48 +117,58 @@ export default function StockOut() {
 
   return (
     <Layout title="Saída de Estoque">
-      <div className="max-w-lg mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm space-y-6">
-        <h2 className="text-lg font-semibold text-slate-800">
-          Registrar Saída
-        </h2>
+      <LoadingModal
+        open={loading}
+        title="Aguarde"
+        description="Carregando dados..."
+      />
 
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Tipo de saída
-          </label>
-          <select
-            value={operationType}
-            onChange={(e) => setOperationType(e.target.value as OperationType)}
-            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
-          >
-            <option value="Selecione">Selecione...</option>
-            <option value={OperationType.MEDICINE}>
-              {OperationType.MEDICINE}
-            </option>
-            <option value={OperationType.INPUT}>{OperationType.INPUT}</option>
-          </select>
+      {!loading && (
+        <div className="max-w-lg mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm space-y-6">
+          <h2 className="text-lg font-semibold text-slate-800">
+            Registrar Saída
+          </h2>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Tipo de saída
+            </label>
+            <select
+              value={operationType}
+              onChange={(e) =>
+                setOperationType(e.target.value as OperationType)
+              }
+              className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
+            >
+              <option value="Selecione">Selecione...</option>
+              <option value={OperationType.MEDICINE}>
+                {OperationType.MEDICINE}
+              </option>
+              <option value={OperationType.INPUT}>{OperationType.INPUT}</option>
+            </select>
+          </div>
+
+          {operationType === OperationType.MEDICINE && (
+            <StockOutForm
+              items={medicines.map((m) => ({
+                id: m.id,
+                nome: m.nome,
+                detalhes: `${m.dosagem} ${m.unidade_medida}`,
+              }))}
+              cabinets={cabinets}
+              onSubmit={(data) => handleStockOut(data, OperationType.MEDICINE)}
+            />
+          )}
+
+          {operationType === OperationType.INPUT && (
+            <StockOutForm
+              items={inputs.map((i) => ({ id: i.id, nome: i.nome }))}
+              cabinets={cabinets}
+              onSubmit={(data) => handleStockOut(data, OperationType.INPUT)}
+            />
+          )}
         </div>
-
-        {operationType === OperationType.MEDICINE && (
-          <StockOutForm
-            items={medicines.map((m) => ({
-              id: m.id,
-              nome: m.nome,
-              detalhes: `${m.dosagem} ${m.unidade_medida}`,
-            }))}
-            cabinets={cabinets}
-            onSubmit={(data) => handleStockOut(data, OperationType.MEDICINE)}
-          />
-        )}
-
-        {operationType === OperationType.INPUT && (
-          <StockOutForm
-            items={inputs.map((i) => ({ id: i.id, nome: i.nome }))}
-            cabinets={cabinets}
-            onSubmit={(data) => handleStockOut(data, OperationType.INPUT)}
-          />
-        )}
-      </div>
+      )}
     </Layout>
   );
 }

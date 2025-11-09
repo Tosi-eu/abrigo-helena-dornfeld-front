@@ -2,9 +2,10 @@ import { useState } from "react";
 import Layout from "@/components/Layout";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import LoadingModal from "@/components/LoadingModal";
 
 export default function RegisterResident() {
-  const [nome, setNome] = useState("");
+  const [name, setName] = useState("");
   const [casela, setCasela] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export default function RegisterResident() {
       const res = await fetch("http://localhost:3001/api/residentes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, casela }),
+        body: JSON.stringify({ nome: name, casela }),
       });
 
       const data = await res.json();
@@ -41,6 +42,12 @@ export default function RegisterResident() {
 
   return (
     <Layout title="Cadastro de Residente e Casela">
+      <LoadingModal
+        open={loading}
+        title="Aguarde"
+        description="Cadastrando residente..."
+      />
+
       <div className="max-w-lg mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-800 mb-6">
           Cadastro de Residente
@@ -53,10 +60,10 @@ export default function RegisterResident() {
             </label>
             <input
               type="text"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
-              placeholder="Digite o nome do residente"
+              placeholder="Digite o name do residente"
               required
             />
           </div>
@@ -89,7 +96,7 @@ export default function RegisterResident() {
               disabled={loading}
               className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition disabled:opacity-50"
             >
-              {loading ? "Cadastrando..." : "Cadastrar Residente"}
+              Cadastrar Residente
             </button>
           </div>
         </form>

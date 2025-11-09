@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { toast } from "@/hooks/use-toast";
+import LoadingModal from "@/components/LoadingModal";
 
 export default function EditResident() {
   const location = useLocation();
@@ -12,6 +13,8 @@ export default function EditResident() {
     num_casela: "",
     nome: "",
   });
+
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (item) {
@@ -44,15 +47,15 @@ export default function EditResident() {
       return;
     }
 
+    setSaving(true);
+
     try {
       const res = await fetch(
         `http://localhost:3001/api/residentes/${formData.num_casela}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nome: formData.nome,
-          }),
+          body: JSON.stringify({ nome: formData.nome }),
         },
       );
 
@@ -66,18 +69,27 @@ export default function EditResident() {
       });
 
       navigate("/residents");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       toast({
         title: "Erro ao editar residente",
-        description: "Não foi possível atualizar o residente.",
+        description: err.message || "Não foi possível atualizar o residente.",
         variant: "error",
       });
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
     <Layout title="Editar Residente">
+      {/* Modal de Loading */}
+      <LoadingModal
+        open={saving}
+        title="Aguarde"
+        description="Atualizando residente..."
+      />
+
       <div className="max-w-lg mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm space-y-6">
         <h2 className="text-lg font-semibold text-slate-800 mb-6">
           Edição de Residente
@@ -94,6 +106,7 @@ export default function EditResident() {
               value={formData.nome}
               onChange={handleChange}
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+              disabled={saving}
             />
           </div>
 
@@ -116,14 +129,16 @@ export default function EditResident() {
               type="button"
               onClick={() => navigate("/residents")}
               className="px-5 py-2 border border-slate-400 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-100 transition"
+              disabled={saving}
             >
               Cancelar
             </button>
             <button
               onClick={handleSave}
-              className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition"
+              className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition disabled:opacity-50"
+              disabled={saving}
             >
-              Salvar Alterações
+              {saving ? "Salvando..." : "Salvar Alterações"}
             </button>
           </div>
         </div>

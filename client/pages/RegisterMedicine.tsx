@@ -2,6 +2,7 @@ import Layout from "@/components/Layout";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import LoadingModal from "@/components/LoadingModal";
 
 export default function SignUpMedicine() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export default function SignUpMedicine() {
   });
 
   const [medicines, setMedicines] = useState<any[]>([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     async function fetchMedicines() {
@@ -87,6 +89,8 @@ export default function SignUpMedicine() {
       return;
     }
 
+    setSaving(true);
+
     try {
       const response = await fetch("http://localhost:3001/api/medicamentos", {
         method: "POST",
@@ -109,19 +113,28 @@ export default function SignUpMedicine() {
       });
 
       navigate("/medicines");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       toast({
         title: "Erro ao cadastrar",
         description:
+          error?.message ||
           "Não foi possível registrar o medicamento. Tente novamente.",
         variant: "error",
       });
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
     <Layout title="Cadastro de Medicamento">
+      <LoadingModal
+        open={saving}
+        title="Aguarde"
+        description="Cadastrando medicamento..."
+      />
+
       <div className="max-w-lg mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm space-y-6">
         <h2 className="text-lg font-semibold text-slate-800">
           Cadastro de Medicamento
@@ -138,6 +151,7 @@ export default function SignUpMedicine() {
               onChange={(e) => handleMedicineSelect(e.target.value)}
               placeholder="Selecione ou digite um medicamento"
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
+              disabled={saving}
             />
             <datalist id="lista-medicamentos">
               {medicines.map((m) => (
@@ -158,6 +172,7 @@ export default function SignUpMedicine() {
               }
               placeholder="Paracetamol"
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
+              disabled={saving}
             />
           </div>
 
@@ -174,6 +189,7 @@ export default function SignUpMedicine() {
                 }
                 placeholder="500"
                 className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
+                disabled={saving}
               />
             </div>
 
@@ -187,6 +203,7 @@ export default function SignUpMedicine() {
                   setFormData({ ...formData, measurementUnit: e.target.value })
                 }
                 className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
+                disabled={saving}
               >
                 <option value="">Selecione</option>
                 <option value="mg">mg</option>
@@ -209,6 +226,7 @@ export default function SignUpMedicine() {
               }
               placeholder="10"
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
+              disabled={saving}
             />
           </div>
 
@@ -217,14 +235,16 @@ export default function SignUpMedicine() {
               type="button"
               onClick={() => navigate("/medicines")}
               className="px-5 py-2 border border-slate-400 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-100 transition"
+              disabled={saving}
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition"
+              className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition disabled:opacity-50"
+              disabled={saving}
             >
-              Cadastrar
+              {saving ? "Cadastrando..." : "Cadastrar"}
             </button>
           </div>
         </form>

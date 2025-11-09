@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import LoadingModal from "@/components/LoadingModal";
 
 export default function EditMedicine() {
   const location = useLocation();
@@ -15,6 +16,8 @@ export default function EditMedicine() {
     unidade_medida: "",
     estoque_minimo: 0,
   });
+
+  const [saving, setSaving] = useState(false); // Loading para salvar alterações
 
   useEffect(() => {
     if (location.state?.item) {
@@ -47,6 +50,8 @@ export default function EditMedicine() {
       return;
     }
 
+    setSaving(true); // mostra modal de loading
+
     try {
       const res = await fetch(
         `http://localhost:3001/api/medicamentos/${medicineId}`,
@@ -75,11 +80,20 @@ export default function EditMedicine() {
         description: err.message || "Erro inesperado ao salvar alterações.",
         variant: "error",
       });
+    } finally {
+      setSaving(false); // esconde modal de loading
     }
   };
 
   return (
     <Layout title="Edição de Medicamento">
+      {/* Modal de Loading */}
+      <LoadingModal
+        open={saving}
+        title="Aguarde"
+        description="Atualizando medicamento..."
+      />
+
       <div className="max-w-lg mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm font-[Inter]">
         <h2 className="text-lg font-semibold text-slate-800 mb-6">
           Editar Medicamento
@@ -159,14 +173,16 @@ export default function EditMedicine() {
               type="button"
               onClick={() => navigate("/medicines")}
               className="px-5 py-2 border border-slate-400 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-100 transition"
+              disabled={saving}
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition"
+              className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition disabled:opacity-50"
+              disabled={saving}
             >
-              Salvar Alterações
+              {saving ? "Salvando..." : "Salvar Alterações"}
             </button>
           </div>
         </form>

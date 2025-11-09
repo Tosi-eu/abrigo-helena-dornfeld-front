@@ -3,6 +3,7 @@ import Layout from "@/components/Layout";
 import { CabinetCategory } from "@/enums/enums";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import LoadingModal from "@/components/LoadingModal";
 
 export default function EditCabinet() {
   const location = useLocation();
@@ -16,6 +17,7 @@ export default function EditCabinet() {
     category: "",
     description: "",
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:3001/api/armarios")
@@ -73,6 +75,8 @@ export default function EditCabinet() {
       return;
     }
 
+    setLoading(true);
+
     try {
       const res = await fetch(
         `http://localhost:3001/api/armarios/${formData.id}`,
@@ -100,11 +104,19 @@ export default function EditCabinet() {
         description: "Não foi possível atualizar o armário.",
         variant: "error",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <Layout title="Editar Armário">
+      <LoadingModal
+        open={loading}
+        title="Aguarde"
+        description="Atualizando armário..."
+      />
+
       <div className="max-w-lg mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm space-y-6">
         <h2 className="text-lg font-semibold text-slate-800 mb-6">
           Edição de Armário
@@ -170,7 +182,8 @@ export default function EditCabinet() {
               </button>
               <button
                 onClick={handleSave}
-                className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition"
+                disabled={loading}
+                className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition disabled:opacity-50"
               >
                 Salvar Alterações
               </button>

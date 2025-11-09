@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import EditableTable from "@/components/EditableTable";
 import { useToast } from "@/hooks/use-toast";
+import LoadingModal from "@/components/LoadingModal";
 
 export default function Inputs() {
   const [data, setData] = useState<any[]>([]);
@@ -21,7 +22,7 @@ export default function Inputs() {
 
         const result = await res.json();
         setData(result);
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
         toast({
           title: "Erro ao carregar insumos",
@@ -35,21 +36,19 @@ export default function Inputs() {
     fetchInputs();
   }, []);
 
-  if (loading) {
-    return (
-      <Layout title="Insumos">
-        <div className="flex justify-center items-center h-64 text-slate-500">
-          Carregando insumos...
-        </div>
-      </Layout>
-    );
-  }
-
   return (
     <Layout title="Insumos">
-      <div className="space-y-6">
-        <EditableTable data={data} columns={columns} entityType="inputs" />
-      </div>
+      <LoadingModal
+        open={loading}
+        title="Aguarde"
+        description="Carregando insumos..."
+      />
+
+      {!loading && (
+        <div className="space-y-6">
+          <EditableTable data={data} columns={columns} entityType="inputs" />
+        </div>
+      )}
     </Layout>
   );
 }

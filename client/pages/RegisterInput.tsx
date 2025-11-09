@@ -2,6 +2,7 @@ import { useState } from "react";
 import Layout from "@/components/Layout";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import LoadingModal from "@/components/LoadingModal";
 
 export default function RegisterInput() {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ export default function RegisterInput() {
     name: "",
     category: "",
   });
+  const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +23,8 @@ export default function RegisterInput() {
       });
       return;
     }
+
+    setSaving(true);
 
     try {
       const response = await fetch("http://localhost:3001/api/insumos", {
@@ -51,11 +55,19 @@ export default function RegisterInput() {
         description: "Não foi possível salvar o insumo no banco.",
         variant: "error",
       });
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
     <Layout title="Cadastro de Insumo">
+      <LoadingModal
+        open={saving}
+        title="Aguarde"
+        description="Cadastrando insumo..."
+      />
+
       <div className="max-w-lg mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-800 mb-6">
           Cadastrar Insumo
@@ -86,6 +98,7 @@ export default function RegisterInput() {
                 }
                 placeholder={placeholder}
                 className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
+                disabled={saving}
               />
             </div>
           ))}
@@ -95,14 +108,16 @@ export default function RegisterInput() {
               type="button"
               onClick={() => navigate("/inputs")}
               className="px-5 py-2 border border-slate-400 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-100 transition"
+              disabled={saving}
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition"
+              className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition disabled:opacity-50"
+              disabled={saving}
             >
-              Cadastrar
+              {saving ? "Cadastrando..." : "Cadastrar"}
             </button>
           </div>
         </form>

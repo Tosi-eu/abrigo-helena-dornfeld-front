@@ -198,3 +198,9 @@ export interface MedicineFormProps {
     stockType: { geral: boolean };
   }) => void;
 }
+
+export interface LoadingModalProps {
+  open: boolean;
+  title?: string;
+  description?: string;
+}

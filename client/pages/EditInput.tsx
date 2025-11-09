@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import LoadingModal from "@/components/LoadingModal";
 
 export default function EditInput() {
   const location = useLocation();
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -52,6 +55,8 @@ export default function EditInput() {
       return;
     }
 
+    setSaving(true);
+
     try {
       const res = await fetch(
         `http://localhost:3001/api/insumos/${formData.id}`,
@@ -81,6 +86,8 @@ export default function EditInput() {
         description: "Não foi possível atualizar o insumo.",
         variant: "error",
       });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -96,6 +103,12 @@ export default function EditInput() {
 
   return (
     <Layout title="Edição de Insumo">
+      <LoadingModal
+        open={saving}
+        title="Aguarde"
+        description="Atualizando insumo..."
+      />
+
       <div className="max-w-lg mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-800 mb-6">
           Editar Insumo
@@ -112,6 +125,7 @@ export default function EditInput() {
               onChange={(e) => handleChange("nome", e.target.value)}
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
               placeholder="Ex: Seringa 5ml"
+              required
             />
           </div>
 
@@ -138,9 +152,10 @@ export default function EditInput() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition"
+              disabled={saving}
+              className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition disabled:opacity-50"
             >
-              Salvar Alterações
+              {saving ? "Salvando..." : "Salvar Alterações"}
             </button>
           </div>
         </form>
