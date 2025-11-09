@@ -4,18 +4,7 @@ import { ptBR } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import { OriginType } from "@/enums/enums";
 import { useNavigate } from "react-router-dom";
-
-type MedicineFormProps = {
-  medicines: {
-    id: string;
-    nome: string;
-    dosagem: string;
-    unidade_medida: string;
-  }[];
-  caselas: { value: string; label: string; nome: string }[];
-  cabinets: { value: string; label: string }[];
-  onSubmit: (data: any) => void;
-};
+import { Medicine, MedicineFormProps } from "@/interfaces/interfaces";
 
 export function MedicineForm({
   medicines,
@@ -24,24 +13,24 @@ export function MedicineForm({
   onSubmit,
 }: MedicineFormProps) {
   const [formData, setFormData] = useState({
-    id: "",
-    quantity: "",
+    id: 0,
+    quantity: 0,
     stockType: { geral: false, individual: false },
     expirationDate: null as Date | null,
     resident: "",
-    casela: "",
-    cabinet: "",
+    casela: 0,
+    cabinet: 0,
     origin: "",
   });
 
   const navigate = useNavigate();
 
-  const handleCaselaChange = (value: string) => {
-    const selected = caselas.find((c) => c.value === value);
+  const handleCaselaChange = (value: number) => {
+    const selected = caselas.find((c) => c.casela === value);
     setFormData((prev) => ({
       ...prev,
       casela: value,
-      resident: selected ? selected.nome : "",
+      resident: selected ? selected.name : "",
     }));
   };
 
@@ -56,6 +45,15 @@ export function MedicineForm({
     }));
   };
 
+  const handleSubmit = () => {
+    onSubmit({
+      ...formData,
+      expirationDate: formData.expirationDate
+        ? formData.expirationDate.toISOString()
+        : null,
+    });
+  };
+
   return (
     <div className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
       <div>
@@ -64,13 +62,15 @@ export function MedicineForm({
         </label>
         <select
           value={formData.id}
-          onChange={(e) => setFormData({ ...formData, id: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, id: parseInt(e.target.value) })
+          }
           className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >
           <option value="">Selecione</option>
           {medicines.map((med) => (
             <option key={med.id} value={med.id}>
-              {med.nome} {med.dosagem} {med.unidade_medida}
+              {med.name} {med.dosage} {med.measurementUnit}
             </option>
           ))}
         </select>
@@ -82,15 +82,16 @@ export function MedicineForm({
             Quantidade
           </label>
           <input
-            type="number"
+            type="text"
             value={formData.quantity}
             onChange={(e) =>
-              setFormData({ ...formData, quantity: e.target.value })
+              setFormData({ ...formData, quantity: parseInt(e.target.value) })
             }
             placeholder="10"
             className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
           />
         </div>
+
         <div className="flex-1">
           <label className="block text-sm font-medium text-slate-700 mb-1">
             Data de vencimento
@@ -119,15 +120,10 @@ export function MedicineForm({
                 type="checkbox"
                 id={type}
                 checked={formData.stockType[type as "geral" | "individual"]}
-                onChange={() =>
-                  handleStockTypeChange(type as "geral" | "individual")
-                }
+                onChange={() => handleStockTypeChange(type as "geral" | "individual")}
                 className="w-5 h-5 border-slate-400 rounded text-sky-600 focus:ring-sky-300"
               />
-              <label
-                htmlFor={type}
-                className="text-sm text-slate-700 capitalize"
-              >
+              <label htmlFor={type} className="text-sm text-slate-700 capitalize">
                 {type}
               </label>
             </div>
@@ -142,13 +138,13 @@ export function MedicineForm({
           </label>
           <select
             value={formData.casela}
-            onChange={(e) => handleCaselaChange(e.target.value)}
+            onChange={(e) => handleCaselaChange(parseInt(e.target.value))}
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
             <option value="">Selecione</option>
             {caselas.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
+              <option key={c.casela} value={c.casela}>
+                {c.casela} - {c.name}
               </option>
             ))}
           </select>
@@ -176,14 +172,14 @@ export function MedicineForm({
           <select
             value={formData.cabinet}
             onChange={(e) =>
-              setFormData({ ...formData, cabinet: e.target.value })
+              setFormData({ ...formData, cabinet: parseInt(e.target.value) })
             }
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
             <option value="">Selecione</option>
             {cabinets.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
+              <option key={c.id} value={c.id}>
+                {c.category}
               </option>
             ))}
           </select>
@@ -195,9 +191,7 @@ export function MedicineForm({
           </label>
           <select
             value={formData.origin}
-            onChange={(e) =>
-              setFormData({ ...formData, origin: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
             <option value="">Selecione</option>
@@ -220,7 +214,7 @@ export function MedicineForm({
         </button>
         <button
           type="button"
-          onClick={() => onSubmit(formData)}
+          onClick={handleSubmit}
           className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition"
         >
           Confirmar

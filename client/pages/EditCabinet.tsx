@@ -134,12 +134,11 @@ export default function EditCabinet() {
                 Número do Armário
               </label>
               <input
-                type="number"
+                type="text"
                 name="id"
                 value={formData.id}
                 onChange={handleChange}
                 className="w-full border bg-white rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-                disabled
               />
             </div>
 

@@ -1,15 +1,5 @@
+import { StockOutFormProps } from "@/interfaces/interfaces";
 import { useState, useEffect } from "react";
-
-type StockOutFormProps = {
-  items: { id: string; nome: string; detalhes?: string }[];
-  cabinets: { value: string; label: string }[];
-  onSubmit: (data: {
-    itemId: string;
-    armarioId: string;
-    caselaId?: string;
-    quantity: number;
-  }) => void;
-};
 
 export function StockOutForm({ items, cabinets, onSubmit }: StockOutFormProps) {
   const [formData, setFormData] = useState({
@@ -109,7 +99,7 @@ export function StockOutForm({ items, cabinets, onSubmit }: StockOutFormProps) {
           Quantidade
         </label>
         <input
-          type="number"
+          type="text"
           value={formData.quantity}
           onChange={(e) =>
             setFormData({ ...formData, quantity: e.target.value })

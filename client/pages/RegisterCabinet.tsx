@@ -71,7 +71,7 @@ export default function RegisterCabinet() {
               Número do Armário
             </label>
             <input
-              type="number"
+              type="text"
               value={id}
               onChange={(e) => {
                 const v = e.target.value;

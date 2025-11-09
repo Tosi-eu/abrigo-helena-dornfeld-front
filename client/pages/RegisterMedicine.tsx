@@ -10,7 +10,7 @@ export default function SignUpMedicine() {
     name: "",
     substance: "",
     dosageValue: "",
-    measuremeUnit: "",
+    measurementUnit: "",
     minimumStock: "",
   });
 
@@ -42,7 +42,7 @@ export default function SignUpMedicine() {
         name: "",
         substance: "",
         dosageValue: "",
-        measuremeUnit: "",
+        measurementUnit: "",
         minimumStock: "",
       });
       return;
@@ -52,13 +52,13 @@ export default function SignUpMedicine() {
     if (selected) {
       const match = selected.dosagem?.match(/^(\d+(?:,\d+)?)([a-zA-Z]+)$/);
       const dosageValue = match ? match[1] : "";
-      const measuremeUnit = match ? match[2] : "";
+      const measurementUnit = match ? match[2] : "";
 
       setFormData({
         name: selected.name,
         substance: selected.principio_ativo || "",
         dosageValue,
-        measuremeUnit,
+        measurementUnit,
         minimumStock: selected.estoque_minimo?.toString() || "",
       });
     } else {
@@ -69,10 +69,10 @@ export default function SignUpMedicine() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { name, substance, dosageValue, measuremeUnit, minimumStock } =
+    const { name, substance, dosageValue, measurementUnit, minimumStock } =
       formData;
 
-    if (!name || !substance || !dosageValue || !measuremeUnit || !minimumStock) {
+    if (!name || !substance || !dosageValue || !measurementUnit || !minimumStock) {
       toast({
         title: "Campos obrigatórios",
         description: "Preencha todos os campos antes de continuar.",
@@ -89,7 +89,7 @@ export default function SignUpMedicine() {
           nome: name,
           principio_ativo: substance,
           dosagem: dosageValue,
-          unidade_medida: measuremeUnit,
+          unidade_medida: measurementUnit,
           estoque_minimo: Number(minimumStock),
         }),
       });
@@ -98,7 +98,7 @@ export default function SignUpMedicine() {
 
       toast({
         title: "Medicamento cadastrado!",
-        description: `${name} (${dosageValue}${measuremeUnit}) foi registrado com sucesso.`,
+        description: `${name} (${dosageValue}${measurementUnit}) foi registrado com sucesso.`,
         variant: "success",
       });
 
@@ -175,12 +175,13 @@ export default function SignUpMedicine() {
                 Unidade
               </label>
               <select
-                value={formData.measuremeUnit}
+                value={formData.measurementUnit}
                 onChange={(e) =>
-                  setFormData({ ...formData, measuremeUnit: e.target.value })
+                  setFormData({ ...formData, measurementUnit: e.target.value })
                 }
                 className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
               >
+                <option value="">Selecione</option>
                 <option value="mg">mg</option>
                 <option value="ml">ml</option>
                 <option value="g">g</option>
@@ -194,7 +195,7 @@ export default function SignUpMedicine() {
               Estoque mínimo
             </label>
             <input
-              type="number"
+              type="text"
               value={formData.minimumStock}
               onChange={(e) =>
                 setFormData({ ...formData, minimumStock: e.target.value })

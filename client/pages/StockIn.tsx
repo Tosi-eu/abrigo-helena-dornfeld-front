@@ -4,31 +4,22 @@ import { MedicineForm } from "@/components/MedicineForm";
 import { InputForm } from "@/components/EquipmentForm";
 import { OperationType, StockType } from "@/enums/enums";
 import { toast } from "@/hooks/use-toast";
+import { Input, Medicine, Patient, Cabinet } from "@/interfaces/interfaces";
 
 export default function StockIn() {
-  const [operationType, setOperationType] = useState<
-    OperationType | "Selecione"
-  >("Selecione");
+  const [operationType, setOperationType] = useState<OperationType | "Selecione">("Selecione");
 
-  const [medicines, setMedicines] = useState<
-    { id: string; nome: string; dosagem: string; unidade_medida: string }[]
-  >([]);
-  const [inputs, setInputs] = useState<
-    { id: string; nome: string; categoria: string; unidade: string }[]
-  >([]);
-  const [caselas, setCaselas] = useState<
-    { value: string; label: string; nome: string }[]
-  >([]);
-  const [cabinets, setCabinets] = useState<{ value: string; label: string }[]>(
-    [],
-  );
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
+  const [inputs, setInputs] = useState<Input[]>([]);
+  const [caselas, setCaselas] = useState<Patient[]>([]);
+  const [cabinets, setCabinets] = useState<Cabinet[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchMedicines = async () => {
       try {
         const res = await fetch("http://localhost:3001/api/medicamentos");
-        const data = await res.json();
+        const data: Medicine[] = await res.json();
         if (Array.isArray(data)) setMedicines(data);
       } catch (err) {
         console.error("Erro ao buscar medicines:", err);
@@ -38,7 +29,7 @@ export default function StockIn() {
     const fetchInputs = async () => {
       try {
         const res = await fetch("http://localhost:3001/api/insumos");
-        const data = await res.json();
+        const data: Input[] = await res.json();
         if (Array.isArray(data)) setInputs(data);
       } catch (err) {
         console.error("Erro ao buscar inputs:", err);
@@ -48,14 +39,13 @@ export default function StockIn() {
     const fetchCaselas = async () => {
       try {
         const res = await fetch("http://localhost:3001/api/residentes");
-        const data = await res.json();
+        const data: any[] = await res.json();
         if (Array.isArray(data)) {
           setCaselas(
-            data.map((p: any) => ({
-              value: String(p.num_casela),
-              label: `Casela ${p.num_casela}`,
-              nome: p.nome,
-            })),
+            data.map((p) => ({
+              casela: p.num_casela,
+              name: p.nome,
+            }))
           );
         }
       } catch (err) {
@@ -66,13 +56,13 @@ export default function StockIn() {
     const fetchCabinets = async () => {
       try {
         const res = await fetch("http://localhost:3001/api/armarios");
-        const data = await res.json();
+        const data: any[] = await res.json();
         if (Array.isArray(data)) {
           setCabinets(
-            data.map((a: any) => ({
-              value: String(a.num_armario),
-              label: `Armário ${a.num_armario}`,
-            })),
+            data.map((a) => ({
+              id: a.num_armario,
+              category: `Armário ${a.num_armario}`,
+            }))
           );
         }
       } catch (err) {
@@ -82,28 +72,29 @@ export default function StockIn() {
 
     const fetchAll = async () => {
       setLoading(true);
-      await Promise.all([
-        fetchMedicines(),
-        fetchInputs(),
-        fetchCaselas(),
-        fetchCabinets(),
-      ]);
+      await Promise.all([fetchMedicines(), fetchInputs(), fetchCaselas(), fetchCabinets()]);
       setLoading(false);
     };
 
     fetchAll();
   }, []);
 
-  const handleMedicineSubmit = async (data: any) => {
+  const handleMedicineSubmit = async (data: {
+    id: number;
+    quantity: number;
+    cabinet: number;
+    casela?: number;
+    expirationDate?: string;
+    origin?: string;
+    stockType: { geral: boolean };
+  }) => {
     try {
       const payload = {
-        medicamento_id: Number(data.id),
-        quantidade: Number(data.quantity),
-        armario_id: Number(data.cabinet),
-        casela_id: Number(data.casela),
-        validade: data.expirationDate
-          ? new Date(data.expirationDate).toISOString()
-          : null,
+        medicamento_id: data.id,
+        quantidade: data.quantity,
+        armario_id: data.cabinet,
+        casela_id: data.casela ?? null,
+        validade: data.expirationDate ?? null,
         origem: data.origin,
         tipo: data.stockType.geral ? StockType.GERAL : StockType.INDIVIDUAL,
         tipo_entrada: "medicamento",
@@ -115,7 +106,7 @@ export default function StockIn() {
         body: JSON.stringify(payload),
       });
 
-      const result = await res.json();
+      if (!res.ok) throw new Error("Erro ao registrar entrada");
 
       await fetch("http://localhost:3001/api/movimentacoes", {
         method: "POST",
@@ -123,22 +114,20 @@ export default function StockIn() {
         body: JSON.stringify({
           tipo: "entrada",
           login_id: 1,
-          medicamento_id: Number(data.id),
-          armario_id: Number(data.cabinet),
-          casela_id: Number(data.casela) ?? null,
-          quantidade: Number(data.quantity),
-          validade_medicamento: new Date(data.expirationDate),
+          medicamento_id: data.id,
+          armario_id: data.cabinet,
+          casela_id: data.casela ?? null,
+          quantidade: data.quantity,
+          validade_medicamento: data.expirationDate ?? null,
         }),
       });
-
-      if (!res.ok) throw new Error(result.error || "Erro ao registrar entrada");
 
       toast({
         title: "Entrada registrada com sucesso!",
         description: `Medicamento adicionado ao estoque.`,
         variant: "success",
       });
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: "Erro ao registrar entrada",
         description: err.message || "Erro inesperado ao salvar no estoque.",
@@ -147,12 +136,17 @@ export default function StockIn() {
     }
   };
 
-  const handleInputSubmit = async (data: any) => {
+  const handleInputSubmit = async (data: {
+    inputId: number;
+    cabinetId: number;
+    caselaId?: number;
+    quantity: number;
+  }) => {
     try {
       const payload = {
-        insumo_id: Number(data.insumoId),
-        quantidade: Number(data.quantity),
-        armario_id: Number(data.cabinet),
+        insumo_id: data.inputId,
+        quantidade: data.quantity,
+        armario_id: data.cabinetId,
         tipo_entrada: "insumo",
       };
 
@@ -161,9 +155,10 @@ export default function StockIn() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Erro ao registrar entrada");
+      
+      console.log(JSON.stringify(data))
+      console.log(JSON.stringify(payload))
+      if (!res.ok) throw new Error(`Erro ao registrar entrada ${res}`);
 
       await fetch("http://localhost:3001/api/movimentacoes", {
         method: "POST",
@@ -171,8 +166,9 @@ export default function StockIn() {
         body: JSON.stringify({
           tipo: "entrada",
           login_id: 1,
-          insumo_id: Number(data.insumoId),
-          armario_id: Number(data.cabinet),
+          insumo_id: data.inputId,
+          armario_id: data.cabinetId,
+          quantidade: data.quantity,
         }),
       });
 
@@ -200,12 +196,27 @@ export default function StockIn() {
     );
   }
 
+    const canonicalMedicines: Medicine[] = medicines.map((m: any) => ({
+    id: m.id,
+    name: m.nome,
+    dosage: m.dosagem,
+    measurementUnit: m.unidade_medida,
+    substance: m.principio_ativo,
+    minimumStock: m.estoque_minimo,
+  }));
+
+  const canonicalInputs: Input[] = inputs.map((i: any) => ({
+    id: i.id,
+    name: i.nome,
+    description: i.descricao,
+  }));
+
+  console.log(inputs)
+
   return (
     <Layout title="Entrada de Estoque">
       <div className="max-w-lg mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm space-y-6">
-        <h2 className="text-lg font-semibold text-slate-800">
-          Registrar Entrada
-        </h2>
+        <h2 className="text-lg font-semibold text-slate-800">Registrar Entrada</h2>
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -217,38 +228,26 @@ export default function StockIn() {
             className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
           >
             <option value="Selecione">Selecione</option>
-            <option value={OperationType.MEDICINE}>
-              {OperationType.MEDICINE}
-            </option>
+            <option value={OperationType.MEDICINE}>{OperationType.MEDICINE}</option>
             <option value={OperationType.INPUT}>{OperationType.INPUT}</option>
           </select>
         </div>
 
         {operationType === OperationType.MEDICINE && (
-          <div>
-            <h3 className="text-md font-semibold text-slate-800 mb-3">
-              Medicamento
-            </h3>
-            <MedicineForm
-              medicines={medicines}
-              caselas={caselas}
-              cabinets={cabinets}
-              onSubmit={handleMedicineSubmit}
-            />
-          </div>
+          <MedicineForm
+            medicines={canonicalMedicines}
+            caselas={caselas}
+            cabinets={cabinets}
+            onSubmit={handleMedicineSubmit}
+          />
         )}
 
         {operationType === OperationType.INPUT && (
-          <div>
-            <h3 className="text-md font-semibold text-slate-800 mb-3">
-              Insumo
-            </h3>
-            <InputForm
-              inputs={inputs}
-              cabinets={cabinets}
-              onSubmit={handleInputSubmit}
-            />
-          </div>
+          <InputForm
+            inputs={canonicalInputs}
+            cabinets={cabinets}
+            onSubmit={handleInputSubmit}
+          />
         )}
       </div>
     </Layout>

@@ -1,13 +1,7 @@
 import Layout from "@/components/Layout";
 import { medicines } from "../../mocks/medicines";
-import { movements } from "../../mocks/movements";
-import { users } from "../../mocks/users";
-import { patients } from "../../mocks/patients";
-import { cabinets } from "../../mocks/cabinets";
 import { useEffect, useMemo, useState } from "react";
-import { inputInventory, medicineInventory } from "../../mocks/stock";
-import { prepareMovements } from "@/utils/utils";
-import { inputs } from "../../mocks/inputs";
+import { medicineInventory } from "../../mocks/stock";
 import { useNavigate } from "react-router-dom";
 import {
   PieChart,
@@ -39,7 +33,6 @@ export default function Dashboard() {
   const [expired, setExpired] = useState<number>(0);
   const [expiringSoon, setExpiringSoon] = useState<any[]>([]);
   const [cabinetStockData, setCabinetStockData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [noStockData, setNoStockData] = useState<any[]>([]);
   const [belowMinData, setBelowMinData] = useState<any[]>([]);
   const [expiredData, setExpiredData] = useState<any[]>([]);
@@ -77,8 +70,6 @@ export default function Dashboard() {
         setExpiringSoonData(expiringSoonRes);
       } catch (err) {
         console.error("Erro ao carregar dados do estoque:", err);
-      } finally {
-        setLoading(false);
       }
     };
 

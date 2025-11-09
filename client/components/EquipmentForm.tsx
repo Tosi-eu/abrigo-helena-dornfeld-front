@@ -1,29 +1,51 @@
 import "react-datepicker/dist/react-datepicker.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-type InputFormProps = {
-  inputs: { id: string; nome: string; categoria: string; unidade: string }[];
-  cabinets: { value: string; label: string }[];
-  onSubmit: (data: any) => void;
-};
+import { InputFormProps } from "@/interfaces/interfaces";
+import { toast } from "@/hooks/use-toast";
 
 export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
   const [formData, setFormData] = useState({
-    insumoId: "",
+    inputId: 0,
     category: "",
-    quantity: "",
-    cabinet: "",
+    quantity: 0,
+    cabinetId: 0,
+    caselaId: 0,
   });
 
   const navigate = useNavigate();
 
-  const handleInputChange = (id: string) => {
+  const handleInputChange = (id: number) => {
     const selected = inputs.find((i) => i.id === id);
     setFormData({
       ...formData,
-      insumoId: id,
-      category: selected ? selected.categoria : "",
+      inputId: id,
+      category: selected ? selected.description : "",
+    });
+  };
+
+  const handleSubmit = () => {
+    if (!formData.inputId) {
+      toast({ title: "Selecione um insumo", variant: "error" });
+      return;
+    }
+
+    if (!formData.cabinetId) {
+      toast({ title: "Selecione um armário", variant: "error" });
+      return;
+    }
+
+    const quantidade = Number(formData.quantity);
+    if (isNaN(quantidade) || quantidade <= 0) {
+      toast({ title: "Informe uma quantidade válida", variant: "error" });
+      return;
+    }
+
+    onSubmit({
+      inputId: formData.inputId,
+      cabinetId: formData.cabinetId,
+      caselaId: formData.caselaId || undefined,
+      quantity: quantidade,
     });
   };
 
@@ -34,14 +56,14 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
           Nome do Insumo
         </label>
         <select
-          value={formData.insumoId}
-          onChange={(e) => handleInputChange(e.target.value)}
+          value={formData.inputId}
+          onChange={(e) => handleInputChange(parseInt(e.target.value))}
           className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >
           <option value="">Selecione</option>
           {inputs.map((insumo) => (
             <option key={insumo.id} value={insumo.id}>
-              {insumo.nome}
+              {insumo.name}
             </option>
           ))}
         </select>
@@ -53,10 +75,10 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
             Quantidade
           </label>
           <input
-            type="number"
+            type="text"
             value={formData.quantity}
             onChange={(e) =>
-              setFormData({ ...formData, quantity: e.target.value })
+              setFormData({ ...formData, quantity: parseInt(e.target.value) || 0 })
             }
             placeholder="10"
             className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
@@ -69,15 +91,16 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
           Armário
         </label>
         <select
-          value={formData.cabinet}
+          value={formData.cabinetId}
           onChange={(e) =>
-            setFormData({ ...formData, cabinet: e.target.value })
+            setFormData({ ...formData, cabinetId: parseInt(e.target.value) || 0 })
           }
           className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >
+          <option value="">Selecione</option>
           {cabinets.map((cab) => (
-            <option key={cab.value} value={cab.value}>
-              {cab.label}
+            <option key={cab.id} value={cab.id}>
+              {cab.id}
             </option>
           ))}
         </select>
@@ -93,7 +116,7 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
         </button>
         <button
           type="button"
-          onClick={() => onSubmit(formData)}
+          onClick={handleSubmit}
           className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition"
         >
           Confirmar

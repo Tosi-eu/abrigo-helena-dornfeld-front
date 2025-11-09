@@ -62,6 +62,8 @@ export default function Stock() {
           insRes.json(),
         ]);
 
+        console.log(medData);
+
         const medicamentos: StockItem[] = medData.map((m: any) => ({
           name: m.nome,
           description: m.principio_ativo,

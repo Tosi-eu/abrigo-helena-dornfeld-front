@@ -116,7 +116,7 @@ export default function EditMedicine() {
                 Dosagem
               </label>
               <input
-                type="number"
+                type="text"
                 value={formData.dosagem}
                 onChange={(e) => handleChange("dosagem", e.target.value)}
                 className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
@@ -131,6 +131,7 @@ export default function EditMedicine() {
                 onChange={(e) => handleChange("unidade_medida", e.target.value)}
                 className="w-full border bg-white border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
               >
+                <option value="">Selecione</option>
                 <option value="mg">mg</option>
                 <option value="g">g</option>
                 <option value="mcg">mcg</option>
@@ -144,7 +145,7 @@ export default function EditMedicine() {
               Estoque mínimo
             </label>
             <input
-              type="number"
+              type="text"
               value={formData.estoque_minimo}
               onChange={(e) =>
                 handleChange("estoque_minimo", Number(e.target.value))
