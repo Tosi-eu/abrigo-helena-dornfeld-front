@@ -4,7 +4,7 @@ import { ptBR } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import { OriginType } from "@/enums/enums";
 import { useNavigate } from "react-router-dom";
-import { Medicine, MedicineFormProps } from "@/interfaces/interfaces";
+import { MedicineFormProps } from "@/interfaces/interfaces";
 
 export function MedicineForm({
   medicines,

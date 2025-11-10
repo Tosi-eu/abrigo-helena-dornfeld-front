@@ -26,7 +26,7 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
 
   const handleSubmit = () => {
     if (!formData.inputId) {
-      toast({ title: "Selecione um insumo", variant: "error" });
+      toast({ title: "Selecione um input", variant: "error" });
       return;
     }
 
@@ -35,9 +35,9 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
       return;
     }
 
-    const quantidade = Number(formData.quantity);
-    if (isNaN(quantidade) || quantidade <= 0) {
-      toast({ title: "Informe uma quantidade válida", variant: "error" });
+    const quantity = Number(formData.quantity);
+    if (isNaN(quantity) || quantity <= 0) {
+      toast({ title: "Informe uma quantity válida", variant: "error" });
       return;
     }
 
@@ -45,7 +45,7 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
       inputId: formData.inputId,
       cabinetId: formData.cabinetId,
       caselaId: formData.caselaId || undefined,
-      quantity: quantidade,
+      quantity: quantity,
     });
   };
 
@@ -61,9 +61,9 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
           className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >
           <option value="">Selecione</option>
-          {inputs.map((insumo) => (
-            <option key={insumo.id} value={insumo.id}>
-              {insumo.name}
+          {inputs.map((input) => (
+            <option key={input.id} value={input.id}>
+              {input.name}
             </option>
           ))}
         </select>

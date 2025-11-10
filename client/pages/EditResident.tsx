@@ -83,7 +83,7 @@ export default function EditResident() {
 
   return (
     <Layout title="Editar Residente">
-      {/* Modal de Loading */}
+
       <LoadingModal
         open={saving}
         title="Aguarde"

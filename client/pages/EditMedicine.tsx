@@ -17,7 +17,7 @@ export default function EditMedicine() {
     estoque_minimo: 0,
   });
 
-  const [saving, setSaving] = useState(false); // Loading para salvar alterações
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (location.state?.item) {
@@ -50,7 +50,7 @@ export default function EditMedicine() {
       return;
     }
 
-    setSaving(true); // mostra modal de loading
+    setSaving(true); 
 
     try {
       const res = await fetch(
@@ -81,13 +81,13 @@ export default function EditMedicine() {
         variant: "error",
       });
     } finally {
-      setSaving(false); // esconde modal de loading
+      setSaving(false); 
     }
   };
 
   return (
     <Layout title="Edição de Medicamento">
-      {/* Modal de Loading */}
+
       <LoadingModal
         open={saving}
         title="Aguarde"

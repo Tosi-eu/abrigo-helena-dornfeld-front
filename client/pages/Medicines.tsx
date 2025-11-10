@@ -30,28 +30,6 @@ export default function Medicines() {
     fetchMedicines();
   }, []);
 
-  const handleAdd = async (row: any) => {
-    try {
-      const body = {
-        nome: row.nome,
-        dosagem: row.dosagem,
-        unidade_medida: row.unidade_medida,
-        principio_ativo: row.principio_ativo,
-        estoque_minimo: row.estoque_minimo,
-      };
-      const res = await fetch("http://localhost:3001/api/medicamentos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error();
-      toast({ title: "Medicamento adicionado", variant: "success" });
-      fetchMedicines();
-    } catch {
-      toast({ title: "Erro ao adicionar medicamento", variant: "error" });
-    }
-  };
-
   return (
     <Layout title="Medicamentos">
       <LoadingModal

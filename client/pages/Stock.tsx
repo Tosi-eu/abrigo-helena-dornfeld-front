@@ -158,7 +158,7 @@ export default function Stock() {
 
   return (
     <Layout title="Estoque de Medicamentos e Insumos">
-      {/* Modal de Loading */}
+
       <LoadingModal
         open={loading}
         title="Aguarde"
