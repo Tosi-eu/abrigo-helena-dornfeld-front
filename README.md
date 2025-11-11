@@ -26,18 +26,18 @@
 
 O repositório segue uma estrutura simples e padronizada de branches:
 
-| Branch | Função | Permissão de Push |
-|--------|--------|-------------------|
-| **main** | Versão estável do código em produção | Protegida (sem push direto) |
-| **dev** | Ambiente principal de desenvolvimento | Via Pull Request |
-| **hotfix** | Correções urgentes e pontuais | Via Pull Request |
+| Branch     | Função                                | Permissão de Push           |
+| ---------- | ------------------------------------- | --------------------------- |
+| **main**   | Versão estável do código em produção  | Protegida (sem push direto) |
+| **dev**    | Ambiente principal de desenvolvimento | Via Pull Request            |
+| **hotfix** | Correções urgentes e pontuais         | Via Pull Request            |
 
 ---
 
 ## Regras de Push e Pull Requests
 
-- Nenhum push direto é permitido na branch **main**.  
-- Todo código deve ser enviado via **Pull Request (PR)**.  
+- Nenhum push direto é permitido na branch **main**.
+- Todo código deve ser enviado via **Pull Request (PR)**.
 - As PRs podem ter origem:
   - da branch **dev**, para desenvolvimento normal;
   - ou da branch **hotfix**, para correções urgentes.

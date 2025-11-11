@@ -2,7 +2,6 @@ import {
   CabinetCategory,
   MovementType,
   OriginType,
-  SectorType,
   StockType,
 } from "@/enums/enums";
 import { ReactNode } from "react";
@@ -40,6 +39,17 @@ export interface User {
   password: string;
 }
 
+export interface LoggedUser {
+  id: number;
+  login: string;
+}
+
+export interface AuthContextType {
+  user: LoggedUser | null;
+  login: (login: string, password: string) => Promise<void>;
+  logout: () => void;
+}
+
 export interface Patient {
   casela: number;
   name: string;
@@ -49,7 +59,7 @@ export interface Medicine {
   id: number;
   name: string;
   dosage: string;
-  measuremeUnit: string;
+  measurementUnit: string;
   substance: string;
   minimumStock: number;
 }
@@ -57,7 +67,6 @@ export interface Medicine {
 export interface Cabinet {
   id: number;
   category: CabinetCategory | string;
-  description?: string;
 }
 
 export interface Input {
@@ -93,8 +102,6 @@ export interface Movement {
   inputId?: number;
   cabinetId: number;
   patientId?: number;
-  originSector?: SectorType;
-  destinationSector?: SectorType;
 }
 
 export interface InputMovementRow {
@@ -137,7 +144,6 @@ export interface PrepareMovementsParams {
 }
 
 export interface StockItem {
-  type: "Medicamento" | "Insumo";
   name: string;
   description: string;
   expiry: string;
@@ -147,4 +153,54 @@ export interface StockItem {
   cabinet?: number | string;
   casela?: string | number;
   stockType: StockType;
+}
+
+export interface StockOutFormProps {
+  items: {
+    id: string;
+    nome: string;
+    detalhes?: string;
+  }[];
+  cabinets: {
+    value: string;
+    label: string;
+  }[];
+  onSubmit: (data: {
+    itemId: string;
+    armarioId: string;
+    caselaId?: string;
+    quantity: number;
+  }) => void;
+}
+
+export interface InputFormProps {
+  inputs: Input[];
+  cabinets: Cabinet[];
+  onSubmit: (data: {
+    inputId: number;
+    cabinetId: number;
+    caselaId?: number;
+    quantity: number;
+  }) => void;
+}
+
+export interface MedicineFormProps {
+  medicines: Medicine[];
+  caselas: Patient[];
+  cabinets: Cabinet[];
+  onSubmit: (data: {
+    id: number;
+    quantity: number;
+    cabinet: number;
+    casela?: number;
+    expirationDate?: string;
+    origin?: string;
+    stockType: { geral: boolean };
+  }) => void;
+}
+
+export interface LoadingModalProps {
+  open: boolean;
+  title?: string;
+  description?: string;
 }

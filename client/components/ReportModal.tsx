@@ -23,7 +23,11 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
   const reportOptions = [
     { value: "insumos", label: "Insumos", icon: Package },
     { value: "medicamentos", label: "Medicamentos", icon: Stethoscope },
-    { value: "insumos_medicamentos", label: "Insumos e Medicamentos", icon: Check },
+    {
+      value: "insumos_medicamentos",
+      label: "Insumos e Medicamentos",
+      icon: Check,
+    },
   ];
 
   const handleSelectReport = (value: string) => setSelectedReports([value]);
@@ -118,7 +122,9 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
               className="p-10 flex flex-col items-center justify-center gap-3 h-60"
             >
               <Loader2 className="w-12 h-12 animate-spin text-sky-600" />
-              <p className="text-gray-600 font-medium text-center">Gerando...</p>
+              <p className="text-gray-600 font-medium text-center">
+                Gerando...
+              </p>
             </motion.div>
           )}
 

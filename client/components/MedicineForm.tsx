@@ -1,24 +1,38 @@
 import { useState } from "react";
 import DatePicker from "react-datepicker";
 import { ptBR } from "date-fns/locale";
-import CreatableSelect from "react-select/creatable";
 import "react-datepicker/dist/react-datepicker.css";
-import { EntryType, OriginType, SectorType } from "@/enums/enums";
+import { OriginType } from "@/enums/enums";
+import { useNavigate } from "react-router-dom";
+import { MedicineFormProps } from "@/interfaces/interfaces";
 
-export function MedicineForm({ onSubmit }: { onSubmit: (data: any) => void }) {
+export function MedicineForm({
+  medicines,
+  caselas,
+  cabinets,
+  onSubmit,
+}: MedicineFormProps) {
   const [formData, setFormData] = useState({
-    medication: "",
-    quantity: "",
+    id: 0,
+    quantity: 0,
     stockType: { geral: false, individual: false },
-    origin: "",
-    entryType: "",
     expirationDate: null as Date | null,
-    date: null as Date | null,
     resident: "",
-    casela: "",
-    cabinet: "",
-    sector: "",
+    casela: 0,
+    cabinet: 0,
+    origin: "",
   });
+
+  const navigate = useNavigate();
+
+  const handleCaselaChange = (value: number) => {
+    const selected = caselas.find((c) => c.casela === value);
+    setFormData((prev) => ({
+      ...prev,
+      casela: value,
+      resident: selected ? selected.name : "",
+    }));
+  };
 
   const handleStockTypeChange = (type: "geral" | "individual") => {
     setFormData((prev) => ({
@@ -31,26 +45,35 @@ export function MedicineForm({ onSubmit }: { onSubmit: (data: any) => void }) {
     }));
   };
 
-  const existentCabinets = ["1", "2", "3", "4"].map((num) => ({
-    value: num,
-    label: num,
-  }));
+  const handleSubmit = () => {
+    onSubmit({
+      ...formData,
+      expirationDate: formData.expirationDate
+        ? formData.expirationDate.toISOString()
+        : null,
+    });
+  };
 
   return (
     <div className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">
-          Medicamento e Dosagem
+          Medicamento
         </label>
-        <input
-          type="text"
-          value={formData.medication}
+        <select
+          value={formData.id}
           onChange={(e) =>
-            setFormData({ ...formData, medication: e.target.value })
+            setFormData({ ...formData, id: parseInt(e.target.value) })
           }
-          placeholder="Paracetamol - 500mg"
-          className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-        />
+          className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+        >
+          <option value="">Selecione</option>
+          {medicines.map((med) => (
+            <option key={med.id} value={med.id}>
+              {med.name} {med.dosage} {med.measurementUnit}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="flex gap-4">
@@ -59,15 +82,16 @@ export function MedicineForm({ onSubmit }: { onSubmit: (data: any) => void }) {
             Quantidade
           </label>
           <input
-            type="number"
+            type="text"
             value={formData.quantity}
             onChange={(e) =>
-              setFormData({ ...formData, quantity: e.target.value })
+              setFormData({ ...formData, quantity: parseInt(e.target.value) })
             }
             placeholder="10"
             className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
           />
         </div>
+
         <div className="flex-1">
           <label className="block text-sm font-medium text-slate-700 mb-1">
             Data de vencimento
@@ -115,57 +139,57 @@ export function MedicineForm({ onSubmit }: { onSubmit: (data: any) => void }) {
       <div className="flex gap-4">
         <div className="flex-1">
           <label className="block text-sm font-medium text-slate-700 mb-1">
+            Casela
+          </label>
+          <select
+            value={formData.casela}
+            onChange={(e) => handleCaselaChange(parseInt(e.target.value))}
+            className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
+          >
+            <option value="">Selecione</option>
+            {caselas.map((c) => (
+              <option key={c.casela} value={c.casela}>
+                {c.casela} - {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Residente
           </label>
           <input
             type="text"
             value={formData.resident}
-            onChange={(e) =>
-              setFormData({ ...formData, resident: e.target.value })
-            }
-            placeholder="Nome do paciente"
-            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+            readOnly
+            placeholder="Nome do residente"
+            className="w-full border border-slate-200 bg-slate-50 rounded-lg p-2 text-sm text-slate-600"
           />
         </div>
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Casela
-          </label>
-          <input
-            type="number"
-            value={formData.casela}
-            onChange={(e) =>
-              setFormData({ ...formData, casela: e.target.value })
-            }
-            placeholder="5"
-            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Armário
-        </label>
-        <CreatableSelect
-          isClearable
-          placeholder="Selecione ou digite um armário"
-          options={existentCabinets}
-          value={
-            formData.cabinet
-              ? { value: formData.cabinet, label: formData.cabinet }
-              : null
-          }
-          onChange={(newValue) =>
-            setFormData({
-              ...formData,
-              cabinet: newValue ? newValue.value : "",
-            })
-          }
-        />
       </div>
 
       <div className="flex gap-4">
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Armário
+          </label>
+          <select
+            value={formData.cabinet}
+            onChange={(e) =>
+              setFormData({ ...formData, cabinet: parseInt(e.target.value) })
+            }
+            className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
+          >
+            <option value="">Selecione</option>
+            {cabinets.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.category}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="flex-1">
           <label className="block text-sm font-medium text-slate-700 mb-1">
             Origem
@@ -175,62 +199,13 @@ export function MedicineForm({ onSubmit }: { onSubmit: (data: any) => void }) {
             onChange={(e) =>
               setFormData({ ...formData, origin: e.target.value })
             }
-            className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+            className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
             <option value="">Selecione</option>
-            {Object.values(OriginType).map((v) => (
-              <option key={v}>{v}</option>
-            ))}
-          </select>
-        </div>
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Tipo de entrada
-          </label>
-          <select
-            value={formData.entryType}
-            onChange={(e) =>
-              setFormData({ ...formData, entryType: e.target.value })
-            }
-            className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-          >
-            <option value="">Selecione</option>
-            {Object.values(EntryType).map((v) => (
-              <option key={v}>{v}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Data
-          </label>
-          <DatePicker
-            selected={formData.date}
-            onChange={(date: Date | null) => setFormData({ ...formData, date })}
-            locale={ptBR}
-            dateFormat="dd/MM/yyyy"
-            placeholderText="Selecione a data"
-            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-          />
-        </div>
-
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Setor
-          </label>
-          <select
-            value={formData.sector}
-            onChange={(e) =>
-              setFormData({ ...formData, sector: e.target.value })
-            }
-            className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-          >
-            <option value="">Selecione</option>
-            {Object.values(SectorType).map((v) => (
-              <option key={v}>{v}</option>
+            {Object.values(OriginType).map((type) => (
+              <option key={type} value={type}>
+                {type.charAt(0) + type.slice(1).toLowerCase()}
+              </option>
             ))}
           </select>
         </div>
@@ -240,12 +215,13 @@ export function MedicineForm({ onSubmit }: { onSubmit: (data: any) => void }) {
         <button
           type="button"
           className="px-5 py-2 border border-slate-400 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-100 transition mr-2"
+          onClick={() => navigate("/stock")}
         >
           Cancelar
         </button>
         <button
           type="button"
-          onClick={() => onSubmit(formData)}
+          onClick={handleSubmit}
           className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition"
         >
           Confirmar

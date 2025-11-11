@@ -1,7 +1,6 @@
 import { MovementType } from "@/enums/enums";
 import { Movement } from "@/interfaces/interfaces";
 import { users } from "../mocks/users";
-import { SectorType } from "@/enums/enums";
 
 export const movements: Movement[] = [
   {
@@ -12,7 +11,6 @@ export const movements: Movement[] = [
     medicineId: 1,
     cabinetId: 1,
     patientId: 1,
-    originSector: SectorType.ADMINISTRATIVO,
   },
   {
     id: 2,
@@ -22,7 +20,6 @@ export const movements: Movement[] = [
     medicineId: 3,
     cabinetId: 2,
     patientId: 2,
-    destinationSector: SectorType.ENFERMAGEM,
   },
   {
     id: 3,
@@ -32,7 +29,6 @@ export const movements: Movement[] = [
     medicineId: 2,
     cabinetId: 4,
     patientId: 3,
-    originSector: SectorType.NUTRICAO,
   },
   {
     id: 4,
@@ -41,7 +37,6 @@ export const movements: Movement[] = [
     user: users[1].email,
     inputId: 4,
     cabinetId: 1,
-    destinationSector: SectorType.PSICOLOGIA,
   },
   {
     id: 5,
@@ -50,6 +45,5 @@ export const movements: Movement[] = [
     user: users[1].email,
     inputId: 1,
     cabinetId: 3,
-    originSector: SectorType.COZINHA,
   },
 ];

@@ -19,11 +19,9 @@ const typeMap: Record<string, string> = {
 export default function EditableTable({
   data,
   columns,
-  onAdd,
-  onEdit,
-  onDelete,
   entityType,
-}: EditableTableProps & { entityType?: string }) {
+  showAddons = true,
+}: EditableTableProps & { entityType?: string; showAddons?: boolean }) {
   const [rows, setRows] = useState(data);
   const [filterType, setFilterType] = useState("Todos");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -39,12 +37,11 @@ export default function EditableTable({
     const convertToBRT = (dateString: string) => {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return dateString;
-      // converte para UTC-3
-      const brtDate = new Date(date.getTime() - 3 * 60 * 60 * 1000);
-      return brtDate.toLocaleDateString("pt-BR", {
+      return date.toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
+        timeZone: "America/Sao_Paulo",
       });
     };
 
@@ -54,7 +51,8 @@ export default function EditableTable({
         const value = row[key];
         if (
           typeof value === "string" &&
-          /^\d{4}-\d{2}-\d{2}/.test(value)
+          (/^\d{4}-\d{2}-\d{2}/.test(value) ||
+            /^\d{4}\/\d{2}\/\d{2}/.test(value))
         ) {
           updatedRow[key] = convertToBRT(value);
         } else {
@@ -69,7 +67,6 @@ export default function EditableTable({
 
   const handleAddRow = () => {
     if (entityType === "entries") {
-      console.log(rows)
       navigate("/stock/in", { state: { previousData: rows } });
     } else if (entityType === "exits") {
       navigate("/stock/out", { state: { previousData: rows } });
@@ -77,7 +74,7 @@ export default function EditableTable({
       navigate("/medicines/register");
     } else if (entityType === "residents") {
       navigate("/residents/register");
-    } else if (entityType === "equipments") {
+    } else if (entityType === "inputs") {
       navigate("/inputs/register");
     } else if (entityType === "cabinets") {
       navigate("/cabinets/register");
@@ -97,7 +94,6 @@ export default function EditableTable({
     }
   };
 
-
   const handleChange = (rowIndex: number, key: string, value: string) => {
     const updated = [...rows];
     updated[rowIndex][key] = value;
@@ -106,19 +102,57 @@ export default function EditableTable({
 
   const confirmDelete = (index: number) => setDeleteIndex(index);
 
-  const handleDeleteConfirmed = () => {
+  const handleDeleteConfirmed = async () => {
     if (deleteIndex === null) return;
-    const updated = rows.filter((_, i) => i !== deleteIndex);
-    setRows(updated);
-    if (onDelete) onDelete(deleteIndex);
 
-    toast({
-      title: "Item removido",
-      description: "O item foi excluído com sucesso.",
-      variant: "success",
-    });
+    const rowToDelete = rows[deleteIndex];
+    if (!rowToDelete) return;
 
-    setDeleteIndex(null);
+    try {
+      let endpoint = "";
+      if (entityType === "inputs") {
+        endpoint = `http://localhost:3001/api/insumos/${rowToDelete.id}`;
+      } else if (entityType === "cabinets") {
+        endpoint = `http://localhost:3001/api/armarios/${rowToDelete.num_armario}`;
+      } else if (entityType === "residents") {
+        endpoint = `http://localhost:3001/api/residentes/${rowToDelete.num_casela}`;
+      } else if (entityType === "medicines") {
+        endpoint = `http://localhost:3001/api/medicamentos/${rowToDelete.id}`;
+      }
+
+      if (!endpoint) {
+        toast({
+          title: "Erro",
+          description: "Entidade não suportada para deleção.",
+          variant: "error",
+        });
+        return;
+      }
+
+      const res = await fetch(endpoint, { method: "DELETE" });
+
+      if (!res.ok) throw new Error("Erro ao deletar item");
+
+      const data = await res.json();
+
+      toast({
+        title: "Item removido",
+        description: data.message || "O item foi excluído com sucesso.",
+        variant: "success",
+      });
+
+      const updatedRows = rows.filter((_, i) => i !== deleteIndex);
+      setRows(updatedRows);
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Erro ao deletar item",
+        description: "Não foi possível remover o item.",
+        variant: "error",
+      });
+    } finally {
+      setDeleteIndex(null);
+    }
   };
 
   const handleDeleteCancel = () => setDeleteIndex(null);
@@ -126,9 +160,7 @@ export default function EditableTable({
   const handleEditClick = (row: any) => {
     let type = typeMap[row?.type];
 
-    if (
-      ["equipments", "medicines", "residents", "cabinets"].includes(entityType)
-    ) {
+    if (["inputs", "medicines", "residents", "cabinets"].includes(entityType)) {
       type = entityType;
     }
 
@@ -156,7 +188,7 @@ export default function EditableTable({
 
     const today = new Date();
     const diffDays = Math.ceil(
-      (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
     );
 
     let tooltipText = "";
@@ -249,32 +281,16 @@ export default function EditableTable({
   return (
     <>
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden font-[Inter]">
-        <div className="flex justify-between items-center px-4 py-3 border-b border-slate-200 bg-sky-50 text-sm">
-          <div className="flex items-center gap-4">
-            {hasType && entityType !== "equipments" && (
-              <div className="flex items-center gap-2 border-l border-slate-200 pl-4">
-                <span className="text-slate-700">Tipo:</span>
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="border border-slate-300 rounded-md px-2 py-1 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
-                >
-                  {["Todos", "Medicamento", "Insumo"].map((t) => (
-                    <option key={t}>{t}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-
-          <button
-            onClick={handleAddRow}
-            className="flex items-center gap-1 text-sky-700 text-sm font-medium hover:text-sky-800 transition"
-          >
-            <Plus size={16} /> Adicionar linha
-          </button>
+        <div className="flex items-center justify-end px-4 py-3 border-b border-slate-200 bg-sky-50 text-sm">
+          {showAddons && (
+            <button
+              onClick={handleAddRow}
+              className="flex items-center gap-1 text-sky-700 text-sm font-medium hover:text-sky-800 transition"
+            >
+              <Plus size={16} /> Adicionar linha
+            </button>
+          )}
         </div>
-
         <div className="overflow-x-auto relative">
           <table className="w-full text-center border-collapse">
             <thead>
@@ -282,12 +298,9 @@ export default function EditableTable({
                 {columns.map((col, index) => {
                   let label = col.label;
 
-                  if (
-                    col.key === "description" &&
-                    entityType !== "equipments"
-                  ) {
+                  if (col.key === "description" && entityType !== "inputs") {
                     if (filterType === "Todos") {
-                      label = "Princípio Ativo / Descrição";
+                      label = "Princípio Ativo";
                     } else {
                       label =
                         filterType === "Medicamento"
@@ -301,18 +314,21 @@ export default function EditableTable({
                   return (
                     <th
                       key={col.key}
-                      className={`px-4 py-3 text-sm font-semibold text-slate-800 ${index !== columns.length - 1
+                      className={`px-4 py-3 text-sm font-semibold text-slate-800 ${
+                        index !== columns.length - 1
                           ? "border-r border-slate-200"
                           : ""
-                        }`}
+                      }`}
                     >
                       {label}
                     </th>
                   );
                 })}
-                <th className="px-4 py-3 text-sm font-semibold text-slate-800 border-l border-slate-200">
-                  Ações
-                </th>
+                {showAddons && (
+                  <th className="px-4 py-3 text-sm font-semibold text-slate-800 border-l border-slate-200">
+                    Ações
+                  </th>
+                )}
               </tr>
             </thead>
 
@@ -327,15 +343,22 @@ export default function EditableTable({
                     {columns.map((col, index) => (
                       <td
                         key={col.key}
-                        className={`px-4 py-3 text-xs text-slate-800 ${index !== columns.length - 1 ? "border-r border-slate-100" : ""
-                          }`}
+                        className={`px-4 py-3 text-xs text-slate-800 ${
+                          index !== columns.length - 1
+                            ? "border-r border-slate-100"
+                            : ""
+                        }`}
                       >
                         {editingIndex === absoluteIndex && col.editable ? (
                           <input
                             type="text"
                             value={row[col.key]}
                             onChange={(e) =>
-                              handleChange(absoluteIndex, col.key, e.target.value)
+                              handleChange(
+                                absoluteIndex,
+                                col.key,
+                                e.target.value,
+                              )
                             }
                             placeholder={col.label}
                             className="border border-slate-300 rounded-md px-2 py-1 text-xs focus:ring-2 focus:ring-sky-300 focus:outline-none bg-white text-center"
@@ -350,20 +373,22 @@ export default function EditableTable({
                       </td>
                     ))}
 
-                    <td className="px-3 py-2 flex justify-center gap-3 border-l border-slate-200">
-                      <button
-                        onClick={() => handleEditClick(row)}
-                        className="text-sky-700 hover:text-sky-900 transition-colors"
-                      >
-                        <Pencil size={16} />
-                      </button>
-                      <button
-                        onClick={() => confirmDelete(absoluteIndex)}
-                        className="text-red-600 hover:text-red-800 transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </td>
+                    {showAddons && (
+                      <td className="px-3 py-2 flex justify-center gap-3 border-l border-slate-200">
+                        <button
+                          onClick={() => handleEditClick(row)}
+                          className="text-sky-700 hover:text-sky-900 transition-colors"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={() => confirmDelete(absoluteIndex)}
+                          className="text-red-600 hover:text-red-800 transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 );
               })}
@@ -405,7 +430,9 @@ export default function EditableTable({
 
                 <button
                   className="px-2 py-2 border rounded-md hover:bg-slate-50 disabled:opacity-50"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                   disabled={currentPage === totalPages}
                 >
                   Próxima ›

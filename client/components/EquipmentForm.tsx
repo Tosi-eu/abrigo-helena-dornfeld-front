@@ -1,16 +1,53 @@
-import DatePicker from "react-datepicker";
-import { ptBR } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { InputFormProps } from "@/interfaces/interfaces";
+import { toast } from "@/hooks/use-toast";
 
-export function EquipmentForm({ onSubmit }: { onSubmit: (data: any) => void }) {
+export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
   const [formData, setFormData] = useState({
-    name: "",
+    inputId: 0,
     category: "",
-    quantity: "",
-    unit: "",
-    expiry: null as Date | null,
+    quantity: 0,
+    cabinetId: 0,
+    caselaId: 0,
   });
+
+  const navigate = useNavigate();
+
+  const handleInputChange = (id: number) => {
+    const selected = inputs.find((i) => i.id === id);
+    setFormData({
+      ...formData,
+      inputId: id,
+      category: selected ? selected.description : "",
+    });
+  };
+
+  const handleSubmit = () => {
+    if (!formData.inputId) {
+      toast({ title: "Selecione um input", variant: "error" });
+      return;
+    }
+
+    if (!formData.cabinetId) {
+      toast({ title: "Selecione um armário", variant: "error" });
+      return;
+    }
+
+    const quantity = Number(formData.quantity);
+    if (isNaN(quantity) || quantity <= 0) {
+      toast({ title: "Informe uma quantity válida", variant: "error" });
+      return;
+    }
+
+    onSubmit({
+      inputId: formData.inputId,
+      cabinetId: formData.cabinetId,
+      caselaId: formData.caselaId || undefined,
+      quantity: quantity,
+    });
+  };
 
   return (
     <div className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
@@ -18,28 +55,18 @@ export function EquipmentForm({ onSubmit }: { onSubmit: (data: any) => void }) {
         <label className="block text-sm font-medium text-slate-700 mb-1">
           Nome do Insumo
         </label>
-        <input
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          placeholder="Seringa 5ml"
-          className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Categoria
-        </label>
-        <input
-          type="text"
-          value={formData.category}
-          onChange={(e) =>
-            setFormData({ ...formData, category: e.target.value })
-          }
-          placeholder="Material Hospitalar"
-          className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-        />
+        <select
+          value={formData.inputId}
+          onChange={(e) => handleInputChange(parseInt(e.target.value))}
+          className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+        >
+          <option value="">Selecione</option>
+          {inputs.map((input) => (
+            <option key={input.id} value={input.id}>
+              {input.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="flex gap-4">
@@ -48,23 +75,15 @@ export function EquipmentForm({ onSubmit }: { onSubmit: (data: any) => void }) {
             Quantidade
           </label>
           <input
-            type="number"
+            type="text"
             value={formData.quantity}
             onChange={(e) =>
-              setFormData({ ...formData, quantity: e.target.value })
+              setFormData({
+                ...formData,
+                quantity: parseInt(e.target.value) || 0,
+              })
             }
-            className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-          />
-        </div>
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Unidade
-          </label>
-          <input
-            type="text"
-            value={formData.unit}
-            onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-            placeholder="Caixa / Unidade / Par..."
+            placeholder="10"
             className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
           />
         </div>
@@ -72,24 +91,38 @@ export function EquipmentForm({ onSubmit }: { onSubmit: (data: any) => void }) {
 
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">
-          Validade
+          Armário
         </label>
-        <DatePicker
-          selected={formData.expiry}
-          onChange={(date: Date | null) =>
-            setFormData({ ...formData, expiry: date })
+        <select
+          value={formData.cabinetId}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              cabinetId: parseInt(e.target.value) || 0,
+            })
           }
-          locale={ptBR}
-          dateFormat="dd/MM/yyyy"
-          placeholderText="Selecione a data"
-          className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-        />
+          className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+        >
+          <option value="">Selecione</option>
+          {cabinets.map((cab) => (
+            <option key={cab.id} value={cab.id}>
+              {cab.id}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="flex justify-end">
         <button
           type="button"
-          onClick={() => onSubmit(formData)}
+          className="px-5 py-2 border border-slate-400 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-100 transition mr-2"
+          onClick={() => navigate("/stock")}
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          onClick={handleSubmit}
           className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition"
         >
           Confirmar

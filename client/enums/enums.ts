@@ -10,12 +10,6 @@ export enum OriginType {
   FARMACIA_POPULAR = "Farmácia Popular",
 }
 
-export enum EntryType {
-  COMPRA = "Compra",
-  DOACAO = "Doação",
-  REPOSICAO = "Reposição",
-}
-
 export enum CabinetCategory {
   MEDICACAO_GERAL = "Medicação geral",
   PSICOTROPICOS_E_INJECOES = "Psicotrópicos e injeções",
@@ -42,12 +36,4 @@ export enum TransactionType {
 export enum MovementType {
   IN = "entrada",
   OUT = "saida",
-}
-
-export enum SectorType {
-  ENFERMAGEM = "Enfermagem",
-  NUTRICAO = "Nutrição",
-  ADMINISTRATIVO = "Administrativo",
-  PSICOLOGIA = "Psicologia",
-  COZINHA = "Cozinha",
 }

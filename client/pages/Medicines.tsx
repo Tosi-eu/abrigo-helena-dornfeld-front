@@ -1,23 +1,60 @@
 import Layout from "@/components/Layout";
 import EditableTable from "@/components/EditableTable";
-import { medicines } from "../../mocks/medicines";
+import { useEffect, useState } from "react";
+import { toast } from "@/hooks/use-toast";
+import LoadingModal from "@/components/LoadingModal";
 
 export default function Medicines() {
+  const [medicines, setMedicines] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchMedicines = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("http://localhost:3001/api/medicamentos");
+      if (!res.ok) throw new Error("Erro ao buscar medicamentos");
+      const data = await res.json();
+      setMedicines(data);
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Erro ao carregar medicamentos",
+        variant: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMedicines();
+  }, []);
+
   return (
     <Layout title="Medicamentos">
-      <EditableTable
-        data={medicines}
-        columns={[
-          { key: "name", label: "Nome", editable: true },
-          { key: "substance", label: "Princípio Ativo", editable: true },
-          { key: "dosage", label: "Dosagem", editable: true },
-          { key: "minimumStock", label: "Estoque Mínimo", editable: true },
-        ]}
-        onAdd={(row) => console.log("Nova linha:", row)}
-        onEdit={(row, i) => console.log("Editado:", row, "na linha", i)}
-        onDelete={(i) => console.log("Excluído na linha:", i)}
-        entityType="medicines"
+      <LoadingModal
+        open={loading}
+        title="Aguarde"
+        description="Carregando medicamentos..."
       />
+
+      {!loading && (
+        <EditableTable
+          data={medicines}
+          columns={[
+            { key: "nome", label: "Nome", editable: true },
+            {
+              key: "principio_ativo",
+              label: "Princípio Ativo",
+              editable: true,
+            },
+            { key: "dosagem", label: "Dosagem", editable: true },
+            { key: "unidade_medida", label: "Unidade", editable: true },
+            { key: "estoque_minimo", label: "Estoque Mínimo", editable: true },
+          ]}
+          entityType="medicines"
+        />
+      )}
     </Layout>
   );
 }
