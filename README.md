@@ -15,11 +15,23 @@
    Após a instalação, use os scripts disponíveis (por exemplo):
 
    ```bash
-   pnpm run dev
+   npm run dev
+   npm run dev:server
    ```
 
    > Consulte o `package.json` para ver todos os scripts disponíveis.
 
+2. **Execução do banco de dados de homologação**
+
+Diferentemente do banco de produção, o banco de homologação roda em um container postgreSQL.
+
+   Após a instalação, use os scripts disponíveis (por exemplo):
+
+   ```bash
+   npm run dev:server
+   ```
+
+   > Configure as credenciais de acesso do postgres no docker-compose.yml
 ---
 
 ## Estrutura de Branches
@@ -65,6 +77,7 @@ gitGraph
 
 ## Observações
 
+- sempre dê pull na branch **main**
 - Sempre crie uma nova branch local a partir de **dev** antes de iniciar uma feature.
 - Commits devem ser descritivos e seguir boas práticas de versionamento.
 
@@ -74,5 +87,7 @@ gitGraph
 
 - Node.js (versão compatível com o projeto)
 - pnpm (para gerenciamento de dependências)
+- Docker (para usar o banco de homolog)
+- PostgreSQL (para rodar o banco local)
 
 ---
