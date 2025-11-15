@@ -13,7 +13,7 @@ export default function EditMedicine() {
     nome: "",
     principio_ativo: "",
     dosagem: "",
-    unidade_medida: "",
+    unidade_medida: "" as string | null,
     estoque_minimo: 0,
   });
 
@@ -24,18 +24,22 @@ export default function EditMedicine() {
       const item = location.state.item;
 
       setMedicineId(item.id);
+
       setFormData({
         nome: item.nome || "",
         principio_ativo: item.principio_ativo || "",
         dosagem: item.dosagem || "",
-        unidade_medida: item.unidade_medida || "",
+        unidade_medida: item.unidade_medida || null,
         estoque_minimo: item.estoque_minimo || 0,
       });
     }
   }, [location.state]);
 
-  const handleChange = (field: string, value: string | number) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleChange = (field: string, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,16 +54,21 @@ export default function EditMedicine() {
       return;
     }
 
-    setSaving(true); 
+    setSaving(true);
 
     try {
+      const payload = {
+        ...formData,
+        unidade_medida: formData.unidade_medida || null, // garante null real
+      };
+
       const res = await fetch(
         `http://localhost:3001/api/medicamentos/${medicineId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        },
+          body: JSON.stringify(payload),
+        }
       );
 
       if (!res.ok) {
@@ -81,13 +90,12 @@ export default function EditMedicine() {
         variant: "error",
       });
     } finally {
-      setSaving(false); 
+      setSaving(false);
     }
   };
 
   return (
     <Layout title="Edição de Medicamento">
-
       <LoadingModal
         open={saving}
         title="Aguarde"
@@ -109,6 +117,7 @@ export default function EditMedicine() {
               value={formData.nome}
               onChange={(e) => handleChange("nome", e.target.value)}
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+              disabled={saving}
             />
           </div>
 
@@ -121,6 +130,7 @@ export default function EditMedicine() {
               value={formData.principio_ativo}
               onChange={(e) => handleChange("principio_ativo", e.target.value)}
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+              disabled={saving}
             />
           </div>
 
@@ -134,6 +144,7 @@ export default function EditMedicine() {
                 value={formData.dosagem}
                 onChange={(e) => handleChange("dosagem", e.target.value)}
                 className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+                disabled={saving}
               />
             </div>
             <div className="flex-1">
@@ -141,11 +152,16 @@ export default function EditMedicine() {
                 Unidade de medida
               </label>
               <select
-                value={formData.unidade_medida}
-                onChange={(e) => handleChange("unidade_medida", e.target.value)}
+                value={formData.unidade_medida ?? ""}
+                onChange={(e) =>
+                  handleChange("unidade_medida", e.target.value || null)
+                }
                 className="w-full border bg-white border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+                disabled={saving}
               >
-                <option value="">Selecione</option>
+                <option value="" disabled hidden>
+                  Unidade
+                </option>
                 <option value="mg">mg</option>
                 <option value="g">g</option>
                 <option value="mcg">mcg</option>
@@ -159,12 +175,13 @@ export default function EditMedicine() {
               Estoque mínimo
             </label>
             <input
-              type="text"
+              type="number"
               value={formData.estoque_minimo}
               onChange={(e) =>
                 handleChange("estoque_minimo", Number(e.target.value))
               }
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+              disabled={saving}
             />
           </div>
 

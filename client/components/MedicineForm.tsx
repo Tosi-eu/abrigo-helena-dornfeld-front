@@ -6,24 +6,23 @@ import { OriginType } from "@/enums/enums";
 import { useNavigate } from "react-router-dom";
 import { MedicineFormProps } from "@/interfaces/interfaces";
 
-export function MedicineForm({
-  medicines,
-  caselas,
-  cabinets,
-  onSubmit,
-}: MedicineFormProps) {
+export function MedicineForm({ medicines, caselas, cabinets, onSubmit }: MedicineFormProps) {
   const [formData, setFormData] = useState({
-    id: 0,
-    quantity: 0,
+    id: null as number | null,
+    quantity: "",
     stockType: { geral: false, individual: false },
     expirationDate: null as Date | null,
     resident: "",
-    casela: 0,
-    cabinet: 0,
+    casela: null as number | null,
+    cabinet: null as number | null,
     origin: "",
   });
 
   const navigate = useNavigate();
+
+  const updateField = (field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleCaselaChange = (value: number) => {
     const selected = caselas.find((c) => c.casela === value);
@@ -48,6 +47,7 @@ export function MedicineForm({
   const handleSubmit = () => {
     onSubmit({
       ...formData,
+      quantity: Number(formData.quantity),
       expirationDate: formData.expirationDate
         ? formData.expirationDate.toISOString()
         : null,
@@ -56,18 +56,16 @@ export function MedicineForm({
 
   return (
     <div className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+      
+      {/* MEDICAMENTO */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Medicamento
-        </label>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Medicamento</label>
         <select
-          value={formData.id}
-          onChange={(e) =>
-            setFormData({ ...formData, id: parseInt(e.target.value) })
-          }
+          value={formData.id ?? ""}
+          onChange={(e) => updateField("id", e.target.value ? Number(e.target.value) : null)}
           className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >
-          <option value="">Selecione</option>
+          <option value="" disabled hidden>Selecione</option>
           {medicines.map((med) => (
             <option key={med.id} value={med.id}>
               {med.name} {med.dosage} {med.measurementUnit}
@@ -76,26 +74,21 @@ export function MedicineForm({
         </select>
       </div>
 
+      {/* QUANTIDADE + DATA */}
       <div className="flex gap-4">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Quantidade
-          </label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Quantidade</label>
           <input
-            type="text"
+            type="number"
             value={formData.quantity}
-            onChange={(e) =>
-              setFormData({ ...formData, quantity: parseInt(e.target.value) })
-            }
+            onChange={(e) => updateField("quantity", e.target.value)}
             placeholder="10"
             className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
           />
         </div>
 
         <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Data de vencimento
-          </label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Data de vencimento</label>
           <DatePicker
             selected={formData.expirationDate}
             onChange={(date: Date | null) =>
@@ -109,10 +102,9 @@ export function MedicineForm({
         </div>
       </div>
 
+      {/* TIPO DE ESTOQUE */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Tipo de estoque
-        </label>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de estoque</label>
         <div className="space-y-2">
           {["geral", "individual"].map((type) => (
             <div key={type} className="flex items-center gap-3">
@@ -120,15 +112,10 @@ export function MedicineForm({
                 type="checkbox"
                 id={type}
                 checked={formData.stockType[type as "geral" | "individual"]}
-                onChange={() =>
-                  handleStockTypeChange(type as "geral" | "individual")
-                }
+                onChange={() => handleStockTypeChange(type as "geral" | "individual")}
                 className="w-5 h-5 border-slate-400 rounded text-sky-600 focus:ring-sky-300"
               />
-              <label
-                htmlFor={type}
-                className="text-sm text-slate-700 capitalize"
-              >
+              <label htmlFor={type} className="text-sm text-slate-700 capitalize">
                 {type}
               </label>
             </div>
@@ -136,17 +123,16 @@ export function MedicineForm({
         </div>
       </div>
 
+      {/* CASELA + RESIDENTE */}
       <div className="flex gap-4">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Casela
-          </label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Casela</label>
           <select
-            value={formData.casela}
-            onChange={(e) => handleCaselaChange(parseInt(e.target.value))}
+            value={formData.casela ?? ""}
+            onChange={(e) => handleCaselaChange(Number(e.target.value))}
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
-            <option value="">Selecione</option>
+            <option value="" disabled hidden>Selecione</option>
             {caselas.map((c) => (
               <option key={c.casela} value={c.casela}>
                 {c.casela} - {c.name}
@@ -156,9 +142,7 @@ export function MedicineForm({
         </div>
 
         <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Residente
-          </label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Residente</label>
           <input
             type="text"
             value={formData.resident}
@@ -169,19 +153,16 @@ export function MedicineForm({
         </div>
       </div>
 
+      {/* ARMÁRIO + ORIGEM */}
       <div className="flex gap-4">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Armário
-          </label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Armário</label>
           <select
-            value={formData.cabinet}
-            onChange={(e) =>
-              setFormData({ ...formData, cabinet: parseInt(e.target.value) })
-            }
+            value={formData.cabinet ?? ""}
+            onChange={(e) => updateField("cabinet", Number(e.target.value))}
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
-            <option value="">Selecione</option>
+            <option value="" disabled hidden>Selecione</option>
             {cabinets.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.category}
@@ -191,17 +172,13 @@ export function MedicineForm({
         </div>
 
         <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Origem
-          </label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Origem</label>
           <select
             value={formData.origin}
-            onChange={(e) =>
-              setFormData({ ...formData, origin: e.target.value })
-            }
+            onChange={(e) => updateField("origin", e.target.value)}
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
-            <option value="">Selecione</option>
+            <option value="" disabled hidden>Selecione</option>
             {Object.values(OriginType).map((type) => (
               <option key={type} value={type}>
                 {type.charAt(0) + type.slice(1).toLowerCase()}
@@ -211,6 +188,7 @@ export function MedicineForm({
         </div>
       </div>
 
+      {/* BOTÕES */}
       <div className="flex justify-end">
         <button
           type="button"
@@ -219,6 +197,7 @@ export function MedicineForm({
         >
           Cancelar
         </button>
+
         <button
           type="button"
           onClick={handleSubmit}
