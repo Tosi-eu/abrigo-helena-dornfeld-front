@@ -57,7 +57,6 @@ export function MedicineForm({ medicines, caselas, cabinets, onSubmit }: Medicin
   return (
     <div className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
       
-      {/* MEDICAMENTO */}
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">Medicamento</label>
         <select
@@ -74,7 +73,6 @@ export function MedicineForm({ medicines, caselas, cabinets, onSubmit }: Medicin
         </select>
       </div>
 
-      {/* QUANTIDADE + DATA */}
       <div className="flex gap-4">
         <div className="flex-1">
           <label className="block text-sm font-medium text-slate-700 mb-1">Quantidade</label>
@@ -102,7 +100,6 @@ export function MedicineForm({ medicines, caselas, cabinets, onSubmit }: Medicin
         </div>
       </div>
 
-      {/* TIPO DE ESTOQUE */}
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de estoque</label>
         <div className="space-y-2">
@@ -123,7 +120,6 @@ export function MedicineForm({ medicines, caselas, cabinets, onSubmit }: Medicin
         </div>
       </div>
 
-      {/* CASELA + RESIDENTE */}
       <div className="flex gap-4">
         <div className="flex-1">
           <label className="block text-sm font-medium text-slate-700 mb-1">Casela</label>
@@ -135,7 +131,7 @@ export function MedicineForm({ medicines, caselas, cabinets, onSubmit }: Medicin
             <option value="" disabled hidden>Selecione</option>
             {caselas.map((c) => (
               <option key={c.casela} value={c.casela}>
-                {c.casela} - {c.name}
+                {c.casela}
               </option>
             ))}
           </select>
@@ -153,7 +149,6 @@ export function MedicineForm({ medicines, caselas, cabinets, onSubmit }: Medicin
         </div>
       </div>
 
-      {/* ARMÁRIO + ORIGEM */}
       <div className="flex gap-4">
         <div className="flex-1">
           <label className="block text-sm font-medium text-slate-700 mb-1">Armário</label>
@@ -188,7 +183,6 @@ export function MedicineForm({ medicines, caselas, cabinets, onSubmit }: Medicin
         </div>
       </div>
 
-      {/* BOTÕES */}
       <div className="flex justify-end">
         <button
           type="button"
