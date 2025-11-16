@@ -1,175 +1,176 @@
-import Layout from "@/components/Layout";
-import { useState, useEffect } from "react";
-import { toast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
 import { OperationType } from "@/enums/enums";
-import { StockOutForm } from "@/components/StockOutForm";
-import LoadingModal from "@/components/LoadingModal";
 
-export default function StockOut() {
-  const [operationType, setOperationType] = useState<
-    OperationType | "Selecione"
-  >("Selecione");
-  const [medicines, setMedicines] = useState<any[]>([]);
-  const [inputs, setInputs] = useState<any[]>([]);
-  const [cabinets, setCabinets] = useState<{ value: string; label: string }[]>(
-    [],
-  );
-  const [loading, setLoading] = useState(true);
+interface Item {
+  id: number;
+  nome: string;
+  detalhes?: string;
+  type?: OperationType | string;
+}
+
+interface CabinetOption {
+  value: string;
+  label: string;
+}
+
+interface StockOutFormProps {
+  items: Item[];
+  cabinets: CabinetOption[];
+  onSubmit: (data: any) => void;
+}
+
+export function StockOutForm({ items, cabinets, onSubmit }: StockOutFormProps) {
+  const [formData, setFormData] = useState({
+    itemId: null as string | null,
+    armarioId: null as string | null,
+    caselaId: null as string | null,
+    quantity: "",
+  });
+
+  const [filteredCabinets, setFilteredCabinets] = useState<CabinetOption[]>([]);
+  const [caselas, setCaselas] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {
-    const fetchMedicines = async () => {
+    const fetchCaselas = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/medicamentos");
-        const data = await res.json();
-        if (Array.isArray(data)) setMedicines(data);
-      } catch (err) {
-        console.error("Erro ao buscar medicines:", err);
-      }
-    };
-
-    const fetchInputs = async () => {
-      try {
-        const res = await fetch("http://localhost:3001/api/insumos");
-        const data = await res.json();
-        if (Array.isArray(data)) setInputs(data);
-      } catch (err) {
-        console.error("Erro ao buscar inputs:", err);
-      }
-    };
-
-    const fetchCabinets = async () => {
-      try {
-        const res = await fetch("http://localhost:3001/api/armarios");
+        const res = await fetch("http://localhost:3001/api/residentes");
         const data = await res.json();
         if (Array.isArray(data)) {
-          setCabinets(
-            data.map((a: any) => ({
-              value: String(a.num_armario),
-              label: `Armário ${a.num_armario}`,
-            })),
+          setCaselas(
+            data.map((r: any) => ({
+              value: String(r.num_casela),
+              label: `Casela ${r.num_casela} - ${r.nome}`,
+            }))
           );
         }
       } catch (err) {
-        console.error("Erro ao buscar armários:", err);
+        console.error("Erro ao buscar caselas:", err);
+      }
+    };
+    fetchCaselas();
+  }, []);
+
+  useEffect(() => {
+    const fetchFilteredCabinets = async () => {
+      if (!formData.itemId) {
+        setFilteredCabinets([]);
+        return;
+      }
+
+      const selectedItem = items.find((i) => String(i.id) === String(formData.itemId));
+      if (!selectedItem) return;
+
+      const tipo =
+        selectedItem.type === "medicine" || selectedItem.type === OperationType.MEDICINE
+          ? "medicamento"
+          : "insumo";
+
+      try {
+        const res = await fetch(
+          `http://localhost:3001/api/armarios?itemId=${formData.itemId}&type=${tipo}`
+        );
+        const data = await res.json();
+
+        setFilteredCabinets(
+          data.map((a: any) => ({
+            value: String(a.num_armario),
+            label: `Armário ${a.num_armario}`,
+          }))
+        );
+        setFormData(prev => ({ ...prev, armarioId: null })); 
+      } catch (err) {
+        console.error("Erro ao filtrar armários:", err);
       }
     };
 
-    const fetchAll = async () => {
-      setLoading(true);
-      await Promise.all([fetchMedicines(), fetchInputs(), fetchCabinets()]);
-      setLoading(false);
-    };
+    fetchFilteredCabinets();
+  }, [formData.itemId, items]);
 
-    fetchAll();
-  }, []);
+  const updateField = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
-  const handleStockOut = async (payload: any, type: OperationType) => {
-    try {
-      const body = {
-        tipo: type === OperationType.MEDICINE ? "medicamento" : "insumo",
-        itemId: Number(payload.itemId),
-        armarioId: Number(payload.armarioId),
-        quantidade: Number(payload.quantity),
-      };
-
-      const res = await fetch("http://localhost:3001/api/estoque/saida", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Erro ao registrar saída");
-
-      await fetch("http://localhost:3001/api/movimentacoes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipo: "saida",
-          login_id: 1,
-          armario_id: Number(payload.armarioId),
-          quantidade: Number(payload.quantity),
-          casela_id: Number(payload.caselaId),
-          ...(type === OperationType.MEDICINE
-            ? {
-                medicamento_id: Number(payload.itemId),
-                validade_medicamento: payload.expirationDate
-                  ? new Date(payload.expirationDate).toISOString()
-                  : null,
-              }
-            : { insumo_id: Number(payload.itemId) }),
-        }),
-      });
-
-      toast({
-        title: "Saída registrada com sucesso!",
-        description: `${type === OperationType.MEDICINE ? "Medicamento" : "Insumo"} removido do estoque.`,
-        variant: "success",
-      });
-    } catch (err: any) {
-      toast({
-        title: "Erro ao registrar saída",
-        description: err.message || "Erro inesperado ao processar a saída.",
-        variant: "error",
-      });
+  const handleSubmit = () => {
+    if (!formData.itemId || !formData.armarioId || !formData.caselaId || !formData.quantity) {
+      alert("Preencha todos os campos!");
+      return;
     }
+    onSubmit({
+      itemId: formData.itemId,
+      armarioId: formData.armarioId,
+      caselaId: formData.caselaId,
+      quantity: Number(formData.quantity),
+    });
+    setFormData({ itemId: null, armarioId: null, caselaId: null, quantity: "" });
   };
 
   return (
-    <Layout title="Saída de Estoque">
-      <LoadingModal
-        open={loading}
-        title="Aguarde"
-        description="Carregando dados..."
-      />
+    <div className="space-y-4 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+      <div>
+        <label className="block text-sm font-medium text-slate-700">Item</label>
+        <select
+          value={formData.itemId ?? ""}
+          onChange={e => updateField("itemId", e.target.value || null)}
+          className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+        >
+          <option value="" disabled hidden>Selecione</option>
+          {items.map(item => (
+            <option key={item.id} value={item.id}>
+              {item.nome} {item.detalhes || ""}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      {!loading && (
-        <div className="max-w-lg mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm space-y-6">
-          <h2 className="text-lg font-semibold text-slate-800">
-            Registrar Saída
-          </h2>
+      <div>
+        <label className="block text-sm font-medium text-slate-700">Armário</label>
+        <select
+          value={formData.armarioId ?? ""}
+          onChange={e => updateField("armarioId", e.target.value || null)}
+          disabled={!formData.itemId}
+          className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+        >
+          <option value="" disabled hidden>Selecione</option>
+          {filteredCabinets.map(c => (
+            <option key={c.value} value={c.value}>{c.label}</option>
+          ))}
+        </select>
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Tipo de saída
-            </label>
-            <select
-              value={operationType === "Selecione" ? "" : operationType}
-              onChange={(e) => setOperationType(e.target.value as OperationType)}
-              className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
-            >
-              <option value="" disabled hidden>Selecione</option>
+      <div>
+        <label className="block text-sm font-medium text-slate-700">Casela</label>
+        <select
+          value={formData.caselaId ?? ""}
+          onChange={e => updateField("caselaId", e.target.value || null)}
+          className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+        >
+          <option value="" disabled hidden>Selecione</option>
+          {caselas.map(c => (
+            <option key={c.value} value={c.value}>{c.label}</option>
+          ))}
+        </select>
+      </div>
 
-              <option value={OperationType.MEDICINE}>
-                {OperationType.MEDICINE}
-              </option>
-              <option value={OperationType.INPUT}>
-                {OperationType.INPUT}
-              </option>
-            </select>
-          </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-700">Quantidade</label>
+        <input
+          type="number"
+          value={formData.quantity}
+          onChange={e => updateField("quantity", e.target.value)}
+          placeholder="0"
+          className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+        />
+      </div>
 
-          {operationType === OperationType.MEDICINE && (
-            <StockOutForm
-              items={medicines.map((m) => ({
-                id: m.id,
-                nome: m.nome,
-                detalhes: `${m.dosagem} ${m.unidade_medida}`,
-              }))}
-              cabinets={cabinets}
-              onSubmit={(data) => handleStockOut(data, OperationType.MEDICINE)}
-            />
-          )}
-
-          {operationType === OperationType.INPUT && (
-            <StockOutForm
-              items={inputs.map((i) => ({ id: i.id, nome: i.nome }))}
-              cabinets={cabinets}
-              onSubmit={(data) => handleStockOut(data, OperationType.INPUT)}
-            />
-          )}
-        </div>
-      )}
-    </Layout>
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={handleSubmit}
+          className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition"
+        >
+          Confirmar
+        </button>
+      </div>
+    </div>
   );
 }
