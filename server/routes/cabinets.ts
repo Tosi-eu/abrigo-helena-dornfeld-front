@@ -18,7 +18,7 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/", async (req, res) => {
-  const { itemId, type } = req.query;
+  const { itemId, tipo } = req.query;
 
   try {
     if (!itemId) {
@@ -31,7 +31,7 @@ router.get("/", async (req, res) => {
     let query = "";
     let params = [itemId];
 
-    if (type === "medicamento") {
+    if (tipo === "medicamento") {
       query = `
         SELECT DISTINCT a.*
         FROM armario a
@@ -39,7 +39,7 @@ router.get("/", async (req, res) => {
         WHERE e.medicamento_id = $1
         ORDER BY a.num_armario
       `;
-    } else if (type === "insumo") {
+    } else if (tipo === "insumo") {
       query = `
         SELECT DISTINCT a.*
         FROM armario a
@@ -49,7 +49,7 @@ router.get("/", async (req, res) => {
       `;
     } else {
       return res.status(400).json({
-        error: "Parâmetro 'type' deve ser 'insumo' ou 'medicamento'",
+        error: "Parâmetro 'tipo' deve ser 'insumo' ou 'medicamento'",
       });
     }
 

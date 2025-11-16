@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Package, Stethoscope, Check, X, Loader2 } from "lucide-react";
+import { Package, Stethoscope, Check, X, Loader2, User } from "lucide-react";
 
 type StatusType = "idle" | "loading" | "success" | "error";
 
@@ -23,23 +23,39 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
   const reportOptions = [
     { value: "insumos", label: "Insumos", icon: Package },
     { value: "medicamentos", label: "Medicamentos", icon: Stethoscope },
-    {
-      value: "insumos_medicamentos",
-      label: "Insumos e Medicamentos",
-      icon: Check,
-    },
+    { value: "residentes", label: "Residentes", icon: User },
+    { value: "insumos_medicamentos", label: "Insumos e Medicamentos", icon: Check },
   ];
 
   const handleSelectReport = (value: string) => setSelectedReports([value]);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!selectedReports.length) return;
     setStatus("loading");
 
-    setTimeout(() => {
-      const isSuccess = Math.random() > 0.2;
-      setStatus(isSuccess ? "success" : "error");
-    }, 1500);
+    try {
+      const tipo = selectedReports[0];
+      const res = await fetch(`http://localhost:3001/api/relatorios?tipo=${tipo}`);
+      if (!res.ok) throw new Error("Erro ao gerar relatório");
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `relatorio-${tipo}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setStatus("success");
+
+      setTimeout(() => handleClose(), 3000);
+
+    } catch (err) {
+      console.error(err);
+      setStatus("error");
+    }
   };
 
   const handleClose = () => {
@@ -52,7 +68,7 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="p-0 bg-white rounded-2xl shadow-xl max-w-md w-full flex flex-col items-center">
+      <DialogContent className="p-0 bg-white rounded-2xl shadow-xl max-w-6xl w-full flex flex-col items-center">
         <AnimatePresence mode="wait">
           {status === "idle" && (
             <motion.div
@@ -122,56 +138,45 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
               className="p-10 flex flex-col items-center justify-center gap-3 h-60"
             >
               <Loader2 className="w-12 h-12 animate-spin text-sky-600" />
-              <p className="text-gray-600 font-medium text-center">
-                Gerando...
-              </p>
+              <p className="text-gray-600 font-medium text-center">Gerando...</p>
             </motion.div>
           )}
 
-          {(status === "success" || status === "error") && (
+          {status === "success" && (
             <motion.div
-              key={status}
+              key="success"
               className="flex flex-col items-center justify-center h-72 w-full"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: [0, 1.1, 1], opacity: 1 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
+              <Check className="text-green-600" style={{ width: iconSize, height: iconSize }} />
+              <p className="font-bold text-xl text-center mt-4">Relatório gerado com sucesso!</p>
+              <Button
+                className="mt-6 px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white"
+                onClick={handleClose}
               >
-                {status === "success" ? (
-                  <Check
-                    className="text-green-600"
-                    style={{ width: iconSize, height: iconSize }}
-                  />
-                ) : (
-                  <X
-                    className="text-red-600"
-                    style={{ width: iconSize, height: iconSize }}
-                  />
-                )}
-              </motion.div>
+                OK
+              </Button>
+            </motion.div>
+          )}
 
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.4 }}
-                className="mt-6 flex flex-col items-center gap-4"
+          {status === "error" && (
+            <motion.div
+              key="error"
+              className="flex flex-col items-center justify-center h-72 w-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <X className="text-red-600" style={{ width: iconSize, height: iconSize }} />
+              <p className="font-bold text-xl text-center mt-4">Falha ao gerar relatório!</p>
+              <Button
+                className="mt-6 px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white"
+                onClick={handleClose}
               >
-                <p className="font-bold text-xl text-center">
-                  {status === "success"
-                    ? "Relatório gerado com sucesso!"
-                    : "Falha ao gerar relatório!"}
-                </p>
-                <Button
-                  className="px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white"
-                  onClick={handleClose}
-                >
-                  OK
-                </Button>
-              </motion.div>
+                OK
+              </Button>
             </motion.div>
           )}
         </AnimatePresence>

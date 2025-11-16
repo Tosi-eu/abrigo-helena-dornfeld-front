@@ -19,15 +19,45 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/", async (_req, res) => {
+router.get("/", async (req, res) => {
+  const { itemId, tipo } = req.query;
+
   try {
-    const result = await pool.query("SELECT * FROM paciente ORDER BY nome");
-    res.json(result.rows);
+    if (!itemId) {
+      const result = await pool.query("SELECT * FROM paciente ORDER BY nome");
+      return res.json(result.rows);
+    }
+
+    let query = "";
+    let params = [itemId];
+
+    if (tipo === "medicamento") {
+      query = `
+        SELECT DISTINCT p.*
+        FROM paciente p
+        JOIN estoque_medicamento e ON e.casela_id = p.num_casela
+        WHERE e.medicamento_id = $1
+        ORDER BY p.nome
+      `;
+    } else if (tipo === "insumo") {
+      query = `
+        SELECT DISTINCT p.*
+        FROM paciente p
+        JOIN estoque_insumo e ON e.casela_id = p.num_casela
+        WHERE e.insumo_id = $1
+        ORDER BY p.nome
+      `;
+    } else {
+      return res.status(400).json({
+        error: "Parâmetro 'tipo' deve ser 'insumo' ou 'medicamento'",
+      });
+    }
+
+    const result = await pool.query(query, params);
+    return res.json(result.rows);
   } catch (err: any) {
     console.error("Erro ao buscar pacientes:", err);
-    res
-      .status(500)
-      .json({ error: `Erro ao buscar pacientes: ${err.message ?? err}` });
+    return res.status(500).json({ error: `Erro ao buscar pacientes: ${err.message ?? err}` });
   }
 });
 
