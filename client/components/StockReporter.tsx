@@ -18,14 +18,13 @@ Font.register({
 });
 
 interface RowData {
-  nome: string;
+  insumo?: string;
   principio_ativo?: string;
-  quantidade?: number;
+  quantidade?: number | string;
   validade?: string;
   residente?: string;
-  num_casela?: number;
   medicamento?: string;
-  armario_id?: number;
+  armario?: number;
   medicamentos?: RowData[];
   insumos?: RowData[];
 }
@@ -188,8 +187,8 @@ export function createStockPDF(tipo: string, data: RowData[]) {
             <Text style={styles.sectionTitle}>Medicamentos</Text>
             {renderTable(
               [
-                "Nome",
-                "Princípio Ativo",
+                "Medicamento",
+                "Principio Ativo",
                 "Quantidade",
                 "Validade",
                 "Residente",
@@ -202,7 +201,7 @@ export function createStockPDF(tipo: string, data: RowData[]) {
         {tipo === "insumos" && (
           <>
             <Text style={styles.sectionTitle}>Insumos</Text>
-            {renderTable(["Nome", "Quantidade", "Armário"], data)}
+            {renderTable(["Insumo", "Quantidade", "Armario"], data)}
           </>
         )}
 
@@ -212,8 +211,9 @@ export function createStockPDF(tipo: string, data: RowData[]) {
             {renderTable(
               [
                 "Residente",
+                "Casela",
                 "Medicamento",
-                "Princípio Ativo",
+                "Principio Ativo",
                 "Quantidade",
                 "Validade",
               ],
@@ -228,7 +228,7 @@ export function createStockPDF(tipo: string, data: RowData[]) {
             {renderTable(
               [
                 "Medicamento",
-                "Princípio Ativo",
+                "Principio Ativo",
                 "Quantidade",
                 "Validade",
                 "Residente",
@@ -238,7 +238,7 @@ export function createStockPDF(tipo: string, data: RowData[]) {
 
             <Text style={styles.sectionTitle}>Insumos</Text>
             {renderTable(
-              ["Nome", "Quantidade", "Armário"],
+              ["Insumo", "Quantidade", "Armario"],
               data[0].insumos ?? [],
             )}
           </>
