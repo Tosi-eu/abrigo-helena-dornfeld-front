@@ -13,6 +13,7 @@ export default function Layout({ children, title }: LayoutProps) {
     { name: "Estoque", href: "/stock" },
     { name: "Residentes", href: "/residents" },
     { name: "Armários", href: "/cabinets" },
+    { name: "Perfil", href: "/user/profile" },
   ];
 
   return (

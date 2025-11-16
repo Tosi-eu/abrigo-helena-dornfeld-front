@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import logo from "/logo.png";
 
@@ -20,15 +20,22 @@ export default function Auth() {
     try {
       if (isLogin) {
         const query = new URLSearchParams({ login, password });
-        const res = await fetch(`http://localhost:3001/api/login?${query.toString()}`);
+        const res = await fetch(`/api/login?${query.toString()}`);
         const data = await res.json();
 
         if (!res.ok) throw new Error(data.error || "Erro ao fazer login");
 
+        // store user locally for profile editing
+        try {
+          localStorage.setItem("user", JSON.stringify(data));
+        } catch (e) {
+          // ignore storage errors
+        }
+
         toast({ title: "Login realizado!", variant: "success" });
         navigate("/dashboard");
       } else {
-        const res = await fetch("http://localhost:3001/api/login", {
+        const res = await fetch("/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ login, password }),
@@ -124,9 +131,9 @@ export default function Auth() {
                     <span className="text-sm text-slate-700">Lembrar de mim</span>
                   </label>
 
-                  <a href="#" className="text-sm text-sky-600 hover:underline">
+                  <Link to="/user/forgot-password" className="text-sm text-sky-600 hover:underline">
                     Esqueci minha senha
-                  </a>
+                  </Link>
                 </div>
               )}
 
