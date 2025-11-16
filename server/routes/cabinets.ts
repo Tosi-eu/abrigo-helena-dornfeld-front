@@ -23,7 +23,7 @@ router.get("/", async (req, res) => {
   try {
     if (!itemId) {
       const result = await pool.query(
-        "SELECT * FROM armario ORDER BY num_armario"
+        "SELECT * FROM armario ORDER BY num_armario",
       );
       return res.json(result.rows);
     }
@@ -55,7 +55,6 @@ router.get("/", async (req, res) => {
 
     const result = await pool.query(query, params);
     return res.json(result.rows);
-
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Erro ao buscar armários" });

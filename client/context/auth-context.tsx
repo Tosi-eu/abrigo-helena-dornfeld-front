@@ -1,7 +1,9 @@
 import { createContext, useState, useEffect, ReactNode } from "react";
 import { AuthContextType, LoggedUser } from "@/interfaces/interfaces";
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined,
+);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<LoggedUser | null>(null);
@@ -31,7 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem("user");
   };
 
-  if (loading) return null; 
+  if (loading) return null;
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>

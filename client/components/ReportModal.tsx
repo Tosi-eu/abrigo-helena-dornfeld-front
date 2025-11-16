@@ -24,7 +24,11 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
     { value: "insumos", label: "Insumos", icon: Package },
     { value: "medicamentos", label: "Medicamentos", icon: Stethoscope },
     { value: "residentes", label: "Residentes", icon: User },
-    { value: "insumos_medicamentos", label: "Insumos e Medicamentos", icon: Check },
+    {
+      value: "insumos_medicamentos",
+      label: "Insumos e Medicamentos",
+      icon: Check,
+    },
   ];
 
   const handleSelectReport = (value: string) => setSelectedReports([value]);
@@ -35,7 +39,9 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
 
     try {
       const tipo = selectedReports[0];
-      const res = await fetch(`http://localhost:3001/api/relatorios?tipo=${tipo}`);
+      const res = await fetch(
+        `http://localhost:3001/api/relatorios?tipo=${tipo}`,
+      );
       if (!res.ok) throw new Error("Erro ao gerar relatório");
 
       const blob = await res.blob();
@@ -51,7 +57,6 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
       setStatus("success");
 
       setTimeout(() => handleClose(), 3000);
-
     } catch (err) {
       console.error(err);
       setStatus("error");
@@ -138,7 +143,9 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
               className="p-10 flex flex-col items-center justify-center gap-3 h-60"
             >
               <Loader2 className="w-12 h-12 animate-spin text-sky-600" />
-              <p className="text-gray-600 font-medium text-center">Gerando...</p>
+              <p className="text-gray-600 font-medium text-center">
+                Gerando...
+              </p>
             </motion.div>
           )}
 
@@ -150,8 +157,13 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Check className="text-green-600" style={{ width: iconSize, height: iconSize }} />
-              <p className="font-bold text-xl text-center mt-4">Relatório gerado com sucesso!</p>
+              <Check
+                className="text-green-600"
+                style={{ width: iconSize, height: iconSize }}
+              />
+              <p className="font-bold text-xl text-center mt-4">
+                Relatório gerado com sucesso!
+              </p>
               <Button
                 className="mt-6 px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white"
                 onClick={handleClose}
@@ -169,8 +181,13 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <X className="text-red-600" style={{ width: iconSize, height: iconSize }} />
-              <p className="font-bold text-xl text-center mt-4">Falha ao gerar relatório!</p>
+              <X
+                className="text-red-600"
+                style={{ width: iconSize, height: iconSize }}
+              />
+              <p className="font-bold text-xl text-center mt-4">
+                Falha ao gerar relatório!
+              </p>
               <Button
                 className="mt-6 px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white"
                 onClick={handleClose}

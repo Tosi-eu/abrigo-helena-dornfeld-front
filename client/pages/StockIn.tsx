@@ -226,17 +226,19 @@ export default function StockIn() {
             </label>
             <select
               value={operationType === "Selecione" ? "" : operationType}
-              onChange={(e) => setOperationType(e.target.value as OperationType)}
+              onChange={(e) =>
+                setOperationType(e.target.value as OperationType)
+              }
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
             >
-              <option value="" disabled hidden>Selecione</option>
+              <option value="" disabled hidden>
+                Selecione
+              </option>
 
               <option value={OperationType.MEDICINE}>
                 {OperationType.MEDICINE}
               </option>
-              <option value={OperationType.INPUT}>
-                {OperationType.INPUT}
-              </option>
+              <option value={OperationType.INPUT}>{OperationType.INPUT}</option>
             </select>
           </div>
 

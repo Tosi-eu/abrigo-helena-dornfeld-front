@@ -1,7 +1,24 @@
-import { Document, Page, Text, View, Image, StyleSheet } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  Image,
+  StyleSheet,
+  Font,
+} from "@react-pdf/renderer";
+
+Font.register({
+  family: "Inter",
+  fonts: [
+    {
+      src: "http://localhost:8080/fonts/Inter-Regular.ttf",
+    },
+  ],
+});
 
 interface RowData {
-  nome?: string;
+  nome: string;
   principio_ativo?: string;
   quantidade?: number;
   validade?: string;
@@ -9,56 +26,99 @@ interface RowData {
   num_casela?: number;
   medicamento?: string;
   armario_id?: number;
+  medicamentos?: RowData[];
+  insumos?: RowData[];
 }
 
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
-    fontSize: 12,
-    fontFamily: "Helvetica",
-    lineHeight: 1.5,
+    paddingTop: 20,
+    paddingHorizontal: 30,
+    paddingBottom: 40,
+    fontFamily: "Inter",
+    fontSize: 11,
+    backgroundColor: "#ffffff",
   },
+
+  topLine: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#000",
+    marginBottom: 8,
+  },
+
+  headerInfo: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginBottom: 12,
+  },
+
+  headerRightText: {
+    fontSize: 10,
+    color: "#000",
+    textAlign: "right",
+  },
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 15,
   },
+
   logo: {
-    width: 120,
-    height: 60,
+    width: 90,
   },
+
   title: {
     fontSize: 20,
     fontWeight: "bold",
+    marginTop: 5,
+    color: "#000",
+    textTransform: "uppercase",
   },
+
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginTop: 20,
+    marginBottom: 6,
+    color: "#000",
+  },
+
   tableHeader: {
     flexDirection: "row",
+    backgroundColor: "#e5e5e5",
+    paddingVertical: 6,
+    borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderBottomColor: "#000",
-    borderBottomStyle: "solid",
-    paddingBottom: 4,
-    marginBottom: 4,
+    borderColor: "#000",
     fontWeight: "bold",
+    textAlign: "center",
   },
+
   tableRow: {
     flexDirection: "row",
-    paddingVertical: 4,
+    paddingVertical: 5,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#ccc",
   },
+
+  striped: {
+    backgroundColor: "#f2f2f2",
+  },
+
   cell: {
     flex: 1,
+    paddingHorizontal: 2,
+    textAlign: "center",
   },
+
   footer: {
     position: "absolute",
     bottom: 20,
-    left: 40,
-    right: 40,
-    textAlign: "right",
-    fontSize: 10,
-    color: "#555",
-  },
-  striped: {
-    backgroundColor: "#f5f5f5",
+    right: 30,
+    fontSize: 9,
+    color: "#444",
   },
 });
 
@@ -69,19 +129,11 @@ function formatDate(value?: string | Date) {
 }
 
 export function createStockPDF(tipo: string, data: RowData[]) {
-  const headers =
-    tipo === "medicamentos"
-      ? ["Nome", "Princípio Ativo", "Quantidade", "Validade", "Residente"]
-      : ["Nome", "Quantidade", "Armário"];
+  const renderTable = (headers: string[], rows: RowData[]) => {
+    console.log("DEBUG:", rows);
 
-  return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <Image src="http://localhost:8080/logo.png" style={styles.logo} /> 
-          <Text style={styles.title}>Relatório de {tipo}</Text>
-        </View> 
-
+    return (
+      <>
         <View style={styles.tableHeader}>
           {headers.map((h, i) => (
             <Text key={i} style={styles.cell}>
@@ -90,28 +142,107 @@ export function createStockPDF(tipo: string, data: RowData[]) {
           ))}
         </View>
 
-        {data.map((row, idx) => (
+        {rows.map((row, idx) => (
           <View
             key={idx}
-            style={[styles.tableRow, idx % 2 === 0 ? styles.striped : undefined]}
+            style={[
+              styles.tableRow,
+              idx % 2 === 0 ? styles.striped : undefined,
+            ]}
           >
-            {tipo === "medicamentos" ? (
-              <>
-                <Text style={styles.cell}>{row.nome || ""}</Text>
-                <Text style={styles.cell}>{row.principio_ativo || ""}</Text>
-                <Text style={styles.cell}>{row.quantidade?.toString() || "0"}</Text>
-                <Text style={styles.cell}>{formatDate(row.validade)}</Text>
-                <Text style={styles.cell}>{row.residente || "Geral"}</Text>
-              </>
-            ) : (
-              <>
-                <Text style={styles.cell}>{row.nome || ""}</Text>
-                <Text style={styles.cell}>{row.quantidade?.toString() || "0"}</Text>
-                <Text style={styles.cell}>{row.armario_id?.toString() || "-"}</Text>
-              </>
-            )}
+            {headers.map((h, i) => {
+              const key = h
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .replace(/\s+/g, "_");
+
+              let value: any = row[key as keyof RowData] ?? "";
+
+              if (key === "validade") value = formatDate(value);
+
+              return (
+                <Text key={i} style={styles.cell}>
+                  {value}
+                </Text>
+              );
+            })}
           </View>
         ))}
+      </>
+    );
+  };
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.topLine} />
+
+        <View style={styles.header}>
+          <Image src="http://localhost:8080/logo.png" style={styles.logo} />
+          <Text style={styles.title}>ESTOQUE ATUAL</Text>
+        </View>
+
+        {tipo === "medicamentos" && (
+          <>
+            <Text style={styles.sectionTitle}>Medicamentos</Text>
+            {renderTable(
+              [
+                "Nome",
+                "Princípio Ativo",
+                "Quantidade",
+                "Validade",
+                "Residente",
+              ],
+              data,
+            )}
+          </>
+        )}
+
+        {tipo === "insumos" && (
+          <>
+            <Text style={styles.sectionTitle}>Insumos</Text>
+            {renderTable(["Nome", "Quantidade", "Armário"], data)}
+          </>
+        )}
+
+        {tipo === "residentes" && (
+          <>
+            <Text style={styles.sectionTitle}>Medicamentos por Residente</Text>
+            {renderTable(
+              [
+                "Residente",
+                "Medicamento",
+                "Princípio Ativo",
+                "Quantidade",
+                "Validade",
+              ],
+              data,
+            )}
+          </>
+        )}
+
+        {tipo === "insumos_medicamentos" && data.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Medicamentos</Text>
+            {renderTable(
+              [
+                "Medicamento",
+                "Princípio Ativo",
+                "Quantidade",
+                "Validade",
+                "Residente",
+              ],
+              data[0].medicamentos ?? [],
+            )}
+
+            <Text style={styles.sectionTitle}>Insumos</Text>
+            {renderTable(
+              ["Nome", "Quantidade", "Armário"],
+              data[0].insumos ?? [],
+            )}
+          </>
+        )}
 
         <Text style={styles.footer}>
           Gerado em: {new Date().toLocaleDateString("pt-BR")} às{" "}

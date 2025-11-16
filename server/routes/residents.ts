@@ -57,7 +57,9 @@ router.get("/", async (req, res) => {
     return res.json(result.rows);
   } catch (err: any) {
     console.error("Erro ao buscar pacientes:", err);
-    return res.status(500).json({ error: `Erro ao buscar pacientes: ${err.message ?? err}` });
+    return res
+      .status(500)
+      .json({ error: `Erro ao buscar pacientes: ${err.message ?? err}` });
   }
 });
 

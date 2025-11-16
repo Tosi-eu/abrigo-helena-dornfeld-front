@@ -202,7 +202,7 @@ export default function SignUpMedicine() {
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    measurementUnit: e.target.value || null, 
+                    measurementUnit: e.target.value || null,
                   })
                 }
                 className="w-full border bg-white border-slate-300 rounded-lg p-2.5 text-sm"

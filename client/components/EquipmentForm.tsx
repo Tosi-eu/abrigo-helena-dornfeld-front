@@ -62,20 +62,20 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
         <label className="block text-sm font-medium text-slate-700 mb-1">
           Nome do Insumo
         </label>
-          <select
-            value={formData.inputId}
-            onChange={(e) => handleInputChange(parseInt(e.target.value))}
-            className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-          >
-            <option value="" disabled hidden>
-              Selecione
+        <select
+          value={formData.inputId}
+          onChange={(e) => handleInputChange(parseInt(e.target.value))}
+          className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+        >
+          <option value="" disabled hidden>
+            Selecione
+          </option>
+          {inputs.map((input) => (
+            <option key={input.id} value={input.id}>
+              {input.name}
             </option>
-            {inputs.map((input) => (
-              <option key={input.id} value={input.id}>
-                {input.name}
-              </option>
-            ))}
-          </select>
+          ))}
+        </select>
       </div>
 
       <div className="flex gap-4">
