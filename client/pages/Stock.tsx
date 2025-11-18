@@ -34,23 +34,6 @@ export default function Stock() {
       try {
         setLoading(true);
 
-        if (data && Array.isArray(data)) {
-          const mapped: StockItem[] = data.map((item: any) => ({
-            name: item.nome ?? "-",
-            description: item.principio_ativo ?? item.descricao ?? "-",
-            expiry: item.validade ?? "-",
-            quantity: item.quantidade ?? 0,
-            cabinet: item.armario_id ?? "-",
-            casela: item.casela_id ?? "-",
-            stockType: StockType.GERAL,
-            patient: item.paciente ?? "-",
-            origin: item.origem ?? "-",
-            minimumStock: item.minimo ?? 0,
-          }));
-          setItems(mapped);
-          return;
-        }
-
         const [medRes, insRes] = await Promise.all([
           fetch("http://localhost:3001/api/estoque?type=medicamento"),
           fetch("http://localhost:3001/api/estoque?type=insumo"),
