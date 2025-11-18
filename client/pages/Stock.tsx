@@ -68,7 +68,7 @@ export default function Stock() {
           quantity: m.quantidade,
           cabinet: m.armario_id,
           casela: m.casela_id,
-          stockType: StockType.GERAL,
+          stockType: m.tipo,
           patient: m.paciente ?? "-",
           origin: m.origem ?? "-",
           minimumStock: m.minimo ?? 0,
