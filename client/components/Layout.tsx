@@ -2,11 +2,14 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "/logo.png";
 import { LayoutProps } from "@/interfaces/interfaces";
 import { useAuth } from "@/hooks/use-auth";
+import { useState } from "react";
+import LogoutConfirmDialog from "./LogoutConfirmDialog";
 
 export default function Layout({ children, title }: LayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const navigation = [
     { name: "Painel", href: "/dashboard" },
@@ -16,11 +19,20 @@ export default function Layout({ children, title }: LayoutProps) {
     { name: "Estoque", href: "/stock" },
     { name: "Residentes", href: "/residents" },
     { name: "Armários", href: "/cabinets" },
+    { name: "Perfil", href: "/user/profile" },
   ];
 
   const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
     logout();
     navigate("/user/login");
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   return (
@@ -80,6 +92,12 @@ export default function Layout({ children, title }: LayoutProps) {
       <main className="max-w-[1651px] mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {children}
       </main>
+
+      <LogoutConfirmDialog
+        open={showLogoutModal}
+        onCancel={cancelLogout}
+        onConfirm={confirmLogout}
+      />
     </div>
   );
 }

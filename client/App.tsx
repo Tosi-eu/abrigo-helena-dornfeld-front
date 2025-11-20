@@ -8,6 +8,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
+import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import SignUpMedicine from "./pages/RegisterMedicine";
 import Transactions from "./pages/Transactions";
@@ -178,6 +180,15 @@ const App = () => (
                 </PrivateRoute>
               }
             />
+            <Route
+              path="/user/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/user/forgot-password" element={<ForgotPassword />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
