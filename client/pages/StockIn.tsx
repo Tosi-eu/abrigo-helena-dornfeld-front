@@ -6,6 +6,7 @@ import { OperationType, StockType } from "@/enums/enums";
 import { toast } from "@/hooks/use-toast";
 import { Input, Medicine, Patient, Cabinet } from "@/interfaces/interfaces";
 import LoadingModal from "@/components/LoadingModal";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function StockIn() {
   const [operationType, setOperationType] = useState<
@@ -16,6 +17,8 @@ export default function StockIn() {
   const [caselas, setCaselas] = useState<Patient[]>([]);
   const [cabinets, setCabinets] = useState<Cabinet[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchMedicines = async () => {
@@ -120,7 +123,7 @@ export default function StockIn() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tipo: "entrada",
-          login_id: 1,
+          login_id: user?.id,
           medicamento_id: data.id,
           armario_id: data.cabinet,
           casela_id: data.casela ?? null,
@@ -170,7 +173,7 @@ export default function StockIn() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tipo: "entrada",
-          login_id: 1,
+          login_id: user?.id,
           insumo_id: data.inputId,
           armario_id: data.cabinetId,
           quantidade: data.quantity,

@@ -67,9 +67,10 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
           onChange={(e) => handleInputChange(parseInt(e.target.value))}
           className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >
-          <option value="" disabled hidden>
+          <option value={0} disabled hidden>
             Selecione
           </option>
+
           {inputs.map((input) => (
             <option key={input.id} value={input.id}>
               {input.name}
@@ -107,7 +108,7 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
           onChange={(e) => handleCabinetChange(parseInt(e.target.value))}
           className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >
-          <option value="" disabled hidden>
+          <option value={0} disabled hidden>
             Selecione
           </option>
           {cabinets.map((cab) => (

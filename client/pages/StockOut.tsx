@@ -4,6 +4,7 @@ import { toast } from "@/hooks/use-toast";
 import { OperationType } from "@/enums/enums";
 import { StockOutForm } from "@/components/StockOutForm";
 import LoadingModal from "@/components/LoadingModal";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function StockOut() {
   const [operationType, setOperationType] = useState<
@@ -12,6 +13,8 @@ export default function StockOut() {
   const [medicines, setMedicines] = useState<any[]>([]);
   const [inputs, setInputs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchMedicines = async () => {
@@ -66,7 +69,7 @@ export default function StockOut() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tipo: "saida",
-          login_id: 1,
+          login_id: user?.id,
           armario_id: Number(payload.armarioId),
           quantidade: Number(payload.quantity),
           casela_id: Number(payload.caselaId),
