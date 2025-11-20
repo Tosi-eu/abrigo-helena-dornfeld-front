@@ -22,6 +22,7 @@ router.get("/medicamentos", async (req, res) => {
 
     const query = `
         SELECT
+          DISTINCT
           mv.id,
           m.nome AS name,
           m.principio_ativo AS "additionalData",
@@ -64,6 +65,7 @@ router.get("/insumos", async (req, res) => {
 
     const query = `
         SELECT
+          DISTINCT
           mv.id,
           i.nome AS name,
           i.descricao AS "additionalData",

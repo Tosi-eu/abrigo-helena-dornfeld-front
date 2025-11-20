@@ -24,6 +24,13 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
     });
   };
 
+  const handleCabinetChange = (id: number) => {
+    setFormData({
+      ...formData,
+      cabinetId: id,
+    });
+  };
+
   const handleSubmit = () => {
     if (!formData.inputId) {
       toast({ title: "Selecione um input", variant: "error" });
@@ -60,7 +67,10 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
           onChange={(e) => handleInputChange(parseInt(e.target.value))}
           className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >
-          <option value="">Selecione</option>
+          <option value={0} disabled hidden>
+            Selecione
+          </option>
+
           {inputs.map((input) => (
             <option key={input.id} value={input.id}>
               {input.name}
@@ -95,18 +105,15 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
         </label>
         <select
           value={formData.cabinetId}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              cabinetId: parseInt(e.target.value) || 0,
-            })
-          }
+          onChange={(e) => handleCabinetChange(parseInt(e.target.value))}
           className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >
-          <option value="">Selecione</option>
+          <option value={0} disabled hidden>
+            Selecione
+          </option>
           {cabinets.map((cab) => (
             <option key={cab.id} value={cab.id}>
-              {cab.id}
+              {`Armário ${cab.id}`}
             </option>
           ))}
         </select>

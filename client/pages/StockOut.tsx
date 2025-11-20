@@ -4,6 +4,7 @@ import { toast } from "@/hooks/use-toast";
 import { OperationType } from "@/enums/enums";
 import { StockOutForm } from "@/components/StockOutForm";
 import LoadingModal from "@/components/LoadingModal";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function StockOut() {
   const [operationType, setOperationType] = useState<
@@ -11,10 +12,9 @@ export default function StockOut() {
   >("Selecione");
   const [medicines, setMedicines] = useState<any[]>([]);
   const [inputs, setInputs] = useState<any[]>([]);
-  const [cabinets, setCabinets] = useState<{ value: string; label: string }[]>(
-    [],
-  );
   const [loading, setLoading] = useState(true);
+
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchMedicines = async () => {
@@ -37,26 +37,9 @@ export default function StockOut() {
       }
     };
 
-    const fetchCabinets = async () => {
-      try {
-        const res = await fetch("http://localhost:3001/api/armarios");
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setCabinets(
-            data.map((a: any) => ({
-              value: String(a.num_armario),
-              label: `Armário ${a.num_armario}`,
-            })),
-          );
-        }
-      } catch (err) {
-        console.error("Erro ao buscar armários:", err);
-      }
-    };
-
     const fetchAll = async () => {
       setLoading(true);
-      await Promise.all([fetchMedicines(), fetchInputs(), fetchCabinets()]);
+      await Promise.all([fetchMedicines(), fetchInputs()]);
       setLoading(false);
     };
 
@@ -86,7 +69,7 @@ export default function StockOut() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tipo: "saida",
-          login_id: 1,
+          login_id: user?.id,
           armario_id: Number(payload.armarioId),
           quantidade: Number(payload.quantity),
           casela_id: Number(payload.caselaId),
@@ -155,7 +138,6 @@ export default function StockOut() {
                 nome: m.nome,
                 detalhes: `${m.dosagem} ${m.unidade_medida}`,
               }))}
-              cabinets={cabinets}
               onSubmit={(data) => handleStockOut(data, OperationType.MEDICINE)}
             />
           )}
@@ -163,7 +145,6 @@ export default function StockOut() {
           {operationType === OperationType.INPUT && (
             <StockOutForm
               items={inputs.map((i) => ({ id: i.id, nome: i.nome }))}
-              cabinets={cabinets}
               onSubmit={(data) => handleStockOut(data, OperationType.INPUT)}
             />
           )}

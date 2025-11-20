@@ -17,15 +17,47 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/", async (_req, res) => {
+router.get("/", async (req, res) => {
+  const { itemId, tipo } = req.query;
+
   try {
-    const result = await pool.query(
-      "SELECT * FROM armario ORDER BY num_armario",
-    );
-    res.json(result.rows);
+    if (!itemId) {
+      const result = await pool.query(
+        "SELECT * FROM armario ORDER BY num_armario",
+      );
+      return res.json(result.rows);
+    }
+
+    let query = "";
+    let params = [itemId];
+
+    if (tipo === "medicamento") {
+      query = `
+        SELECT DISTINCT a.*
+        FROM armario a
+        JOIN estoque_medicamento e ON e.armario_id = a.num_armario
+        WHERE e.medicamento_id = $1
+        ORDER BY a.num_armario
+      `;
+    } else if (tipo === "insumo") {
+      query = `
+        SELECT DISTINCT a.*
+        FROM armario a
+        JOIN estoque_insumo e ON e.armario_id = a.num_armario
+        WHERE e.insumo_id = $1
+        ORDER BY a.num_armario
+      `;
+    } else {
+      return res.status(400).json({
+        error: "Parâmetro 'tipo' deve ser 'insumo' ou 'medicamento'",
+      });
+    }
+
+    const result = await pool.query(query, params);
+    return res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Erro ao buscar armários" });
+    return res.status(500).json({ error: "Erro ao buscar armários" });
   }
 });
 

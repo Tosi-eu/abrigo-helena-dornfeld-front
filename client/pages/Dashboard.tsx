@@ -58,13 +58,27 @@ export default function Dashboard() {
           proportionRes,
           cabinetRes,
         ] = await Promise.all([
-          fetch("http://localhost:3001/api/estoque?filter=noStock").then((r) => r.json()),
-          fetch("http://localhost:3001/api/estoque?filter=belowMin").then((r) => r.json()),
-          fetch("http://localhost:3001/api/estoque?filter=expired").then((r) => r.json()),
-          fetch("http://localhost:3001/api/estoque?filter=expiringSoon").then((r) => r.json()),
-          fetch("http://localhost:3001/api/movimentacoes/medicamentos?days=7").then((r) => r.json()),
-          fetch("http://localhost:3001/api/estoque/proporcao").then((r) => r.json()),
-          fetch("http://localhost:3001/api/estoque?type=armarios").then((r) => r.json()),
+          fetch("http://localhost:3001/api/estoque?filter=noStock").then((r) =>
+            r.json(),
+          ),
+          fetch("http://localhost:3001/api/estoque?filter=belowMin").then((r) =>
+            r.json(),
+          ),
+          fetch("http://localhost:3001/api/estoque?filter=expired").then((r) =>
+            r.json(),
+          ),
+          fetch("http://localhost:3001/api/estoque?filter=expiringSoon").then(
+            (r) => r.json(),
+          ),
+          fetch(
+            "http://localhost:3001/api/movimentacoes/medicamentos?days=7",
+          ).then((r) => r.json()),
+          fetch("http://localhost:3001/api/estoque/proporcao").then((r) =>
+            r.json(),
+          ),
+          fetch("http://localhost:3001/api/estoque?type=armarios").then((r) =>
+            r.json(),
+          ),
         ]);
 
         setNoStock(noStockRes.length);
@@ -82,8 +96,8 @@ export default function Dashboard() {
         setStockDistribution([
           {
             name: "Estoque Geral (medicamentos)",
-            value: parseFloat(proportionRes.medicamentos_geral.toFixed(2)), 
-            rawValue: proportionRes.totais.medicamentos_geral,              
+            value: parseFloat(proportionRes.medicamentos_geral.toFixed(2)),
+            rawValue: proportionRes.totais.medicamentos_geral,
           },
           {
             name: "Estoque Individual (medicamentos)",
@@ -99,7 +113,7 @@ export default function Dashboard() {
 
         const formattedCabinetData = cabinetRes.map((arm: any) => ({
           cabinet: arm.armario_nome || `Armário ${arm.armario_id}`,
-          total: Number(arm.total_geral) || 0,  
+          total: Number(arm.total_geral) || 0,
         }));
         setCabinetStockData(formattedCabinetData);
       } catch (err) {
@@ -130,24 +144,67 @@ export default function Dashboard() {
   }, []);
 
   const stats = [
-    { label: "Sem Estoque", value: noStock, onClick: () => navigate("/stock", { state: { filter: "noStock", data: noStockData } }) },
-    { label: "Abaixo do Mínimo", value: belowMin, onClick: () => navigate("/stock", { state: { filter: "belowMin", data: belowMinData } }) },
-    { label: "Vencidos", value: expired, onClick: () => navigate("/stock", { state: { filter: "expired", data: expiredData } }) },
-    { label: "Vencendo em Breve", value: expiringSoon.length, onClick: () => navigate("/stock", { state: { filter: "expiringSoon", data: expiringSoonData } }) },
+    {
+      label: "Sem Estoque",
+      value: noStock,
+      onClick: () =>
+        navigate("/stock", { state: { filter: "noStock", data: noStockData } }),
+    },
+    {
+      label: "Abaixo do Mínimo",
+      value: belowMin,
+      onClick: () =>
+        navigate("/stock", {
+          state: { filter: "belowMin", data: belowMinData },
+        }),
+    },
+    {
+      label: "Vencidos",
+      value: expired,
+      onClick: () =>
+        navigate("/stock", { state: { filter: "expired", data: expiredData } }),
+    },
+    {
+      label: "Vencendo em Breve",
+      value: expiringSoon.length,
+      onClick: () =>
+        navigate("/stock", {
+          state: { filter: "expiringSoon", data: expiringSoonData },
+        }),
+    },
   ];
 
   const COLORS = ["#0EA5E9", "#FACC15", "#EF4444"];
 
   const renderActiveShape = (props: any) => {
-    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
-    return <g><Sector cx={cx} cy={cy} innerRadius={innerRadius} outerRadius={outerRadius + 10} startAngle={startAngle} endAngle={endAngle} fill={fill} style={{ transition: "all 0.3s ease", opacity: 1 }} /></g>;
+    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } =
+      props;
+    return (
+      <g>
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius + 10}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+          style={{ transition: "all 0.3s ease", opacity: 1 }}
+        />
+      </g>
+    );
   };
 
-    return (
-      <Layout>
-        <LoadingModal open={loading} title="Carregando Dashboard" description="Aguarde enquanto os dados são carregados..." />
+  return (
+    <Layout>
+      <LoadingModal
+        open={loading}
+        title="Carregando Dashboard"
+        description="Aguarde enquanto os dados são carregados..."
+      />
 
-        { !loading && <div className="space-y-10 pt-10">
+      {!loading && (
+        <div className="space-y-10 pt-10">
           <section>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {stats.map((stat, index) => (
@@ -179,7 +236,11 @@ export default function Dashboard() {
               <EditableTable
                 columns={[
                   { key: "name", label: "Medicamento", editable: false },
-                  { key: "substance", label: "Princípio Ativo", editable: false },
+                  {
+                    key: "substance",
+                    label: "Princípio Ativo",
+                    editable: false,
+                  },
                   { key: "quantity", label: "Quantidade", editable: false },
                   {
                     key: "expiry",
@@ -250,8 +311,16 @@ export default function Dashboard() {
 
                     <defs>
                       <linearGradient id="barFill" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#0284c7" stopOpacity={0.9} />
-                        <stop offset="100%" stopColor="#0369a1" stopOpacity={1} />
+                        <stop
+                          offset="0%"
+                          stopColor="#0284c7"
+                          stopOpacity={0.9}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor="#0369a1"
+                          stopOpacity={1}
+                        />
                       </linearGradient>
                     </defs>
 
@@ -334,7 +403,8 @@ export default function Dashboard() {
               </div>
             </div>
           </section>
-        </div>}
-      </Layout>
-    );
-  }
+        </div>
+      )}
+    </Layout>
+  );
+}

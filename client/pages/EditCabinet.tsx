@@ -131,6 +131,9 @@ export default function EditCabinet() {
             onChange={(e) => handleSelectChange(e.target.value)}
             className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
+            <option value="" disabled hidden>
+              Selecione
+            </option>
             {cabinets.map((c) => (
               <option key={c.num_armario} value={c.num_armario}>
                 Armário {c.num_armario} ({c.categoria})
@@ -145,13 +148,21 @@ export default function EditCabinet() {
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Número do Armário
               </label>
-              <input
-                type="text"
+              <select
                 name="id"
                 value={formData.id}
-                onChange={handleChange}
+                onChange={(e) => handleSelectChange(e.target.value)}
                 className="w-full border bg-white rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
-              />
+              >
+                <option value="" disabled hidden>
+                  Selecione
+                </option>
+                {cabinets.map((c) => (
+                  <option key={c.num_armario} value={c.num_armario}>
+                    Armário {c.num_armario}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>

@@ -13,17 +13,21 @@ export function MedicineForm({
   onSubmit,
 }: MedicineFormProps) {
   const [formData, setFormData] = useState({
-    id: 0,
-    quantity: 0,
+    id: null as number | null,
+    quantity: "",
     stockType: { geral: false, individual: false },
     expirationDate: null as Date | null,
     resident: "",
-    casela: 0,
-    cabinet: 0,
+    casela: null as number | null,
+    cabinet: null as number | null,
     origin: "",
   });
 
   const navigate = useNavigate();
+
+  const updateField = (field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleCaselaChange = (value: number) => {
     const selected = caselas.find((c) => c.casela === value);
@@ -48,6 +52,7 @@ export function MedicineForm({
   const handleSubmit = () => {
     onSubmit({
       ...formData,
+      quantity: Number(formData.quantity),
       expirationDate: formData.expirationDate
         ? formData.expirationDate.toISOString()
         : null,
@@ -61,13 +66,15 @@ export function MedicineForm({
           Medicamento
         </label>
         <select
-          value={formData.id}
+          value={formData.id ?? ""}
           onChange={(e) =>
-            setFormData({ ...formData, id: parseInt(e.target.value) })
+            updateField("id", e.target.value ? Number(e.target.value) : null)
           }
           className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >
-          <option value="">Selecione</option>
+          <option value="" disabled hidden>
+            Selecione
+          </option>
           {medicines.map((med) => (
             <option key={med.id} value={med.id}>
               {med.name} {med.dosage} {med.measurementUnit}
@@ -82,11 +89,9 @@ export function MedicineForm({
             Quantidade
           </label>
           <input
-            type="text"
+            type="number"
             value={formData.quantity}
-            onChange={(e) =>
-              setFormData({ ...formData, quantity: parseInt(e.target.value) })
-            }
+            onChange={(e) => updateField("quantity", e.target.value)}
             placeholder="10"
             className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
           />
@@ -142,14 +147,16 @@ export function MedicineForm({
             Casela
           </label>
           <select
-            value={formData.casela}
-            onChange={(e) => handleCaselaChange(parseInt(e.target.value))}
+            value={formData.casela ?? ""}
+            onChange={(e) => handleCaselaChange(Number(e.target.value))}
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
-            <option value="">Selecione</option>
+            <option value="" disabled hidden>
+              Selecione
+            </option>
             {caselas.map((c) => (
               <option key={c.casela} value={c.casela}>
-                {c.casela} - {c.name}
+                {c.casela}
               </option>
             ))}
           </select>
@@ -175,13 +182,13 @@ export function MedicineForm({
             Armário
           </label>
           <select
-            value={formData.cabinet}
-            onChange={(e) =>
-              setFormData({ ...formData, cabinet: parseInt(e.target.value) })
-            }
+            value={formData.cabinet ?? ""}
+            onChange={(e) => updateField("cabinet", Number(e.target.value))}
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
-            <option value="">Selecione</option>
+            <option value="" disabled hidden>
+              Selecione
+            </option>
             {cabinets.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.category}
@@ -196,12 +203,12 @@ export function MedicineForm({
           </label>
           <select
             value={formData.origin}
-            onChange={(e) =>
-              setFormData({ ...formData, origin: e.target.value })
-            }
+            onChange={(e) => updateField("origin", e.target.value)}
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
-            <option value="">Selecione</option>
+            <option value="" disabled hidden>
+              Selecione
+            </option>
             {Object.values(OriginType).map((type) => (
               <option key={type} value={type}>
                 {type.charAt(0) + type.slice(1).toLowerCase()}
@@ -219,6 +226,7 @@ export function MedicineForm({
         >
           Cancelar
         </button>
+
         <button
           type="button"
           onClick={handleSubmit}

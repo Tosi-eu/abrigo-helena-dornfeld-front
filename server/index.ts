@@ -8,6 +8,7 @@ import inputs from "./routes/inputs";
 import login from "./routes/login";
 import stock from "./routes/stock";
 import movements from "./routes/movements";
+import reports from "./routes/report";
 
 export function createServer() {
   const app = express();
@@ -22,6 +23,7 @@ export function createServer() {
   app.use("/api/login", login);
   app.use("/api/estoque", stock);
   app.use("/api/movimentacoes", movements);
+  app.use("/api/relatorios", reports);
 
   app.get("/api/ping", (_req, res) => {
     res.json({ message: process.env.PING_MESSAGE ?? "pong from default" });

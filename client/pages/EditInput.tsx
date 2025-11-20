@@ -131,7 +131,7 @@ export default function EditInput() {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Descrição
+              Categoria
             </label>
             <input
               type="text"
