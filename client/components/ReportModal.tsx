@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Package, Stethoscope, Check, X, Loader2, User } from "lucide-react";
+import { createStockPDF } from "./StockReporter";
+import { pdf } from "@react-pdf/renderer";
 
 type StatusType = "idle" | "loading" | "success" | "error";
 
@@ -39,24 +41,26 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
 
     try {
       const tipo = selectedReports[0];
+
       const res = await fetch(
         `http://localhost:3001/api/relatorios?tipo=${tipo}`,
       );
-      if (!res.ok) throw new Error("Erro ao gerar relatório");
+      if (!res.ok) throw new Error("Erro ao buscar dados do relatório");
 
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-
+      const dados = await res.json();
+      const doc = createStockPDF(tipo, dados);
+      const blob = await pdf(doc).toBlob();
+      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
+
       link.href = url;
-      link.setAttribute("download", `relatorio-${tipo}.pdf`);
-      document.body.appendChild(link);
+      link.download = `relatorio-${tipo}.pdf`;
       link.click();
-      link.remove();
+
+      URL.revokeObjectURL(url);
 
       setStatus("success");
-
-      setTimeout(() => handleClose(), 3000);
+      setTimeout(() => handleClose(), 2000);
     } catch (err) {
       console.error(err);
       setStatus("error");

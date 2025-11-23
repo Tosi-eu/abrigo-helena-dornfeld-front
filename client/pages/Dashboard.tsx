@@ -54,7 +54,8 @@ export default function Dashboard() {
           belowMinRes,
           expiredRes,
           expiringSoonRes,
-          recentMovementsRes,
+          medicamentosMovRes,
+          insumosMovRes,
           proportionRes,
           cabinetRes,
         ] = await Promise.all([
@@ -70,9 +71,15 @@ export default function Dashboard() {
           fetch("http://localhost:3001/api/estoque?filter=expiringSoon").then(
             (r) => r.json(),
           ),
+
           fetch(
             "http://localhost:3001/api/movimentacoes/medicamentos?days=7",
           ).then((r) => r.json()),
+
+          fetch("http://localhost:3001/api/movimentacoes/insumos?days=7").then(
+            (r) => r.json(),
+          ),
+
           fetch("http://localhost:3001/api/estoque/proporcao").then((r) =>
             r.json(),
           ),
@@ -81,17 +88,38 @@ export default function Dashboard() {
           ),
         ]);
 
+        const recentMovements = [
+          ...medicamentosMovRes.map((m: any) => ({
+            name: m.MedicamentoModel?.nome || "-",
+            type: m.tipo,
+            operator: m.LoginModel?.login || "-",
+            casela: m.ResidenteModel?.num_casela ?? "-",
+            quantity: m.quantidade,
+            patient: m.ResidenteModel ? m.ResidenteModel.nome : "-",
+            cabinet: m.ArmarioModel?.num_armario ?? "-",
+            date: new Date(m.data).toLocaleString("pt-BR"),
+          })),
+          ...insumosMovRes.map((m: any) => ({
+            name: m.InsumoModel?.nome || "-",
+            type: m.tipo,
+            operator: m.LoginModel?.login || "-",
+            casela: m.ResidenteModel?.num_casela ?? "-",
+            quantity: m.quantidade,
+            patient: m.ResidenteModel ? m.ResidenteModel.nome : "-",
+            cabinet: m.ArmarioModel?.num_armario ?? "-",
+            date: new Date(m.data).toLocaleString("pt-BR"),
+          })),
+        ].sort((a, b) => Number(new Date(b.date)) - Number(new Date(a.date)));
+
         setNoStock(noStockRes.length);
         setBelowMin(belowMinRes.length);
         setExpired(expiredRes.length);
         setExpiringSoon(expiringSoonRes);
-
         setNoStockData(noStockRes);
         setBelowMinData(belowMinRes);
         setExpiredData(expiredRes);
         setExpiringSoonData(expiringSoonRes);
-
-        setRecentMovements(recentMovementsRes);
+        setRecentMovements(recentMovements);
 
         setStockDistribution([
           {

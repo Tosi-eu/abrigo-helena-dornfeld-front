@@ -15,7 +15,6 @@ export default function EditCabinet() {
   const [formData, setFormData] = useState({
     id: 0,
     category: "",
-    description: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -36,25 +35,23 @@ export default function EditCabinet() {
     if (item) {
       setSelectedCabinet(item);
       setFormData({
-        id: item.num_armario,
+        id: item.numero,
         category: item.categoria,
-        description: "",
       });
     }
   }, [item]);
 
   const handleSelectChange = (value: string) => {
-    const cabinet = cabinets.find((c) => c.num_armario === parseInt(value, 10));
+    const cabinet = cabinets.find((c) => c.numero === parseInt(value, 10));
     if (cabinet) {
       setSelectedCabinet(cabinet);
       setFormData({
-        id: cabinet.num_armario,
+        id: cabinet.numero,
         category: cabinet.categoria,
-        description: "",
       });
     } else {
       setSelectedCabinet(null);
-      setFormData({ id: 0, category: "", description: "" });
+      setFormData({ id: 0, category: "" });
     }
   };
 
@@ -92,7 +89,7 @@ export default function EditCabinet() {
 
       toast({
         title: "Armário atualizado",
-        description: `O armário ${updated.num_armario} foi atualizado com sucesso!`,
+        description: `O armário ${updated.numero} foi atualizado com sucesso!`,
         variant: "success",
       });
 
@@ -127,7 +124,7 @@ export default function EditCabinet() {
             Selecionar Armário
           </label>
           <select
-            value={selectedCabinet?.num_armario || ""}
+            value={selectedCabinet?.numero || ""}
             onChange={(e) => handleSelectChange(e.target.value)}
             className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
@@ -135,8 +132,8 @@ export default function EditCabinet() {
               Selecione
             </option>
             {cabinets.map((c) => (
-              <option key={c.num_armario} value={c.num_armario}>
-                Armário {c.num_armario} ({c.categoria})
+              <option key={c.numero} value={c.numero}>
+                Armário {c.numero} ({c.categoria})
               </option>
             ))}
           </select>
@@ -158,8 +155,8 @@ export default function EditCabinet() {
                   Selecione
                 </option>
                 {cabinets.map((c) => (
-                  <option key={c.num_armario} value={c.num_armario}>
-                    Armário {c.num_armario}
+                  <option key={c.numero} value={c.numero}>
+                    Armário {c.numero}
                   </option>
                 ))}
               </select>

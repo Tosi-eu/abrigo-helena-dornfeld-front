@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { OperationType } from "@/enums/enums";
 
 interface Item {
   id: number;
@@ -42,17 +41,13 @@ export function StockOutForm({ items, onSubmit }: Props) {
       const item = items.find((i) => String(i.id) === String(formData.itemId));
       if (!item) return;
 
-      const tipo = item.detalhes ? "medicamento" : "insumo";
-
       try {
-        const res = await fetch(
-          `http://localhost:3001/api/residentes?itemId=${formData.itemId}&tipo=${tipo}`,
-        );
+        const res = await fetch(`http://localhost:3001/api/residentes`);
         const data = await res.json();
         setCaselas(
           data.map((r: any) => ({
-            value: String(r.num_casela),
-            label: `Casela ${r.num_casela} - ${r.nome}`,
+            value: String(r.casela),
+            label: r.casela,
           })),
         );
         updateField("caselaId", "");
@@ -77,15 +72,13 @@ export function StockOutForm({ items, onSubmit }: Props) {
       const tipo = item.detalhes ? "medicamento" : "insumo";
 
       try {
-        const res = await fetch(
-          `http://localhost:3001/api/armarios?itemId=${formData.itemId}&tipo=${tipo}`,
-        );
+        const res = await fetch(`http://localhost:3001/api/armarios`);
         const data = await res.json();
         if (Array.isArray(data)) {
           setFilteredCabinets(
             data.map((a: any) => ({
-              value: String(a.num_armario),
-              label: `Armário ${a.num_armario}`,
+              value: String(a.numero),
+              label: a.numero,
             })),
           );
           updateField("armarioId", "");

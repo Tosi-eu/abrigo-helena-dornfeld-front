@@ -2,7 +2,6 @@ import Layout from "@/components/Layout";
 import EditableTable from "@/components/EditableTable";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { StockType } from "@/enums/enums";
 import { StockItem } from "@/interfaces/interfaces";
 import ReportModal from "@/components/ReportModal";
 import LoadingModal from "@/components/LoadingModal";
@@ -14,62 +13,45 @@ export default function Stock() {
 
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({
-    name: "",
-    description: "",
     expiry: "",
     quantity: "",
-    patient: "",
-    cabinet: "",
-    casela: "",
-    stockType: "",
-    origin: "",
   });
 
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [items, setItems] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const formatStockItems = (raw: any[]): StockItem[] => {
+    return raw.map((item) => ({
+      name: item.nome || "-",
+      description: item.principio_ativo || item.descricao || "-",
+      expiry: item.validade || "-",
+      quantity: Number(item.quantidade) || 0,
+      cabinet: item.armario_id ?? "-",
+      casela: item.casela_id ?? "-",
+      stockType: item.tipo || "-",
+      patient: item.paciente || "-",
+      origin: item.origem || "-",
+      minimumStock: item.minimo || 0,
+    }));
+  };
+
   useEffect(() => {
     async function loadStock() {
       try {
         setLoading(true);
 
-        const [medRes, insRes] = await Promise.all([
-          fetch("http://localhost:3001/api/estoque?type=medicamento"),
-          fetch("http://localhost:3001/api/estoque?type=insumo"),
-        ]);
+        let stockData: any[] = [];
 
-        const [medData, insData] = await Promise.all([
-          medRes.json(),
-          insRes.json(),
-        ]);
+        if (data && Array.isArray(data)) {
+          stockData = data;
+        } else {
+          stockData = await fetch("http://localhost:3001/api/estoque").then(
+            (res) => res.json(),
+          );
+        }
 
-        const medicamentos: StockItem[] = medData.map((m: any) => ({
-          name: m.nome,
-          description: m.principio_ativo,
-          expiry: m.validade,
-          quantity: m.quantidade,
-          cabinet: m.armario_id,
-          casela: m.casela_id,
-          stockType: m.tipo,
-          patient: m.paciente ?? "-",
-          origin: m.origem ?? "-",
-          minimumStock: m.minimo ?? 0,
-        }));
-
-        const insumos: StockItem[] = insData.map((i: any) => ({
-          name: i.nome,
-          description: i.descricao ?? "-",
-          expiry: "-",
-          quantity: i.quantidade,
-          cabinet: i.armario_id,
-          casela: "-",
-          stockType: StockType.GERAL,
-          patient: "-",
-          origin: "-",
-        }));
-
-        setItems([...medicamentos, ...insumos]);
+        setItems(formatStockItems(stockData));
       } catch (err) {
         console.error("Erro ao buscar estoque:", err);
       } finally {
@@ -109,15 +91,27 @@ export default function Stock() {
       );
     }
 
-    for (const key in filters) {
-      const val = (filters as any)[key];
-      if (val && !["expired", "belowMin", "expiringSoon", "0"].includes(val)) {
-        filtered = filtered.filter((item) =>
-          String(item[key as keyof StockItem] || "")
-            .toLowerCase()
-            .includes(String(val).toLowerCase()),
+    if (filters.expiry) {
+      const today = new Date();
+      if (filters.expiry === "expired") {
+        filtered = filtered.filter(
+          (item) => item.expiry && new Date(item.expiry) < today,
+        );
+      } else if (filters.expiry === "expiringSoon") {
+        filtered = filtered.filter((item) => {
+          if (!item.expiry) return false;
+          const diff = new Date(item.expiry).getTime() - today.getTime();
+          return diff > 0 && diff <= 60 * 24 * 3600 * 1000;
+        });
+      } else if (filters.expiry === "belowMin") {
+        filtered = filtered.filter(
+          (item) => item.quantity <= item.minimumStock,
         );
       }
+    }
+
+    if (filters.quantity === "0") {
+      filtered = filtered.filter((item) => item.quantity === 0);
     }
 
     return filtered;

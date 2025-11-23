@@ -54,7 +54,7 @@ export function MedicineForm({
       ...formData,
       quantity: Number(formData.quantity),
       expirationDate: formData.expirationDate
-        ? formData.expirationDate.toISOString()
+        ? new Date(formData.expirationDate)
         : null,
     });
   };
