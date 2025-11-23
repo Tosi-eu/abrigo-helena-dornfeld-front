@@ -34,42 +34,26 @@ export default function Stock() {
       try {
         setLoading(true);
 
-        const [medRes, insRes] = await Promise.all([
-          fetch("http://localhost:3001/api/estoque?type=medicamento"),
-          fetch("http://localhost:3001/api/estoque?type=insumo"),
-        ]);
+        const stock = await fetch("http://localhost:3001/api/estoque").then(
+          (res) => res.json(),
+        );
 
-        const [medData, insData] = await Promise.all([
-          medRes.json(),
-          insRes.json(),
-        ]);
+        console.log(stock);
 
-        const medicamentos: StockItem[] = medData.map((m: any) => ({
-          name: m.nome,
-          description: m.principio_ativo,
-          expiry: m.validade,
-          quantity: m.quantidade,
-          cabinet: m.armario_id,
-          casela: m.casela_id,
-          stockType: m.tipo,
-          patient: m.paciente ?? "-",
-          origin: m.origem ?? "-",
-          minimumStock: m.minimo ?? 0,
+        const formattedItems: StockItem[] = stock.map((item: any) => ({
+          name: item.nome || "-",
+          description: item.principio_ativo || item.descricao || "-",
+          expiry: item.validade || "-",
+          quantity: Number(item.quantidade) || 0,
+          cabinet: item.armario_id || "-",
+          casela: item.casela_id ?? "-",
+          stockType: item.tipo || "-",
+          patient: item.paciente || "-",
+          origin: item.origem || "-",
+          minimumStock: item.minimo || 0,
         }));
 
-        const insumos: StockItem[] = insData.map((i: any) => ({
-          name: i.nome,
-          description: i.descricao ?? "-",
-          expiry: "-",
-          quantity: i.quantidade,
-          cabinet: i.armario_id,
-          casela: "-",
-          stockType: StockType.GERAL,
-          patient: "-",
-          origin: "-",
-        }));
-
-        setItems([...medicamentos, ...insumos]);
+        setItems(formattedItems);
       } catch (err) {
         console.error("Erro ao buscar estoque:", err);
       } finally {

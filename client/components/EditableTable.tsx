@@ -113,9 +113,9 @@ export default function EditableTable({
       if (entityType === "inputs") {
         endpoint = `http://localhost:3001/api/insumos/${rowToDelete.id}`;
       } else if (entityType === "cabinets") {
-        endpoint = `http://localhost:3001/api/armarios/${rowToDelete.num_armario}`;
+        endpoint = `http://localhost:3001/api/armarios/${rowToDelete.numero}`;
       } else if (entityType === "residents") {
-        endpoint = `http://localhost:3001/api/residentes/${rowToDelete.num_casela}`;
+        endpoint = `http://localhost:3001/api/residentes/${rowToDelete.casela}`;
       } else if (entityType === "medicines") {
         endpoint = `http://localhost:3001/api/medicamentos/${rowToDelete.id}`;
       }
@@ -137,7 +137,7 @@ export default function EditableTable({
 
       toast({
         title: "Item removido",
-        description: data.message || "O item foi excluído com sucesso.",
+        description: data.message ?? "O item foi excluído com sucesso.",
         variant: "success",
       });
 
@@ -265,8 +265,6 @@ export default function EditableTable({
       </TooltipProvider>
     );
   };
-
-  const hasType = rows.some((r) => r.type);
 
   useEffect(() => {
     setCurrentPage(1);

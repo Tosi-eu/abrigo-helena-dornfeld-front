@@ -222,7 +222,7 @@ export function createStockPDF(tipo: string, data: RowData[]) {
           </>
         )}
 
-        {tipo === "insumos_medicamentos" && data.length > 0 && (
+        {tipo === "insumos_medicamentos" && (
           <>
             <Text style={styles.sectionTitle}>Medicamentos</Text>
             {renderTable(
@@ -233,13 +233,13 @@ export function createStockPDF(tipo: string, data: RowData[]) {
                 "Validade",
                 "Residente",
               ],
-              data[0].medicamentos ?? [],
+              (data as any).medicamentos ?? [],
             )}
 
             <Text style={styles.sectionTitle}>Insumos</Text>
             {renderTable(
               ["Insumo", "Quantidade", "Armario"],
-              data[0].insumos ?? [],
+              (data as any).insumos ?? [],
             )}
           </>
         )}

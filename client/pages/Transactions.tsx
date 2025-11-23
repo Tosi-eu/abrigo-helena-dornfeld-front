@@ -14,48 +14,42 @@ export default function InputMovements() {
       try {
         setLoading(true);
 
-        const [entriesRes, exitsRes, inputsRes] = await Promise.all([
-          fetch(
-            "http://localhost:3001/api/movimentacoes/medicamentos?type=entrada",
-          ),
-          fetch(
-            "http://localhost:3001/api/movimentacoes/medicamentos?type=saida",
-          ),
+        const [medicamentosRes, insumosRes] = await Promise.all([
+          fetch("http://localhost:3001/api/movimentacoes/medicamentos"),
           fetch("http://localhost:3001/api/movimentacoes/insumos"),
         ]);
 
-        const [entriesData, exitsData, inputsData] = await Promise.all([
-          entriesRes.json(),
-          exitsRes.json(),
-          inputsRes.json(),
+        const [medicamentosData, insumosData] = await Promise.all([
+          medicamentosRes.json(),
+          insumosRes.json(),
         ]);
 
-        const normalizedMedicines = [...entriesData, ...exitsData].map(
-          (m: any) => ({
-            id: m.id,
-            name: m.name,
-            additionalData: m.additionalData || "",
-            quantity: m.quantity ?? "",
-            operator: m.operator,
-            movementDate: new Date(m.movementDate).toLocaleDateString("pt-BR"),
-            cabinet: m.cabinet,
-            type: m.type.toUpperCase(),
-            resident: m.patient || "",
-            validade: m.validade_medicamento
-              ? new Date(m.validade_medicamento).toLocaleDateString("pt-BR")
-              : "",
-          }),
-        );
+        console.log(medicamentosData);
 
-        const normalizedInputs = inputsData.map((i: any) => ({
+        const normalizedMedicines = medicamentosData.map((m: any) => ({
+          id: m.id,
+          name: m.MedicamentoModel?.nome ?? "—",
+          additionalData: m.MedicamentoModel?.principio_ativo ?? "",
+          quantity: m.quantidade,
+          operator: m.LoginModel?.login ?? "",
+          movementDate: new Date(m.data).toLocaleDateString("pt-BR"),
+          cabinet: m.ArmarioModel?.num_armario ?? "",
+          type: m.tipo.toUpperCase(),
+          resident: m.ResidenteModel?.num_casela ?? "",
+          validade: m.validade_medicamento
+            ? new Date(m.validade_medicamento).toLocaleDateString("pt-BR")
+            : "",
+        }));
+
+        const normalizedInputs = insumosData.map((i: any) => ({
           id: i.id,
-          name: i.name,
-          additionalData: i.additionalData || "",
-          quantity: i.quantity ?? "",
-          operator: i.operator,
-          movementDate: new Date(i.movementDate).toLocaleDateString("pt-BR"),
-          cabinet: i.cabinet,
-          type: i.type.toUpperCase(),
+          name: i.InsumoModel?.nome ?? "—",
+          additionalData: i.InsumoModel?.descricao ?? "",
+          quantity: i.quantidade,
+          operator: i.LoginModel?.login ?? "",
+          movementDate: new Date(i.data).toLocaleDateString("pt-BR"),
+          cabinet: i.ArmarioModel?.num_armario ?? "",
+          type: i.tipo.toUpperCase(),
           resident: "",
           validade: "",
         }));

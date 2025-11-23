@@ -193,7 +193,7 @@ export interface MedicineFormProps {
     quantity: number;
     cabinet: number;
     casela?: number;
-    expirationDate?: string;
+    expirationDate?: Date;
     origin?: string;
     stockType: { geral: boolean };
   }) => void;

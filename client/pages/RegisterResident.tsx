@@ -19,7 +19,7 @@ export default function RegisterResident() {
       const res = await fetch("http://localhost:3001/api/residentes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome: name, casela }),
+        body: JSON.stringify({ nome: name, casela: parseInt(casela) }),
       });
 
       const data = await res.json();

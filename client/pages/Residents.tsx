@@ -9,8 +9,8 @@ export default function Resident() {
   const [error, setError] = useState<string | null>(null);
 
   const columns = [
-    { key: "nome", label: "Nome", editable: true },
-    { key: "num_casela", label: "Casela", editable: true },
+    { key: "name", label: "Nome", editable: true },
+    { key: "casela", label: "Casela", editable: true },
   ];
 
   useEffect(() => {
@@ -18,7 +18,6 @@ export default function Resident() {
       try {
         const res = await fetch("http://localhost:3001/api/residentes");
         if (!res.ok) throw new Error("Erro ao buscar residentes");
-
         const data = await res.json();
         setResidents(data);
       } catch (err: any) {

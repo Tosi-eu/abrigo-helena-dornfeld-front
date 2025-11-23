@@ -48,8 +48,8 @@ export default function StockIn() {
         if (Array.isArray(data)) {
           setCaselas(
             data.map((p) => ({
-              casela: p.num_casela,
-              name: p.nome,
+              casela: p.casela,
+              name: p.name,
             })),
           );
         }
@@ -65,8 +65,8 @@ export default function StockIn() {
         if (Array.isArray(data)) {
           setCabinets(
             data.map((a) => ({
-              id: a.num_armario,
-              category: `Armário ${a.num_armario}`,
+              id: a.numero,
+              category: `Armário ${a.numero}`,
             })),
           );
         }
@@ -94,21 +94,23 @@ export default function StockIn() {
     quantity: number;
     cabinet: number;
     casela?: number;
-    expirationDate?: string;
+    expirationDate: Date;
     origin?: string;
     stockType: { geral: boolean };
   }) => {
     try {
       const payload = {
+        tipo: "medicamento",
         medicamento_id: data.id,
         quantidade: data.quantity,
         armario_id: data.cabinet,
         casela_id: data.casela ?? null,
         validade: data.expirationDate ?? null,
-        origem: data.origin,
-        tipo: data.stockType.geral ? StockType.GERAL : StockType.INDIVIDUAL,
-        tipo_entrada: "medicamento",
+        origem: data.origin ?? null,
+        tipo_medicamento: data.stockType.geral ? "geral" : "individual",
       };
+
+      console.log(JSON.stringify(payload));
 
       const res = await fetch("http://localhost:3001/api/estoque/entrada", {
         method: "POST",
@@ -157,7 +159,7 @@ export default function StockIn() {
         insumo_id: data.inputId,
         quantidade: data.quantity,
         armario_id: data.cabinetId,
-        tipo_entrada: "insumo",
+        tipo: "insumo",
       };
 
       const res = await fetch("http://localhost:3001/api/estoque/entrada", {

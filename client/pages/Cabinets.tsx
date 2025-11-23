@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function Cabinets() {
   const columns = [
-    { key: "num_armario", label: "Número", editable: false },
+    { key: "numero", label: "Número", editable: false },
     { key: "categoria", label: "Categoria", editable: false },
   ];
 
