@@ -24,8 +24,6 @@ export default function InputMovements() {
           insumosRes.json(),
         ]);
 
-        console.log(medicamentosData);
-
         const normalizedMedicines = medicamentosData.map((m: any) => ({
           id: m.id,
           name: m.MedicamentoModel?.nome ?? "—",
@@ -33,7 +31,7 @@ export default function InputMovements() {
           quantity: m.quantidade,
           operator: m.LoginModel?.login ?? "",
           movementDate: new Date(m.data).toLocaleDateString("pt-BR"),
-          cabinet: m.ArmarioModel?.num_armario ?? "",
+          cabinet: m.armario_id ?? "",
           type: m.tipo.toUpperCase(),
           resident: m.ResidenteModel?.num_casela ?? "",
           validade: m.validade_medicamento
