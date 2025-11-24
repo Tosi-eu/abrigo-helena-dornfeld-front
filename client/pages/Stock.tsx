@@ -5,23 +5,20 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { StockItem } from "@/interfaces/interfaces";
 import ReportModal from "@/components/ReportModal";
 import LoadingModal from "@/components/LoadingModal";
+import { getStock } from "@/api/requests";
 
 export default function Stock() {
   const navigate = useNavigate();
   const location = useLocation();
   const { filter, data } = location.state || {};
 
-  const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState({
-    expiry: "",
-    quantity: "",
-  });
-
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [items, setItems] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const formatStockItems = (raw: any[]): StockItem[] => {
+
+    console.log(raw);
     return raw.map((item) => ({
       name: item.nome || "-",
       description: item.principio_ativo || item.descricao || "-",
@@ -29,7 +26,7 @@ export default function Stock() {
       quantity: Number(item.quantidade) || 0,
       cabinet: item.armario_id ?? "-",
       casela: item.casela_id ?? "-",
-      stockType: item.tipo || "-",
+      stockType: item.tipo,
       patient: item.paciente || "-",
       origin: item.origem || "-",
       minimumStock: item.minimo || 0,
@@ -43,13 +40,7 @@ export default function Stock() {
 
         let stockData: any[] = [];
 
-        if (data && Array.isArray(data)) {
-          stockData = data;
-        } else {
-          stockData = await fetch("http://localhost:3001/api/estoque").then(
-            (res) => res.json(),
-          );
-        }
+        stockData = await getStock().then((res) => res);
 
         setItems(formatStockItems(stockData));
       } catch (err) {
@@ -61,61 +52,6 @@ export default function Stock() {
 
     loadStock();
   }, [data]);
-
-  useEffect(() => {
-    if (!filter) return;
-
-    switch (filter) {
-      case "expired":
-        setFilters((prev) => ({ ...prev, expiry: "expired" }));
-        break;
-      case "belowMin":
-        setFilters((prev) => ({ ...prev, expiry: "belowMin" }));
-        break;
-      case "expiringSoon":
-        setFilters((prev) => ({ ...prev, expiry: "expiringSoon" }));
-        break;
-      case "noStock":
-        setFilters((prev) => ({ ...prev, quantity: "0" }));
-        break;
-    }
-  }, [filter]);
-
-  const filteredStock = useMemo(() => {
-    let filtered = [...items];
-    const term = search.toLowerCase();
-
-    if (search) {
-      filtered = filtered.filter((item) =>
-        item.name.toLowerCase().includes(term),
-      );
-    }
-
-    if (filters.expiry) {
-      const today = new Date();
-      if (filters.expiry === "expired") {
-        filtered = filtered.filter(
-          (item) => item.expiry && new Date(item.expiry) < today,
-        );
-      } else if (filters.expiry === "expiringSoon") {
-        filtered = filtered.filter((item) => {
-          if (!item.expiry) return false;
-          const diff = new Date(item.expiry).getTime() - today.getTime();
-          return diff > 0 && diff <= 60 * 24 * 3600 * 1000;
-        });
-      } else if (filters.expiry === "belowMin") {
-        filtered = filtered.filter(
-          (item) => item.quantity <= item.minimumStock,
-        );
-      }
-    }
-
-    if (filters.quantity === "0") {
-      filtered = filtered.filter((item) => item.quantity === 0);
-    }
-
-    return filtered;
-  }, [items, search, filters]);
 
   const columns = [
     { key: "stockType", label: "Tipo de Estoque", editable: false },
@@ -171,11 +107,7 @@ export default function Stock() {
         {!loading && (
           <>
             <h2 className="text-lg font-semibold mt-6">Estoque Geral</h2>
-            <EditableTable
-              data={filteredStock}
-              columns={columns}
-              showAddons={false}
-            />
+            <EditableTable data={items} columns={columns} showAddons={false} />
           </>
         )}
       </div>

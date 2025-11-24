@@ -3,6 +3,7 @@ import EditableTable from "@/components/EditableTable";
 import { useEffect, useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import LoadingModal from "@/components/LoadingModal";
+import { getMedicines } from "@/api/requests";
 
 export default function Medicines() {
   const [medicines, setMedicines] = useState([]);
@@ -11,10 +12,8 @@ export default function Medicines() {
   const fetchMedicines = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:3001/api/medicamentos");
-      if (!res.ok) throw new Error("Erro ao buscar medicamentos");
-      const data = await res.json();
-      setMedicines(data);
+      const res = await getMedicines();
+      setMedicines(res);
     } catch (err) {
       console.error(err);
       toast({

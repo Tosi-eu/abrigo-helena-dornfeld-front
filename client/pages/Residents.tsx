@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import EditableTable from "@/components/EditableTable";
 import LoadingModal from "@/components/LoadingModal";
+import { getResidents } from "@/api/requests";
 
 export default function Resident() {
   const [residents, setResidents] = useState<any[]>([]);
@@ -16,10 +17,9 @@ export default function Resident() {
   useEffect(() => {
     const fetchResidents = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/residentes");
-        if (!res.ok) throw new Error("Erro ao buscar residentes");
-        const data = await res.json();
-        setResidents(data);
+        await getResidents().then((data) => {
+          setResidents(data);
+        });
       } catch (err: any) {
         console.error("Erro ao buscar residentes:", err);
         setError(err.message ?? "Erro ao buscar residentes");

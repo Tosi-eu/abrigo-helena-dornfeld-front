@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import logo from "/logo.png";
+import { resetPassword } from "@/api/requests";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -25,18 +26,7 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      const res = await fetch(
-        "http://localhost:3001/api/login/reset-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, newPassword }),
-        },
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || "Erro ao resetar senha");
+      await resetPassword(email, newPassword);
 
       toast({
         title: "Sucesso!",

@@ -112,8 +112,8 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
             Selecione
           </option>
           {cabinets.map((cab) => (
-            <option key={cab.id} value={cab.id}>
-              {`Armário ${cab.id}`}
+            <option key={cab.numero} value={cab.numero}>
+              {cab.numero}
             </option>
           ))}
         </select>

@@ -3,6 +3,7 @@ import Layout from "@/components/Layout";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import LoadingModal from "@/components/LoadingModal";
+import { createInput } from "@/api/requests";
 
 export default function RegisterInput() {
   const navigate = useNavigate();
@@ -27,22 +28,10 @@ export default function RegisterInput() {
     setSaving(true);
 
     try {
-      const response = await fetch("http://localhost:3001/api/insumos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nome: formData.name,
-          descricao: formData.category,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Erro ao cadastrar insumo");
-
-      const data = await response.json();
-
+      await createInput(formData.name, formData.category);
       toast({
         title: "Insumo cadastrado",
-        description: `${data.nome} foi adicionado ao sistema.`,
+        description: `${formData.name} foi adicionado ao sistema.`,
         variant: "success",
       });
 

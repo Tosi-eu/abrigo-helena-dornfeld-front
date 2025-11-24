@@ -190,8 +190,8 @@ export function MedicineForm({
               Selecione
             </option>
             {cabinets.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.category}
+              <option key={c.numero} value={c.numero}>
+                {c.numero}
               </option>
             ))}
           </select>

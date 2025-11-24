@@ -1,6 +1,7 @@
 import Layout from "@/components/Layout";
 import EditableTable from "@/components/EditableTable";
 import { useQuery } from "@tanstack/react-query";
+import { getCabinets } from "@/api/requests";
 
 export default function Cabinets() {
   const columns = [
@@ -14,11 +15,7 @@ export default function Cabinets() {
     error,
   } = useQuery({
     queryKey: ["cabinets"],
-    queryFn: async () => {
-      const res = await fetch("http://localhost:3001/api/armarios");
-      if (!res.ok) throw new Error(`Erro ao buscar armários ${res}`);
-      return res.json();
-    },
+    queryFn: getCabinets,
   });
 
   if (isLoading)

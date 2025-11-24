@@ -3,6 +3,7 @@ import Layout from "@/components/Layout";
 import EditableTable from "@/components/EditableTable";
 import { useToast } from "@/hooks/use-toast";
 import LoadingModal from "@/components/LoadingModal";
+import { getInputs } from "@/api/requests";
 
 export default function Inputs() {
   const [data, setData] = useState<any[]>([]);
@@ -17,16 +18,12 @@ export default function Inputs() {
   useEffect(() => {
     const fetchInputs = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/insumos");
-        if (!res.ok) throw new Error("Erro ao buscar insumos");
-
-        const result = await res.json();
+        const result = await getInputs();
         setData(result);
       } catch (err: any) {
-        console.error(err);
         toast({
           title: "Erro ao carregar insumos",
-          description: "Não foi possível obter os dados do servidor.",
+          description: err.message,
           variant: "error",
         });
       } finally {

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import LogoutConfirmDialog from "@/components/LogoutConfirmDialog";
 import Layout from "@/components/Layout";
+import { updateUser } from "@/api/requests";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export default function Profile() {
         setUserId(u.id || null);
       }
     } catch (e) {
-      // ignore
+      console.error("Erro ao ler usuário do localStorage", e);
     }
   }, []);
 
@@ -41,19 +42,12 @@ export default function Profile() {
         throw new Error("Senha atual é obrigatória para autenticar");
       if (!newPassword) throw new Error("Informe a nova senha");
 
-      const res = await fetch(`http://localhost:3001/api/login/${userId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          login: newEmail,
-          password: newPassword,
-          currentLogin: currentEmail,
-          currentPassword,
-        }),
+      const { data } = await updateUser(userId, {
+        login: newEmail,
+        password: newPassword,
+        currentLogin: currentEmail,
+        currentPassword,
       });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erro ao atualizar usuário");
 
       localStorage.setItem("user", JSON.stringify(data));
 

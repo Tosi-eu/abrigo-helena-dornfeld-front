@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, ReactNode } from "react";
 import { AuthContextType, LoggedUser } from "@/interfaces/interfaces";
+import { login as apiLogin } from "@/api/requests";
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined,
@@ -16,20 +17,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async (login: string, password: string) => {
-    const res = await fetch("http://localhost:3001/api/login/authenticate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ login, password }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.error || "Erro ao fazer login");
+    const data = await apiLogin(login, password);
 
     const loggedUser = { id: data.id, login: data.login };
     setUser(loggedUser);
+
     localStorage.setItem("user", JSON.stringify(loggedUser));
   };
 

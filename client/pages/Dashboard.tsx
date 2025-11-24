@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import EditableTable from "@/components/EditableTable";
 import LoadingModal from "@/components/LoadingModal";
+import { api } from "@/api/canonical";
 
 const daysBetween = (date1: string, date2: string) => {
   const d1 = new Date(date1);
@@ -59,97 +60,80 @@ export default function Dashboard() {
           proportionRes,
           cabinetRes,
         ] = await Promise.all([
-          fetch("http://localhost:3001/api/estoque?filter=noStock").then((r) =>
-            r.json(),
-          ),
-          fetch("http://localhost:3001/api/estoque?filter=belowMin").then((r) =>
-            r.json(),
-          ),
-          fetch("http://localhost:3001/api/estoque?filter=expired").then((r) =>
-            r.json(),
-          ),
-          fetch("http://localhost:3001/api/estoque?filter=expiringSoon").then(
-            (r) => r.json(),
-          ),
+          api.get("/estoque", { filter: "noStock" }),
+          api.get("/estoque", { filter: "belowMin" }),
+          api.get("/estoque", { filter: "expired" }),
+          api.get("/estoque", { filter: "expiringSoon" }),
 
-          fetch(
-            "http://localhost:3001/api/movimentacoes/medicamentos?days=7",
-          ).then((r) => r.json()),
+          api.get("/movimentacoes/medicamentos", { days: 7 }),
+          api.get("/movimentacoes/insumos", { days: 7 }),
 
-          fetch("http://localhost:3001/api/movimentacoes/insumos?days=7").then(
-            (r) => r.json(),
-          ),
-
-          fetch("http://localhost:3001/api/estoque/proporcao").then((r) =>
-            r.json(),
-          ),
-          fetch("http://localhost:3001/api/estoque?type=armarios").then((r) =>
-            r.json(),
-          ),
+          api.get("/estoque/proporcao"),
+          api.get("/estoque", { type: "armarios" }),
         ]);
 
-        const recentMovements = [
-          ...medicamentosMovRes.map((m: any) => ({
-            name: m.MedicamentoModel?.nome || "-",
-            type: m.tipo,
-            operator: m.LoginModel?.login || "-",
-            casela: m.ResidenteModel?.num_casela ?? "-",
-            quantity: m.quantidade,
-            patient: m.ResidenteModel ? m.ResidenteModel.nome : "-",
-            cabinet: m.ArmarioModel?.num_armario ?? "-",
-            date: new Date(m.data).toLocaleString("pt-BR"),
-          })),
-          ...insumosMovRes.map((m: any) => ({
-            name: m.InsumoModel?.nome || "-",
-            type: m.tipo,
-            operator: m.LoginModel?.login || "-",
-            casela: m.ResidenteModel?.num_casela ?? "-",
-            quantity: m.quantidade,
-            patient: m.ResidenteModel ? m.ResidenteModel.nome : "-",
-            cabinet: m.ArmarioModel?.num_armario ?? "-",
-            date: new Date(m.data).toLocaleString("pt-BR"),
-          })),
-        ].sort((a, b) => Number(new Date(b.date)) - Number(new Date(a.date)));
+    const recentMovements = [
+      ...medicamentosMovRes.map((m: any) => ({
+        name: m.MedicamentoModel?.nome || "-",
+        type: m.tipo,
+        operator: m.LoginModel?.login || "-",
+        casela: m.ResidenteModel?.num_casela ?? "-",
+        quantity: m.quantidade,
+        patient: m.ResidenteModel ? m.ResidenteModel.nome : "-",
+        cabinet: m.ArmarioModel?.num_armario ?? "-",
+        date: new Date(m.data).toLocaleString("pt-BR"),
+      })),
+      ...insumosMovRes.map((m: any) => ({
+        name: m.InsumoModel?.nome || "-",
+        type: m.tipo,
+        operator: m.LoginModel?.login || "-",
+        casela: m.ResidenteModel?.num_casela ?? "-",
+        quantity: m.quantidade,
+        patient: m.ResidenteModel ? m.ResidenteModel.nome : "-",
+        cabinet: m.ArmarioModel?.num_armario ?? "-",
+        date: new Date(m.data).toLocaleString("pt-BR"),
+      })),
+    ].sort((a, b) => Number(new Date(b.date)) - Number(new Date(a.date)));
 
-        setNoStock(noStockRes.length);
-        setBelowMin(belowMinRes.length);
-        setExpired(expiredRes.length);
-        setExpiringSoon(expiringSoonRes);
-        setNoStockData(noStockRes);
-        setBelowMinData(belowMinRes);
-        setExpiredData(expiredRes);
-        setExpiringSoonData(expiringSoonRes);
-        setRecentMovements(recentMovements);
+    setNoStock(noStockRes.length);
+    setBelowMin(belowMinRes.length);
+    setExpired(expiredRes.length);
+    setExpiringSoon(expiringSoonRes);
+    setNoStockData(noStockRes);
+    setBelowMinData(belowMinRes);
+    setExpiredData(expiredRes);
+    setExpiringSoonData(expiringSoonRes);
+    setRecentMovements(recentMovements);
 
-        setStockDistribution([
-          {
-            name: "Estoque Geral (medicamentos)",
-            value: parseFloat(proportionRes.medicamentos_geral.toFixed(2)),
-            rawValue: proportionRes.totais.medicamentos_geral,
-          },
-          {
-            name: "Estoque Individual (medicamentos)",
-            value: parseFloat(proportionRes.medicamentos_individual.toFixed(2)),
-            rawValue: proportionRes.totais.medicamentos_individual,
-          },
-          {
-            name: "Insumos",
-            value: proportionRes.insumos,
-            rawValue: proportionRes.totais.insumos,
-          },
-        ]);
+    setStockDistribution([
+      {
+        name: "Estoque Geral (medicamentos)",
+        value: parseFloat(proportionRes.medicamentos_geral.toFixed(2)),
+        rawValue: proportionRes.totais.medicamentos_geral,
+      },
+      {
+        name: "Estoque Individual (medicamentos)",
+        value: parseFloat(proportionRes.medicamentos_individual.toFixed(2)),
+        rawValue: proportionRes.totais.medicamentos_individual,
+      },
+      {
+        name: "Insumos",
+        value: proportionRes.insumos,
+        rawValue: proportionRes.totais.insumos,
+      },
+    ]);
 
-        const formattedCabinetData = cabinetRes.map((arm: any) => ({
-          cabinet: arm.armario_nome || `Armário ${arm.armario_id}`,
-          total: Number(arm.total_geral) || 0,
-        }));
-        setCabinetStockData(formattedCabinetData);
-      } catch (err) {
-        console.error("Erro ao carregar dados do dashboard:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const formattedCabinetData = cabinetRes.map((arm: any) => ({
+      cabinet: arm.armario_nome || `Armário ${arm.armario_id}`,
+      total: Number(arm.total_geral) || 0,
+    }));
+    setCabinetStockData(formattedCabinetData);
+  } catch (err) {
+    console.error("Erro ao carregar dados do dashboard:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchDashboardData();
   }, []);
@@ -179,7 +163,7 @@ export default function Dashboard() {
         navigate("/stock", { state: { filter: "noStock", data: noStockData } }),
     },
     {
-      label: "Abaixo do Mínimo",
+      label: "Próximo do Mínimo",
       value: belowMin,
       onClick: () =>
         navigate("/stock", {
@@ -195,6 +179,7 @@ export default function Dashboard() {
     {
       label: "Vencendo em Breve",
       value: expiringSoon.length,
+
       onClick: () =>
         navigate("/stock", {
           state: { filter: "expiringSoon", data: expiringSoonData },
@@ -203,6 +188,8 @@ export default function Dashboard() {
   ];
 
   const COLORS = ["#0EA5E9", "#FACC15", "#EF4444"];
+
+  console.log(expiringSoon);
 
   const renderActiveShape = (props: any) => {
     const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } =

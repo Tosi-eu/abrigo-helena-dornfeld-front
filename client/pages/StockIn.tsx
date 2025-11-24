@@ -7,6 +7,15 @@ import { toast } from "@/hooks/use-toast";
 import { Input, Medicine, Patient, Cabinet } from "@/interfaces/interfaces";
 import LoadingModal from "@/components/LoadingModal";
 import { useAuth } from "@/hooks/use-auth";
+import { get } from "http";
+import {
+  createMovement,
+  createStockIn,
+  getCabinets,
+  getInputs,
+  getMedicines,
+  getResidents,
+} from "@/api/requests";
 
 export default function StockIn() {
   const [operationType, setOperationType] = useState<
@@ -23,9 +32,9 @@ export default function StockIn() {
   useEffect(() => {
     const fetchMedicines = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/medicamentos");
-        const data: Medicine[] = await res.json();
-        if (Array.isArray(data)) setMedicines(data);
+        await getMedicines().then((data) => {
+          setMedicines(data);
+        });
       } catch (err) {
         console.error("Erro ao buscar medicines:", err);
       }
@@ -33,9 +42,9 @@ export default function StockIn() {
 
     const fetchInputs = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/insumos");
-        const data: Input[] = await res.json();
-        if (Array.isArray(data)) setInputs(data);
+        await getInputs().then((data) => {
+          setInputs(data);
+        });
       } catch (err) {
         console.error("Erro ao buscar inputs:", err);
       }
@@ -43,16 +52,9 @@ export default function StockIn() {
 
     const fetchCaselas = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/residentes");
-        const data: any[] = await res.json();
-        if (Array.isArray(data)) {
-          setCaselas(
-            data.map((p) => ({
-              casela: p.casela,
-              name: p.name,
-            })),
-          );
-        }
+        await getResidents().then((data) => {
+          setCaselas(data);
+        });
       } catch (err) {
         console.error("Erro ao buscar caselas:", err);
       }
@@ -60,16 +62,9 @@ export default function StockIn() {
 
     const fetchCabinets = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/armarios");
-        const data: any[] = await res.json();
-        if (Array.isArray(data)) {
-          setCabinets(
-            data.map((a) => ({
-              id: a.numero,
-              category: `Armário ${a.numero}`,
-            })),
-          );
-        }
+        await getCabinets().then((data) => {
+          setCabinets(data);
+        });
       } catch (err) {
         console.error("Erro ao buscar armários:", err);
       }
@@ -89,108 +84,72 @@ export default function StockIn() {
     fetchAll();
   }, []);
 
-  const handleMedicineSubmit = async (data: {
-    id: number;
-    quantity: number;
-    cabinet: number;
-    casela?: number;
-    expirationDate: Date;
-    origin?: string;
-    stockType: { geral: boolean };
-  }) => {
+  const handleMedicineSubmit = async (data) => {
     try {
       const payload = {
-        tipo: "medicamento",
+        tipo: data.stockType.geral ? "geral" : "individual",
         medicamento_id: data.id,
         quantidade: data.quantity,
         armario_id: data.cabinet,
         casela_id: data.casela ?? null,
         validade: data.expirationDate ?? null,
         origem: data.origin ?? null,
-        tipo_medicamento: data.stockType.geral ? "geral" : "individual",
       };
 
-      const res = await fetch("http://localhost:3001/api/estoque/entrada", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      await createStockIn(payload);
 
-      if (!res.ok) throw new Error("Erro ao registrar entrada");
-
-      await fetch("http://localhost:3001/api/movimentacoes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipo: "entrada",
-          login_id: user?.id,
-          medicamento_id: data.id,
-          armario_id: data.cabinet,
-          casela_id: data.casela ?? null,
-          quantidade: data.quantity,
-          validade_medicamento: data.expirationDate ?? null,
-        }),
+      await createMovement({
+        tipo: "entrada",
+        login_id: user?.id!,
+        medicamento_id: data.id,
+        armario_id: data.cabinet,
+        casela_id: data.casela ?? null,
+        quantidade: data.quantity,
+        validade_medicamento: data.expirationDate ?? null,
       });
 
       toast({
         title: "Entrada registrada com sucesso!",
-        description: `Medicamento adicionado ao estoque.`,
+        description: "Medicamento adicionado ao estoque.",
         variant: "success",
       });
     } catch (err: any) {
       toast({
-        title: "Erro ao registrar entrada",
-        description: err.message || "Erro inesperado ao salvar no estoque.",
+        title: "Erro ao registrar",
+        description: err.message,
         variant: "error",
       });
     }
   };
 
-  const handleInputSubmit = async (data: {
-    inputId: number;
-    cabinetId: number;
-    caselaId?: number;
-    quantity: number;
-  }) => {
+  const handleInputSubmit = async (data) => {
     try {
       const payload = {
+        tipo: "insumo",
         insumo_id: data.inputId,
         quantidade: data.quantity,
         armario_id: data.cabinetId,
-        tipo: "insumo",
       };
 
-      console.log(JSON.stringify(payload));
+      await createStockIn(payload);
 
-      const res = await fetch("http://localhost:3001/api/estoque/entrada", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) throw new Error(`Erro ao registrar entrada ${res.status}`);
-
-      await fetch("http://localhost:3001/api/movimentacoes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipo: "entrada",
-          login_id: user?.id,
-          insumo_id: data.inputId,
-          armario_id: data.cabinetId,
-          quantidade: data.quantity,
-        }),
+      await createMovement({
+        tipo: "entrada",
+        login_id: user?.id!,
+        insumo_id: data.inputId,
+        armario_id: data.cabinetId,
+        quantidade: data.quantity,
       });
 
       toast({
-        title: "Entrada registrada com sucesso!",
-        description: `Insumo adicionado ao estoque.`,
+        title: "Entrada registrada!",
+        description: "Insumo adicionado ao estoque.",
         variant: "success",
       });
     } catch (err: any) {
       toast({
         title: "Erro ao registrar entrada",
-        description: err.message || "Erro inesperado ao salvar no estoque.",
+        description: err.message,
         variant: "error",
       });
     }

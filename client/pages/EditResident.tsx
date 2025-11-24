@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { toast } from "@/hooks/use-toast";
 import LoadingModal from "@/components/LoadingModal";
+import { updateResident } from "@/api/requests";
 
 export default function EditResident() {
   const location = useLocation();
@@ -50,17 +51,9 @@ export default function EditResident() {
     setSaving(true);
 
     try {
-      const res = await fetch(
-        `http://localhost:3001/api/residentes/${formData.num_casela}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nome: formData.nome }),
-        },
-      );
-
-      if (!res.ok) throw new Error("Erro ao editar residente");
-      const updated = await res.json();
+      const updated = await updateResident(formData.num_casela, {
+        nome: formData.nome,
+      });
 
       toast({
         title: "Residente atualizado",

@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import logo from "/logo.png";
 import { useAuth } from "@/hooks/use-auth";
+import { register } from "@/api/requests";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -23,20 +24,12 @@ export default function Auth() {
       if (isLogin) {
         await authLogin(login, password);
         toast({ title: "Login realizado!", variant: "success" });
-        navigate("/dashboard");
       } else {
-        const res = await fetch("/api/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ login, password }),
-        });
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(data.error || "Erro ao cadastrar usuário");
-
+        await register(login, password);
         toast({ title: "Cadastro realizado!", variant: "success" });
-        navigate("/dashboard");
       }
+
+      navigate("/dashboard");
     } catch (err: any) {
       toast({ title: "Erro", description: err.message, variant: "error" });
     } finally {
