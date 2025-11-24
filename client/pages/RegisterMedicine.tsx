@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import LoadingModal from "@/components/LoadingModal";
+import { createMedicine, getMedicines } from "@/api/requests";
 
 export default function SignUpMedicine() {
   const navigate = useNavigate();
@@ -21,10 +22,9 @@ export default function SignUpMedicine() {
   useEffect(() => {
     async function fetchMedicines() {
       try {
-        const res = await fetch("http://localhost:3001/api/medicamentos");
-        if (!res.ok) throw new Error("Erro ao buscar medicamentos");
-        const data = await res.json();
-        setMedicines(data);
+        await getMedicines().then((data) => {
+          setMedicines(data);
+        });
       } catch (err) {
         console.error(err);
         toast({
@@ -92,19 +92,13 @@ export default function SignUpMedicine() {
     setSaving(true);
 
     try {
-      const response = await fetch("http://localhost:3001/api/medicamentos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nome: name,
-          principio_ativo: substance,
-          dosagem: dosageValue,
-          unidade_medida: measurementUnit,
-          estoque_minimo: Number(minimumStock),
-        }),
-      });
-
-      if (!response.ok) throw new Error("Erro ao cadastrar o medicamento");
+      await createMedicine(
+        name,
+        substance,
+        dosageValue,
+        measurementUnit,
+        parseInt(minimumStock, 10) ?? null,
+      );
 
       toast({
         title: "Medicamento cadastrado!",

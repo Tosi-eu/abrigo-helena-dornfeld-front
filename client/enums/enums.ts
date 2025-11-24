@@ -1,6 +1,6 @@
 export enum OperationType {
-  MEDICINE = "Medicamento",
-  INPUT = "Insumo",
+  MEDICINE = "medicamento",
+  INPUT = "insumo",
 }
 
 export enum OriginType {

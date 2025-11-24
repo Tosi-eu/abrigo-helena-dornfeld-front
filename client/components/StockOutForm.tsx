@@ -1,3 +1,4 @@
+import { getCabinets, getResidents } from "@/api/requests";
 import { useEffect, useState } from "react";
 
 interface Item {
@@ -32,7 +33,7 @@ export function StockOutForm({ items, onSubmit }: Props) {
   };
 
   useEffect(() => {
-    const fetchCaselas = async () => {
+    const loadCaselas = async () => {
       if (!formData.itemId) {
         setCaselas([]);
         return;
@@ -42,25 +43,27 @@ export function StockOutForm({ items, onSubmit }: Props) {
       if (!item) return;
 
       try {
-        const res = await fetch(`http://localhost:3001/api/residentes`);
-        const data = await res.json();
+        const response = await getResidents();
+
         setCaselas(
-          data.map((r: any) => ({
+          response.map((r: any) => ({
             value: String(r.casela),
             label: r.casela,
-          })),
+          }))
         );
+
         updateField("caselaId", "");
       } catch (err) {
         console.error("Erro ao buscar caselas:", err);
       }
     };
 
-    fetchCaselas();
+    loadCaselas();
   }, [formData.itemId]);
 
+
   useEffect(() => {
-    const fetchArmarios = async () => {
+    const loadArmarios = async () => {
       if (!formData.itemId) {
         setFilteredCabinets([]);
         return;
@@ -69,26 +72,23 @@ export function StockOutForm({ items, onSubmit }: Props) {
       const item = items.find((i) => String(i.id) === String(formData.itemId));
       if (!item) return;
 
-      const tipo = item.detalhes ? "medicamento" : "insumo";
-
       try {
-        const res = await fetch(`http://localhost:3001/api/armarios`);
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setFilteredCabinets(
-            data.map((a: any) => ({
-              value: String(a.numero),
-              label: a.numero,
-            })),
-          );
-          updateField("armarioId", "");
-        }
+        const response = await getCabinets();
+
+        setFilteredCabinets(
+          response.map((a: any) => ({
+            value: String(a.numero),
+            label: a.numero,
+          }))
+        );
+
+        updateField("armarioId", "");
       } catch (err) {
         console.error("Erro ao buscar armários:", err);
       }
     };
 
-    fetchArmarios();
+    loadArmarios();
   }, [formData.itemId]);
 
   const handleSubmit = () => {
@@ -102,16 +102,15 @@ export function StockOutForm({ items, onSubmit }: Props) {
 
   return (
     <div className="space-y-4">
+      {/* ITEM */}
       <div>
         <label className="block text-sm font-medium text-gray-700">Item</label>
         <select
           value={formData.itemId}
           onChange={(e) => updateField("itemId", e.target.value)}
-          className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+          className="w-full border bg-white rounded-lg p-2 text-sm"
         >
-          <option value="" disabled hidden>
-            Selecione...
-          </option>
+          <option value="" disabled hidden>Selecione...</option>
           {items.map((item) => (
             <option key={item.id} value={item.id}>
               {item.nome} {item.detalhes || ""}
@@ -120,19 +119,16 @@ export function StockOutForm({ items, onSubmit }: Props) {
         </select>
       </div>
 
+      {/* ARMÁRIO */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Armário
-        </label>
+        <label className="block text-sm font-medium text-gray-700">Armário</label>
         <select
           value={formData.armarioId}
           onChange={(e) => updateField("armarioId", e.target.value)}
           disabled={!formData.itemId}
-          className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+          className="w-full border bg-white rounded-lg p-2 text-sm disabled:bg-gray-100"
         >
-          <option value="" disabled hidden>
-            Selecione...
-          </option>
+          <option value="" disabled hidden>Selecione...</option>
           {filteredCabinets.map((c) => (
             <option key={c.value} value={c.value}>
               {c.label}
@@ -141,18 +137,15 @@ export function StockOutForm({ items, onSubmit }: Props) {
         </select>
       </div>
 
+      {/* CASELA */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Casela
-        </label>
+        <label className="block text-sm font-medium text-gray-700">Casela</label>
         <select
           value={formData.caselaId}
           onChange={(e) => updateField("caselaId", e.target.value)}
-          className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+          className="w-full border bg-white rounded-lg p-2 text-sm"
         >
-          <option value="" disabled hidden>
-            Selecione...
-          </option>
+          <option value="" disabled hidden>Selecione...</option>
           {caselas.map((c) => (
             <option key={c.value} value={c.value}>
               {c.label}
@@ -161,6 +154,7 @@ export function StockOutForm({ items, onSubmit }: Props) {
         </select>
       </div>
 
+      {/* QUANTIDADE */}
       <div>
         <label className="block text-sm font-medium text-gray-700">
           Quantidade
@@ -170,10 +164,11 @@ export function StockOutForm({ items, onSubmit }: Props) {
           value={formData.quantity}
           onChange={(e) => updateField("quantity", e.target.value)}
           placeholder="0"
-          className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+          className="w-full border rounded-lg p-2 text-sm"
         />
       </div>
 
+      {/* BOTÃO */}
       <div className="flex justify-end">
         <button
           type="button"

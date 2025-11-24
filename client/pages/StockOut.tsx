@@ -5,6 +5,12 @@ import { OperationType } from "@/enums/enums";
 import { StockOutForm } from "@/components/StockOutForm";
 import LoadingModal from "@/components/LoadingModal";
 import { useAuth } from "@/hooks/use-auth";
+import {
+  createMovement,
+  createStockOut,
+  getInputs,
+  getMedicines,
+} from "@/api/requests";
 
 export default function StockOut() {
   const [operationType, setOperationType] = useState<
@@ -19,9 +25,9 @@ export default function StockOut() {
   useEffect(() => {
     const fetchMedicines = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/medicamentos");
-        const data = await res.json();
-        if (Array.isArray(data)) setMedicines(data);
+        await getMedicines().then((data) => {
+          setMedicines(data);
+        });
       } catch (err) {
         console.error("Erro ao buscar medicines:", err);
       }
@@ -29,9 +35,9 @@ export default function StockOut() {
 
     const fetchInputs = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/insumos");
-        const data = await res.json();
-        if (Array.isArray(data)) setInputs(data);
+        await getInputs().then((data) => {
+          setInputs(data);
+        });
       } catch (err) {
         console.error("Erro ao buscar inputs:", err);
       }
@@ -49,39 +55,33 @@ export default function StockOut() {
   const handleStockOut = async (payload: any, type: OperationType) => {
     try {
       const body = {
-        tipo: type === OperationType.MEDICINE ? "medicamento" : "insumo",
+        tipo:
+          type === OperationType.MEDICINE
+            ? OperationType.MEDICINE
+            : OperationType.INPUT,
         itemId: Number(payload.itemId),
         armarioId: Number(payload.armarioId),
         quantidade: Number(payload.quantity),
       };
 
-      const res = await fetch("http://localhost:3001/api/estoque/saida", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Erro ao registrar saída");
-
-      await fetch("http://localhost:3001/api/movimentacoes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipo: "saida",
-          login_id: user?.id,
-          armario_id: Number(payload.armarioId),
-          quantidade: Number(payload.quantity),
-          casela_id: Number(payload.caselaId),
-          ...(type === OperationType.MEDICINE
-            ? {
-                medicamento_id: Number(payload.itemId),
-                validade_medicamento: payload.expirationDate
-                  ? new Date(payload.expirationDate).toISOString()
-                  : null,
-              }
-            : { insumo_id: Number(payload.itemId) }),
-        }),
+      await createStockOut(body);
+      await createMovement({
+        tipo: "saida",
+        login_id: user?.id,
+        armario_id: Number(payload.armarioId),
+        casela_id: payload.caselaId ? Number(payload.caselaId) : null,
+        quantidade: Number(payload.quantity),
+        ...(type === OperationType.MEDICINE && payload.expirationDate
+          ? { expirationDate: new Date(payload.expirationDate) }
+          : {}),
+        ...(type === OperationType.MEDICINE
+          ? {
+              medicamento_id: Number(payload.itemId),
+              validade_medicamento: payload.expirationDate
+                ? new Date(payload.expirationDate).toISOString()
+                : null,
+            }
+          : { insumo_id: Number(payload.itemId) }),
       });
 
       toast({

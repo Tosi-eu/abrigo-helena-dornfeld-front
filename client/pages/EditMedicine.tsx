@@ -3,6 +3,7 @@ import Layout from "@/components/Layout";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import LoadingModal from "@/components/LoadingModal";
+import { updateMedicine } from "@/api/requests";
 
 export default function EditMedicine() {
   const location = useLocation();
@@ -57,24 +58,10 @@ export default function EditMedicine() {
     setSaving(true);
 
     try {
-      const payload = {
+      await updateMedicine(medicineId, {
         ...formData,
-        unidade_medida: formData.unidade_medida || null, // garante null real
-      };
-
-      const res = await fetch(
-        `http://localhost:3001/api/medicamentos/${medicineId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      );
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Falha ao atualizar medicamento");
-      }
+        unidade_medida: formData.unidade_medida || null,
+      });
 
       toast({
         title: "Medicamento atualizado",

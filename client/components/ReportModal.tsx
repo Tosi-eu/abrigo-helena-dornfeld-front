@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Package, Stethoscope, Check, X, Loader2, User } from "lucide-react";
 import { createStockPDF } from "./StockReporter";
 import { pdf } from "@react-pdf/renderer";
+import { getReport } from "@/api/requests";
 
 type StatusType = "idle" | "loading" | "success" | "error";
 
@@ -42,13 +43,9 @@ export default function ReportModal({ open, onClose }: ReportModalProps) {
     try {
       const tipo = selectedReports[0];
 
-      const res = await fetch(
-        `http://localhost:3001/api/relatorios?tipo=${tipo}`,
-      );
-      if (!res.ok) throw new Error("Erro ao buscar dados do relatório");
+      const res = await getReport(tipo);
 
-      const dados = await res.json();
-      const doc = createStockPDF(tipo, dados);
+      const doc = createStockPDF(tipo, res);
       const blob = await pdf(doc).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");

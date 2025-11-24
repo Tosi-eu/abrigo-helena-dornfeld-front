@@ -65,8 +65,8 @@ export interface Medicine {
 }
 
 export interface Cabinet {
-  id: number;
-  category: CabinetCategory | string;
+  numero: number;
+  categoria: CabinetCategory | string;
 }
 
 export interface Input {

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { CabinetCategory } from "@/enums/enums";
 import { toast } from "@/hooks/use-toast";
 import LoadingModal from "@/components/LoadingModal";
+import { createCabinet } from "@/api/requests";
 
 export default function RegisterCabinet() {
   const [id, setId] = useState<number | "">("");
@@ -35,17 +36,7 @@ export default function RegisterCabinet() {
     setSaving(true);
 
     try {
-      const res = await fetch("http://localhost:3001/api/armarios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          numero: id,
-          categoria: category,
-        }),
-      });
-
-      if (!res.ok) throw new Error("Erro ao cadastrar armário");
-
+      await createCabinet(id, category);
       toast({
         title: "Armário criado",
         description: `O armário ${id} foi cadastrado com sucesso.`,
@@ -53,7 +44,7 @@ export default function RegisterCabinet() {
       });
 
       navigate("/cabinets");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       toast({
         title: "Erro ao cadastrar",

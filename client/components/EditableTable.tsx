@@ -11,6 +11,14 @@ import {
 } from "@/components/ui/tooltip";
 import DeletePopUp from "./DeletePopUp";
 import CabinetRelocationModal from "./CabinetRelocationModal";
+import {
+  checkCabinetStock,
+  getCabinets,
+  deleteCabinet,
+  deleteInput,
+  deleteMedicine,
+  deleteResident,
+} from "@/api/requests";
 
 const typeMap: Record<string, string> = {
   Medicamento: "medicines",
@@ -41,7 +49,6 @@ export default function EditableTable({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Formatação de datas
   useEffect(() => {
     if (!data) return;
 
@@ -116,21 +123,17 @@ export default function EditableTable({
 
     if (entityType === "cabinets") {
       try {
-        const res = await fetch(
-          `http://localhost:3001/api/armarios/${row.numero}/check`,
-        );
-        const data = await res.json();
+        const res = await checkCabinetStock(row.numero);
 
-        if (data.hasMedicineStock || data.hasInputStock) {
+        if (res.hasMedicineStock || res.hasInputStock) {
           setRemanejamentoIndex(index);
           setStockInfo({
-            hasMedicineStock: data.hasMedicineStock,
-            hasInputStock: data.hasInputStock,
+            hasMedicineStock: res.hasMedicineStock,
+            hasInputStock: res.hasInputStock,
           });
 
-          const armariosRes = await fetch(`http://localhost:3001/api/armarios`);
-          const allArmarios = await armariosRes.json();
-          const available = allArmarios
+          const armariosRes = await getCabinets();
+          const available = armariosRes
             .map((a: any) => a.numero)
             .filter((num: number) => num !== row.numero);
           setArmarios(available);
@@ -157,26 +160,22 @@ export default function EditableTable({
     if (!rowToDelete) return;
 
     try {
-      const endpoint =
-        entityType === "cabinets"
-          ? `http://localhost:3001/api/armarios/${rowToDelete.numero}`
-          : entityType === "inputs"
-            ? `http://localhost:3001/api/insumos/${rowToDelete.id}`
-            : entityType === "medicines"
-              ? `http://localhost:3001/api/medicamentos/${rowToDelete.id}`
-              : entityType === "residents"
-                ? `http://localhost:3001/api/residentes/${rowToDelete.casela}`
-                : "";
+      let res = null;
+      if (entityType === "cabinets") {
+        res = await deleteCabinet(rowToDelete.numero);
+      } else if (entityType === "inputs") {
+        res = await deleteInput(rowToDelete.id);
+      } else if (entityType === "medicines") {
+        res = await deleteMedicine(rowToDelete.id);
+      } else if (entityType === "residents") {
+        res = await deleteResident(rowToDelete.casela);
+      } else {
+        throw new Error("Entidade não suportada para deleção.");
+      }
 
-      if (!endpoint) throw new Error("Entidade não suportada para deleção.");
-
-      const res = await fetch(endpoint, { method: "DELETE" });
-      if (!res.ok) throw new Error("Erro ao deletar item");
-
-      const data = await res.json();
       toast({
         title: "Item removido",
-        description: data.message ?? "O item foi excluído com sucesso.",
+        description: res.message ?? "O item foi excluído com sucesso.",
         variant: "success",
       });
       setRows(rows.filter((_, i) => i !== deleteIndex));
@@ -202,20 +201,10 @@ export default function EditableTable({
     if (!row) return;
 
     try {
-      const res = await fetch(
-        `http://localhost:3001/api/armarios/${row.numero}`,
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(destinos),
-        },
-      );
-      if (!res.ok) throw new Error("Erro ao remanejar e deletar armário");
-
-      const data = await res.json();
+      const res = await deleteCabinet(row.numero, destinos);
       toast({
         title: "Armário removido",
-        description: data.message,
+        description: res.message ?? "O armário foi removido com sucesso.",
         variant: "success",
       });
       setRows(rows.filter((_, i) => i !== remanejamentoIndex));
@@ -238,10 +227,7 @@ export default function EditableTable({
     setStockInfo({ hasMedicineStock: false, hasInputStock: false });
   };
 
-  // Paginação
   const rowsFiltered = rows;
-  const totalItems = rowsFiltered.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / recordsPerPage));
   const startIndex = (currentPage - 1) * recordsPerPage;
   const endIndex = startIndex + recordsPerPage;
   const pageRows = rowsFiltered.slice(startIndex, endIndex);
@@ -263,7 +249,7 @@ export default function EditableTable({
           <table className="w-full text-center border-collapse">
             <thead>
               <tr className="border-b-2 border-slate-300 bg-sky-100">
-                {columns.map((col, index) => (
+                {columns.map((col) => (
                   <th
                     key={col.key}
                     className="px-4 py-3 text-sm font-semibold text-slate-800"
@@ -362,6 +348,7 @@ export default function EditableTable({
     </>
   );
 }
+
 const renderExpiryTag = (value: string) => {
   if (!value) return "-";
 

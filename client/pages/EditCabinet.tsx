@@ -4,6 +4,7 @@ import { CabinetCategory } from "@/enums/enums";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import LoadingModal from "@/components/LoadingModal";
+import { getCabinets, updateCabinet } from "@/api/requests";
 
 export default function EditCabinet() {
   const location = useLocation();
@@ -19,8 +20,7 @@ export default function EditCabinet() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/armarios")
-      .then((res) => res.json())
+    getCabinets()
       .then((data) => setCabinets(data))
       .catch(() => {
         toast({
@@ -75,21 +75,14 @@ export default function EditCabinet() {
     setLoading(true);
 
     try {
-      const res = await fetch(
-        `http://localhost:3001/api/armarios/${formData.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ categoria: formData.category }),
-        },
-      );
-
-      if (!res.ok) throw new Error("Erro ao editar armário");
-      const updated = await res.json();
+      await updateCabinet(selectedCabinet.numero, {
+        numero: formData.id,
+        categoria: formData.category,
+      });
 
       toast({
         title: "Armário atualizado",
-        description: `O armário ${updated.numero} foi atualizado com sucesso!`,
+        description: `O armário ${formData.id} foi atualizado com sucesso!`,
         variant: "success",
       });
 

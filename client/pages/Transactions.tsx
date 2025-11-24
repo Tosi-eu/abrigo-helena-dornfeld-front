@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import Layout from "@/components/Layout";
 import EditableTable from "@/components/EditableTable";
 import LoadingModal from "@/components/LoadingModal";
+import { getInputMovements, getMedicineMovements } from "@/api/requests";
 
 export default function InputMovements() {
   const [entryFilter, setEntryFilter] = useState("");
@@ -9,50 +10,39 @@ export default function InputMovements() {
   const [medicineMovements, setMedicineMovements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  function normalizeMovement(item: any) {
+    return {
+      id: item.id,
+      name: item.MedicamentoModel?.nome ?? item.InsumoModel?.nome ?? "—",
+      additionalData:
+        item.MedicamentoModel?.principio_ativo ??
+        item.InsumoModel?.descricao ??
+        "",
+      quantity: item.quantidade,
+      operator: item.LoginModel?.login ?? "",
+      movementDate: new Date(item.data).toLocaleDateString("pt-BR"),
+      cabinet: item.ArmarioModel?.num_armario ?? item.armario_id ?? "",
+      type: item.tipo.toUpperCase(),
+      resident: item.ResidenteModel?.num_casela ?? "",
+      validade: item.validade_medicamento
+        ? new Date(item.validade_medicamento).toLocaleDateString("pt-BR")
+        : "",
+    };
+  }
   useEffect(() => {
     async function fetchData() {
       try {
         setLoading(true);
 
         const [medicamentosRes, insumosRes] = await Promise.all([
-          fetch("http://localhost:3001/api/movimentacoes/medicamentos"),
-          fetch("http://localhost:3001/api/movimentacoes/insumos"),
+          getInputMovements(),
+          getMedicineMovements(),
         ]);
 
-        const [medicamentosData, insumosData] = await Promise.all([
-          medicamentosRes.json(),
-          insumosRes.json(),
+        setMedicineMovements([
+          ...medicamentosRes.map(normalizeMovement),
+          ...insumosRes.map(normalizeMovement),
         ]);
-
-        const normalizedMedicines = medicamentosData.map((m: any) => ({
-          id: m.id,
-          name: m.MedicamentoModel?.nome ?? "—",
-          additionalData: m.MedicamentoModel?.principio_ativo ?? "",
-          quantity: m.quantidade,
-          operator: m.LoginModel?.login ?? "",
-          movementDate: new Date(m.data).toLocaleDateString("pt-BR"),
-          cabinet: m.armario_id ?? "",
-          type: m.tipo.toUpperCase(),
-          resident: m.ResidenteModel?.num_casela ?? "",
-          validade: m.validade_medicamento
-            ? new Date(m.validade_medicamento).toLocaleDateString("pt-BR")
-            : "",
-        }));
-
-        const normalizedInputs = insumosData.map((i: any) => ({
-          id: i.id,
-          name: i.InsumoModel?.nome ?? "—",
-          additionalData: i.InsumoModel?.descricao ?? "",
-          quantity: i.quantidade,
-          operator: i.LoginModel?.login ?? "",
-          movementDate: new Date(i.data).toLocaleDateString("pt-BR"),
-          cabinet: i.ArmarioModel?.num_armario ?? "",
-          type: i.tipo.toUpperCase(),
-          resident: "",
-          validade: "",
-        }));
-
-        setMedicineMovements([...normalizedMedicines, ...normalizedInputs]);
       } catch (error) {
         console.error("Erro ao carregar movimentações:", error);
       } finally {

@@ -3,6 +3,7 @@ import Layout from "@/components/Layout";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import LoadingModal from "@/components/LoadingModal";
+import { updateInput } from "@/api/requests";
 
 export default function EditInput() {
   const location = useLocation();
@@ -58,19 +59,10 @@ export default function EditInput() {
     setSaving(true);
 
     try {
-      const res = await fetch(
-        `http://localhost:3001/api/insumos/${formData.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nome: formData.nome,
-            descricao: formData.descricao,
-          }),
-        },
-      );
-
-      if (!res.ok) throw new Error("Erro ao atualizar insumo");
+      await updateInput(parseInt(formData.id), {
+        nome: formData.nome,
+        descricao: formData.descricao,
+      });
 
       toast({
         title: "Insumo atualizado",
@@ -80,7 +72,6 @@ export default function EditInput() {
 
       navigate("/inputs");
     } catch (err) {
-      console.error(err);
       toast({
         title: "Erro",
         description: "Não foi possível atualizar o insumo.",
