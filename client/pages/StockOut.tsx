@@ -54,6 +54,7 @@ export default function StockOut() {
 
   const handleStockOut = async (payload: any, type: OperationType) => {
     try {
+      console.log(payload);
       const body = {
         tipo:
           type === OperationType.MEDICINE
@@ -62,6 +63,7 @@ export default function StockOut() {
         itemId: Number(payload.itemId),
         armarioId: Number(payload.armarioId),
         quantidade: Number(payload.quantity),
+        caselaId: payload.caselaId ? Number(payload.caselaId) : null,
       };
 
       await createStockOut(body);
