@@ -2,12 +2,11 @@ import Layout from "@/components/Layout";
 import { useState, useEffect } from "react";
 import { MedicineForm } from "@/components/MedicineForm";
 import { InputForm } from "@/components/EquipmentForm";
-import { OperationType, StockType } from "@/enums/enums";
+import { OperationType } from "@/enums/enums";
 import { toast } from "@/hooks/use-toast";
 import { Input, Medicine, Patient, Cabinet } from "@/interfaces/interfaces";
 import LoadingModal from "@/components/LoadingModal";
 import { useAuth } from "@/hooks/use-auth";
-import { get } from "http";
 import {
   createMovement,
   createStockIn,
@@ -16,6 +15,7 @@ import {
   getMedicines,
   getResidents,
 } from "@/api/requests";
+import { useNavigate } from "react-router-dom";
 
 export default function StockIn() {
   const [operationType, setOperationType] = useState<
@@ -28,6 +28,7 @@ export default function StockIn() {
   const [loading, setLoading] = useState<boolean>(true);
 
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMedicines = async () => {
@@ -87,7 +88,7 @@ export default function StockIn() {
   const handleMedicineSubmit = async (data) => {
     try {
       const payload = {
-        tipo: data.stockType.geral ? "geral" : "individual",
+        tipo: data.stockType,
         medicamento_id: data.id,
         quantidade: data.quantity,
         armario_id: data.cabinet,
@@ -113,6 +114,9 @@ export default function StockIn() {
         description: "Medicamento adicionado ao estoque.",
         variant: "success",
       });
+
+       navigate("/stock");
+        
     } catch (err: any) {
       toast({
         title: "Erro ao registrar",
@@ -123,12 +127,14 @@ export default function StockIn() {
   };
 
   const handleInputSubmit = async (data) => {
+
     try {
       const payload = {
         tipo: "insumo",
         insumo_id: data.inputId,
         quantidade: data.quantity,
         armario_id: data.cabinetId,
+        validade: data.validity
       };
 
       await createStockIn(payload);
@@ -146,6 +152,9 @@ export default function StockIn() {
         description: "Insumo adicionado ao estoque.",
         variant: "success",
       });
+
+      navigate("/stock");
+
     } catch (err: any) {
       toast({
         title: "Erro ao registrar entrada",

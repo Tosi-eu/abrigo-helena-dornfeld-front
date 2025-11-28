@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { InputFormProps } from "@/interfaces/interfaces";
 import { toast } from "@/hooks/use-toast";
+import DatePicker from "react-datepicker";
+import { ptBR } from "date-fns/locale";
 
 export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
   const [formData, setFormData] = useState({
@@ -11,6 +13,7 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
     quantity: 0,
     cabinetId: 0,
     caselaId: 0,
+    validity: null as Date
   });
 
   const navigate = useNavigate();
@@ -53,6 +56,7 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
       cabinetId: formData.cabinetId,
       caselaId: formData.caselaId || undefined,
       quantity: quantity,
+      validity: formData.validity
     });
   };
 
@@ -97,6 +101,22 @@ export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
             className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
           />
         </div>
+      </div>
+
+      <div className="flex-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
+          Validade
+        </label>
+        <DatePicker
+          selected={formData.validity}
+          onChange={(date: Date | null) =>
+            setFormData({ ...formData, validity: date })
+          }
+          locale={ptBR}
+          dateFormat="dd/MM/yyyy"
+          placeholderText="Selecione a data"
+          className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
+        />
       </div>
 
       <div>

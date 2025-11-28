@@ -2,9 +2,10 @@ import { useState } from "react";
 import DatePicker from "react-datepicker";
 import { ptBR } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
-import { OriginType } from "@/enums/enums";
+import { OriginType, StockType, StockTypeLabels } from "@/enums/enums";
 import { useNavigate } from "react-router-dom";
 import { MedicineFormProps } from "@/interfaces/interfaces";
+import { toast } from "@/hooks/use-toast";
 
 export function MedicineForm({
   medicines,
@@ -15,12 +16,12 @@ export function MedicineForm({
   const [formData, setFormData] = useState({
     id: null as number | null,
     quantity: "",
-    stockType: { geral: false, individual: false },
+    stockType: "" as StockType | "",
     expirationDate: null as Date | null,
     resident: "",
     casela: null as number | null,
     cabinet: null as number | null,
-    origin: "",
+    origin: "" as OriginType | "",
   });
 
   const navigate = useNavigate();
@@ -38,21 +39,36 @@ export function MedicineForm({
     }));
   };
 
-  const handleStockTypeChange = (type: "geral" | "individual") => {
-    setFormData((prev) => ({
-      ...prev,
-      stockType: {
-        geral: false,
-        individual: false,
-        [type]: !prev.stockType[type],
-      },
-    }));
-  };
-
   const handleSubmit = () => {
+    const quantity = Number(formData.quantity);
+
+    if (!formData.id) {
+      toast({ title: "Selecione um medicamento", variant: "error" });
+      return;
+    }
+
+    if (isNaN(quantity) || quantity <= 0) {
+      toast({ title: "Informe uma quantidade válida", variant: "error" });
+      return;
+    }
+
+    if (!formData.cabinet) {
+      toast({ title: "Selecione um armário", variant: "error" });
+      return;
+    }
+
+    if (formData.stockType === StockType.GERAL && formData.casela) {
+      toast({
+        title: "Erro de seleção",
+        description: "Não é possível selecionar uma casela para estoque geral.",
+        variant: "error",
+      });
+      return;
+    }
+
     onSubmit({
       ...formData,
-      quantity: Number(formData.quantity),
+      quantity,
       expirationDate: formData.expirationDate
         ? new Date(formData.expirationDate)
         : null,
@@ -99,12 +115,12 @@ export function MedicineForm({
 
         <div className="flex-1">
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            Data de vencimento
+            Validade
           </label>
           <DatePicker
             selected={formData.expirationDate}
             onChange={(date: Date | null) =>
-              setFormData({ ...formData, expirationDate: date })
+              updateField("expirationDate", date)
             }
             locale={ptBR}
             dateFormat="dd/MM/yyyy"
@@ -118,27 +134,24 @@ export function MedicineForm({
         <label className="block text-sm font-medium text-slate-700 mb-1">
           Tipo de estoque
         </label>
-        <div className="space-y-2">
-          {["geral", "individual"].map((type) => (
-            <div key={type} className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id={type}
-                checked={formData.stockType[type as "geral" | "individual"]}
-                onChange={() =>
-                  handleStockTypeChange(type as "geral" | "individual")
-                }
-                className="w-5 h-5 border-slate-400 rounded text-sky-600 focus:ring-sky-300"
-              />
-              <label
-                htmlFor={type}
-                className="text-sm text-slate-700 capitalize"
-              >
-                {type}
-              </label>
-            </div>
+
+        <select
+          value={formData.stockType}
+          onChange={(e) =>
+            updateField("stockType", e.target.value as StockType)
+          }
+          className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
+        >
+          <option value="" disabled hidden>
+            Selecione
+          </option>
+
+          {Object.values(StockType).map((type) => (
+            <option key={type} value={type}>
+               {StockTypeLabels[type]}
+            </option>
           ))}
-        </div>
+        </select>
       </div>
 
       <div className="flex gap-4">
@@ -203,7 +216,7 @@ export function MedicineForm({
           </label>
           <select
             value={formData.origin}
-            onChange={(e) => updateField("origin", e.target.value)}
+            onChange={(e) => updateField("origin", e.target.value as OriginType)}
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
             <option value="" disabled hidden>

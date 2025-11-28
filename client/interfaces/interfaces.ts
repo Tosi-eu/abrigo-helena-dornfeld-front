@@ -181,6 +181,7 @@ export interface InputFormProps {
     cabinetId: number;
     caselaId?: number;
     quantity: number;
+    validity: Date
   }) => void;
 }
 
@@ -195,7 +196,7 @@ export interface MedicineFormProps {
     casela?: number;
     expirationDate?: Date;
     origin?: string;
-    stockType: { geral: boolean };
+    stockType: string;
   }) => void;
 }
 
