@@ -11,30 +11,40 @@ export default function InputMovements() {
   const [loading, setLoading] = useState(true);
 
   function normalizeMovement(item: any) {
+    const isMedicine = item.medicamento_id !== null;
+
     return {
       id: item.id,
-      name: item.MedicamentoModel?.nome ?? item.InsumoModel?.nome ?? "—",
-      additionalData:
-        item.MedicamentoModel?.principio_ativo ??
-        item.InsumoModel?.descricao ??
-        "",
+      name: isMedicine
+        ? item.MedicineModel?.nome ?? "-"
+        : item.InputModel?.nome ?? "-",
+
+      additionalData: isMedicine
+        ? item.MedicineModel?.principio_ativo ?? ""
+        : item.InputModel?.descricao ?? "",
+
       quantity: item.quantidade,
       operator: item.LoginModel?.login ?? "",
       movementDate: new Date(item.data).toLocaleDateString("pt-BR"),
-      cabinet: item.ArmarioModel?.num_armario ?? item.armario_id ?? "",
+
+      cabinet: item.CabinetModel?.num_armario ?? item.armario_id ?? "",
+
+      resident: item.ResidentModel?.num_casela ?? "",
+
       type: item.tipo.toUpperCase(),
-      resident: item.ResidenteModel?.num_casela ?? "",
+
       validade: item.validade_medicamento
         ? new Date(item.validade_medicamento).toLocaleDateString("pt-BR")
-        : "",
+        : new Date(item.validade.toLocaleDateString("pt-BR"))
     };
   }
+
   useEffect(() => {
     async function fetchData() {
       try {
         setLoading(true);
 
-        const [medicamentosRes, insumosRes] = await Promise.all([
+        const [insumosRes, medicamentosRes] = await Promise.all([
           getInputMovements(),
           getMedicineMovements(),
         ]);
@@ -43,6 +53,7 @@ export default function InputMovements() {
           ...medicamentosRes.map(normalizeMovement),
           ...insumosRes.map(normalizeMovement),
         ]);
+
       } catch (error) {
         console.error("Erro ao carregar movimentações:", error);
       } finally {

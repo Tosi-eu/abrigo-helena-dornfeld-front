@@ -1,16 +1,17 @@
 import Layout from "@/components/Layout";
 import EditableTable from "@/components/EditableTable";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { StockItem } from "@/interfaces/interfaces";
 import ReportModal from "@/components/ReportModal";
 import LoadingModal from "@/components/LoadingModal";
 import { getStock } from "@/api/requests";
+import { StockType, StockTypeLabels } from "@/enums/enums";
 
 export default function Stock() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { filter, data } = location.state || {};
+  const { data } = location.state || {};
 
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [items, setItems] = useState<StockItem[]>([]);
@@ -18,7 +19,6 @@ export default function Stock() {
 
   const formatStockItems = (raw: any[]): StockItem[] => {
 
-    console.log(raw);
     return raw.map((item) => ({
       name: item.nome || "-",
       description: item.principio_ativo || item.descricao || "-",
@@ -26,7 +26,7 @@ export default function Stock() {
       quantity: Number(item.quantidade) || 0,
       cabinet: item.armario_id ?? "-",
       casela: item.casela_id ?? "-",
-      stockType: item.tipo,
+      stockType: StockTypeLabels[item.tipo as StockType] ?? item.tipo,
       patient: item.paciente || "-",
       origin: item.origem || "-",
       minimumStock: item.minimo || 0,
@@ -36,8 +36,12 @@ export default function Stock() {
   useEffect(() => {
     async function loadStock() {
       try {
-        setLoading(true);
+        if(data) {
+          setItems(formatStockItems(data));
+          return;
+        }
 
+        setLoading(true);
         let stockData: any[] = [];
 
         stockData = await getStock().then((res) => res);
@@ -51,7 +55,7 @@ export default function Stock() {
     }
 
     loadStock();
-  }, [data]);
+  }, []);
 
   const columns = [
     { key: "stockType", label: "Tipo de Estoque", editable: false },
@@ -106,7 +110,7 @@ export default function Stock() {
 
         {!loading && (
           <>
-            <h2 className="text-lg font-semibold mt-6">Estoque Geral</h2>
+            <h2 className="text-lg font-semibold mt-6">Visão Geral do Estoque</h2>
             <EditableTable data={items} columns={columns} showAddons={false} />
           </>
         )}

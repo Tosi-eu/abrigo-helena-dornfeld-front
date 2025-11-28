@@ -8,6 +8,7 @@ export enum OriginType {
   AUTOCUSTO = "Autocusto",
   UBS = "UBS",
   FARMACIA_POPULAR = "Farmácia Popular",
+  COMPRA_DOACAO = "Compra/Doação"
 }
 
 export enum CabinetCategory {
@@ -25,6 +26,7 @@ export enum StockCategory {
 export enum StockType {
   GERAL = "geral",
   INDIVIDUAL = "individual",
+  CARRINHO = "carrinho_emergencia"
 }
 
 export enum TransactionType {
@@ -37,3 +39,10 @@ export enum MovementType {
   IN = "entrada",
   OUT = "saida",
 }
+
+export enum StockTypeLabels {
+  geral = "Estoque geral",
+  individual = "Estoque individual",
+  carrinho_emergencia = "Carrinho de emergência",
+};
+

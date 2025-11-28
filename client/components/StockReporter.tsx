@@ -129,7 +129,6 @@ function formatDate(value?: string | Date) {
 
 export function createStockPDF(tipo: string, data: RowData[]) {
   const renderTable = (headers: string[], rows: RowData[]) => {
-    console.log("DEBUG:", rows);
 
     return (
       <>

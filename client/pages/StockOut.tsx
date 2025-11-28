@@ -5,90 +5,78 @@ import { OperationType } from "@/enums/enums";
 import { StockOutForm } from "@/components/StockOutForm";
 import LoadingModal from "@/components/LoadingModal";
 import { useAuth } from "@/hooks/use-auth";
-import {
-  createMovement,
-  createStockOut,
-  getInputs,
-  getMedicines,
-} from "@/api/requests";
+import { createMovement, createStockOut, getStock } from "@/api/requests";
+import { useNavigate } from "react-router-dom";
 
 export default function StockOut() {
-  const [operationType, setOperationType] = useState<
-    OperationType | "Selecione"
-  >("Selecione");
+  const [operationType, setOperationType] = useState<OperationType | "Selecione">("Selecione");
   const [medicines, setMedicines] = useState<any[]>([]);
   const [inputs, setInputs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const { user } = useAuth();
+  const navigate = useNavigate()
 
   useEffect(() => {
-    const fetchMedicines = async () => {
-      try {
-        await getMedicines().then((data) => {
-          setMedicines(data);
-        });
-      } catch (err) {
-        console.error("Erro ao buscar medicines:", err);
-      }
-    };
-
-    const fetchInputs = async () => {
-      try {
-        await getInputs().then((data) => {
-          setInputs(data);
-        });
-      } catch (err) {
-        console.error("Erro ao buscar inputs:", err);
-      }
-    };
-
-    const fetchAll = async () => {
+    const fetchStock = async () => {
       setLoading(true);
-      await Promise.all([fetchMedicines(), fetchInputs()]);
-      setLoading(false);
+      try {
+        const data = await getStock();
+
+        const meds = data.filter((item: any) => item.tipo_item === "medicamento");
+        const ins = data.filter((item: any) => item.tipo_item === "insumo");
+
+        setMedicines(meds);
+        setInputs(ins);
+      } catch (err) {
+        console.error("Erro ao buscar estoque:", err);
+        toast({
+          title: "Erro ao carregar estoque",
+          description: "Não foi possível carregar os dados do estoque.",
+          variant: "error",
+        });
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchAll();
+    fetchStock();
   }, []);
 
-  const handleStockOut = async (payload: any, type: OperationType) => {
-    try {
-      const body = {
-        tipo:
-          type === OperationType.MEDICINE
-            ? OperationType.MEDICINE
-            : OperationType.INPUT,
-        itemId: Number(payload.itemId),
-        armarioId: Number(payload.armarioId),
-        quantidade: Number(payload.quantity),
-      };
+  const handleStockOut = async (payload: any) => {
+    if (!payload) return;
 
-      await createStockOut(body);
+    try {
+      await createStockOut({
+        estoqueId: payload.estoqueId, 
+        tipo: payload.tipoItem,   
+        quantidade: Number(payload.quantity),
+      });
+
       await createMovement({
         tipo: "saida",
         login_id: user?.id,
-        armario_id: Number(payload.armarioId),
-        casela_id: payload.caselaId ? Number(payload.caselaId) : null,
+        armario_id: payload.armarioId,
+        casela_id: payload.caselaId ?? null,
         quantidade: Number(payload.quantity),
-        ...(type === OperationType.MEDICINE && payload.expirationDate
-          ? { expirationDate: new Date(payload.expirationDate) }
+        ...(payload.tipo_item === "medicamento" && payload.validity
+          ? { expirationDate: new Date(payload.validity) }
           : {}),
-        ...(type === OperationType.MEDICINE
+        ...(payload.tipo_item === "medicamento"
           ? {
-              medicamento_id: Number(payload.itemId),
-              validade_medicamento: payload.expirationDate
-                ? new Date(payload.expirationDate).toISOString()
-                : null,
+              medicamento_id: payload.itemId,
+              validade_medicamento: payload.validity ? new Date(payload.validity).toISOString() : null,
             }
-          : { insumo_id: Number(payload.itemId) }),
+          : { insumo_id: payload.itemId }),
       });
 
       toast({
         title: "Saída registrada com sucesso!",
-        description: `${type === OperationType.MEDICINE ? "Medicamento" : "Insumo"} removido do estoque.`,
+        description: `${payload.tipoItem === "medicamento" ? "Medicamento" : "Insumo"} removido do estoque.`,
         variant: "success",
       });
+
+      navigate("/stock");
     } catch (err: any) {
       toast({
         title: "Erro ao registrar saída",
@@ -100,17 +88,11 @@ export default function StockOut() {
 
   return (
     <Layout title="Saída de Estoque">
-      <LoadingModal
-        open={loading}
-        title="Aguarde"
-        description="Carregando dados..."
-      />
+      <LoadingModal open={loading} title="Aguarde" description="Carregando dados..." />
 
       {!loading && (
-        <div className="max-w-lg mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm space-y-6">
-          <h2 className="text-lg font-semibold text-slate-800">
-            Registrar Saída
-          </h2>
+        <div className="max-w-5xl mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm space-y-6">
+          <h2 className="text-lg font-semibold text-slate-800">Registrar Saída</h2>
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -118,15 +100,11 @@ export default function StockOut() {
             </label>
             <select
               value={operationType}
-              onChange={(e) =>
-                setOperationType(e.target.value as OperationType)
-              }
+              onChange={(e) => setOperationType(e.target.value as OperationType)}
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
             >
-              <option value="Selecione">Selecione...</option>
-              <option value={OperationType.MEDICINE}>
-                {OperationType.MEDICINE}
-              </option>
+              <option value="Selecione">Selecione</option>
+              <option value={OperationType.MEDICINE}>{OperationType.MEDICINE}</option>
               <option value={OperationType.INPUT}>{OperationType.INPUT}</option>
             </select>
           </div>
@@ -134,18 +112,35 @@ export default function StockOut() {
           {operationType === OperationType.MEDICINE && (
             <StockOutForm
               items={medicines.map((m) => ({
-                id: m.id,
+                tipo_item: m.tipo_item,
+                estoque_id: m.estoque_id,
+                item_id: m.item_id,
                 nome: m.nome,
-                detalhes: `${m.dosagem} ${m.unidade_medida}`,
+                detalhes: `${m.principio_ativo}`,
+                quantidade: Number(m.quantidade),
+                validade: m.validade,
+                origem: m.origem,
+                armario_id: m.armario_id,
+                casela_id: m.casela_id,
+                paciente: m.paciente,
               }))}
-              onSubmit={(data) => handleStockOut(data, OperationType.MEDICINE)}
+              onSubmit={(data) => handleStockOut(data)}
             />
           )}
 
           {operationType === OperationType.INPUT && (
             <StockOutForm
-              items={inputs.map((i) => ({ id: i.id, nome: i.nome }))}
-              onSubmit={(data) => handleStockOut(data, OperationType.INPUT)}
+              items={inputs.map((i) => ({
+                tipo_item: i.tipo_item,
+                estoque_id: i.estoque_id,
+                item_id: i.item_id,
+                nome: i.nome,
+                quantidade: Number(i.quantidade),
+                origem: i.origem,
+                armario_id: i.armario_id,
+                casela_id: i.casela_id,
+              }))}
+              onSubmit={(data) => handleStockOut(data)}
             />
           )}
         </div>

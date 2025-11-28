@@ -85,9 +85,8 @@ export const createResident = (nome: string, casela: string) =>
   api.post("/residentes", { nome, casela: parseInt(casela) });
 
 export const createStockOut = (payload: {
+  estoqueId: number;
   tipo: OperationType;
-  itemId: number;
-  armarioId: number;
   quantidade: number;
 }) => api.post("/estoque/saida", payload);
 

@@ -10,9 +10,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import DeletePopUp from "./DeletePopUp";
-import CabinetRelocationModal from "./CabinetRelocationModal";
+
 import {
-  checkCabinetStock,
   getCabinets,
   deleteCabinet,
   deleteInput,
@@ -33,19 +32,8 @@ export default function EditableTable({
 }: EditableTableProps & { entityType?: string; showAddons?: boolean }) {
   const [rows, setRows] = useState(data);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
-  const [remanejamentoIndex, setRemanejamentoIndex] = useState<number | null>(
-    null,
-  );
-  const [stockInfo, setStockInfo] = useState<{
-    hasMedicineStock: boolean;
-    hasInputStock: boolean;
-  }>({
-    hasMedicineStock: false,
-    hasInputStock: false,
-  });
-  const [armarios, setArmarios] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 10;
+  const recordsPerPage = 6;
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -118,39 +106,7 @@ export default function EditableTable({
   };
 
   const confirmDelete = async (index: number) => {
-    const row = rows[index];
-    if (!row) return;
-
-    if (entityType === "cabinets") {
-      try {
-        const res = await checkCabinetStock(row.numero);
-
-        if (res.hasMedicineStock || res.hasInputStock) {
-          setRemanejamentoIndex(index);
-          setStockInfo({
-            hasMedicineStock: res.hasMedicineStock,
-            hasInputStock: res.hasInputStock,
-          });
-
-          const armariosRes = await getCabinets();
-          const available = armariosRes
-            .map((a: any) => a.numero)
-            .filter((num: number) => num !== row.numero);
-          setArmarios(available);
-        } else {
-          setDeleteIndex(index);
-        }
-      } catch (err) {
-        console.error(err);
-        toast({
-          title: "Erro",
-          description: "Não foi possível verificar estoque.",
-          variant: "error",
-        });
-      }
-    } else {
-      setDeleteIndex(index);
-    }
+    setDeleteIndex(index); // Delete puro agora
   };
 
   const handleDeleteConfirmed = async () => {
@@ -161,6 +117,7 @@ export default function EditableTable({
 
     try {
       let res = null;
+
       if (entityType === "cabinets") {
         res = await deleteCabinet(rowToDelete.numero);
       } else if (entityType === "inputs") {
@@ -191,41 +148,7 @@ export default function EditableTable({
     }
   };
 
-  const handleTransferenceConfirmed = async (destinos: {
-    destinoMedicamentos?: number;
-    destinoInsumos?: number;
-  }) => {
-    if (remanejamentoIndex === null) return;
-
-    const row = rows[remanejamentoIndex];
-    if (!row) return;
-
-    try {
-      const res = await deleteCabinet(row.numero, destinos);
-      toast({
-        title: "Armário removido",
-        description: res.message ?? "O armário foi removido com sucesso.",
-        variant: "success",
-      });
-      setRows(rows.filter((_, i) => i !== remanejamentoIndex));
-    } catch (err) {
-      console.error(err);
-      toast({
-        title: "Erro",
-        description: "Não foi possível remover o armário.",
-        variant: "error",
-      });
-    } finally {
-      setRemanejamentoIndex(null);
-      setStockInfo({ hasMedicineStock: false, hasInputStock: false });
-    }
-  };
-
   const handleDeleteCancel = () => setDeleteIndex(null);
-  const handleTransferenceCancel = () => {
-    setRemanejamentoIndex(null);
-    setStockInfo({ hasMedicineStock: false, hasInputStock: false });
-  };
 
   const rowsFiltered = rows;
   const startIndex = (currentPage - 1) * recordsPerPage;
@@ -245,6 +168,7 @@ export default function EditableTable({
             </button>
           )}
         </div>
+
         <div className="overflow-x-auto relative">
           <table className="w-full text-center border-collapse">
             <thead>
@@ -264,9 +188,11 @@ export default function EditableTable({
                 )}
               </tr>
             </thead>
+
             <tbody>
               {pageRows.map((row, i) => {
                 const absoluteIndex = startIndex + i;
+
                 return (
                   <tr
                     key={absoluteIndex}
@@ -299,6 +225,7 @@ export default function EditableTable({
                         >
                           <Pencil size={16} />
                         </button>
+
                         <button
                           onClick={() => confirmDelete(absoluteIndex)}
                           className="text-red-600 hover:text-red-800 transition-colors"
@@ -327,23 +254,10 @@ export default function EditableTable({
       </div>
 
       <DeletePopUp
-        open={deleteIndex !== null && !remanejamentoIndex}
+        open={deleteIndex !== null}
         onCancel={handleDeleteCancel}
         onConfirm={handleDeleteConfirmed}
-        message="Tem certeza que deseja remover este armário?"
-      />
-
-      <CabinetRelocationModal
-        open={remanejamentoIndex !== null}
-        origin={
-          remanejamentoIndex !== null
-            ? rows[remanejamentoIndex].numero
-            : undefined
-        }
-        onCancel={handleTransferenceCancel}
-        onConfirm={handleTransferenceConfirmed}
-        stockInfo={stockInfo}
-        armarios={armarios}
+        message="Tem certeza que deseja remover este item?"
       />
     </>
   );
@@ -358,7 +272,7 @@ const renderExpiryTag = (value: string) => {
 
   const today = new Date();
   const diffDays = Math.ceil(
-    (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+    (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   );
 
   let tooltipText = "";

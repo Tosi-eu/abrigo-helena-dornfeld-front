@@ -189,8 +189,6 @@ export default function Dashboard() {
 
   const COLORS = ["#0EA5E9", "#FACC15", "#EF4444"];
 
-  console.log(expiringSoon);
-
   const renderActiveShape = (props: any) => {
     const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } =
       props;
