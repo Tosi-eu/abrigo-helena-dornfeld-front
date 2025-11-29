@@ -106,7 +106,7 @@ export default function EditableTable({
   };
 
   const confirmDelete = async (index: number) => {
-    setDeleteIndex(index); // Delete puro agora
+    setDeleteIndex(index); 
   };
 
   const handleDeleteConfirmed = async () => {
@@ -130,11 +130,12 @@ export default function EditableTable({
         throw new Error("Entidade não suportada para deleção.");
       }
 
-      toast({
-        title: "Item removido",
-        description: res.message ?? "O item foi excluído com sucesso.",
-        variant: "success",
-      });
+    toast({
+      title: "Item removido",
+      description: res?.message || "O item foi excluído com sucesso.",
+      variant: "success",
+    });
+
       setRows(rows.filter((_, i) => i !== deleteIndex));
     } catch (err) {
       console.error(err);

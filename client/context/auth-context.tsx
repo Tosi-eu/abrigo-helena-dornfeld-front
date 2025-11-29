@@ -12,14 +12,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
+
+    try {
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        setUser(parsed);
+      }
+    } catch {
+      localStorage.removeItem("user");
+      setUser(null);
+    }
+
     setLoading(false);
   }, []);
 
   const login = async (login: string, password: string) => {
     const data = await apiLogin(login, password);
 
-    const loggedUser = { id: data.id, login: data.login };
+    const loggedUser = { id: data.user.id, login: data.user.login };
     setUser(loggedUser);
 
     localStorage.setItem("user", JSON.stringify(loggedUser));
