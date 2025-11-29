@@ -52,7 +52,7 @@ export default function EditResident() {
 
     try {
       const updated = await updateResident(formData.num_casela, {
-        nome: formData.nome,
+        name: formData.nome,
       });
 
       toast({

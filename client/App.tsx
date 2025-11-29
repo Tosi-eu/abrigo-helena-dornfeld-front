@@ -29,7 +29,6 @@ import RegisterInput from "./pages/RegisterInput";
 import Inputs from "./pages/Inputs";
 
 import { AuthProvider } from "./context/auth-context";
-import PrivateRoute from "./pages/PrivateRoute";
 
 const queryClient = new QueryClient();
 
@@ -47,145 +46,109 @@ const App = () => (
             <Route
               path="/dashboard"
               element={
-                <PrivateRoute>
                   <Dashboard />
-                </PrivateRoute>
               }
             />
             <Route
               path="/transactions"
               element={
-                <PrivateRoute>
                   <Transactions />
-                </PrivateRoute>
               }
             />
             <Route
               path="/medicines"
               element={
-                <PrivateRoute>
                   <Medicines />
-                </PrivateRoute>
               }
             />
             <Route
               path="/medicines/register"
               element={
-                <PrivateRoute>
                   <SignUpMedicine />
-                </PrivateRoute>
               }
             />
             <Route
               path="/medicines/edit"
               element={
-                <PrivateRoute>
                   <EditMedicine />
-                </PrivateRoute>
               }
             />
             <Route
               path="/stock"
               element={
-                <PrivateRoute>
                   <Stock />
-                </PrivateRoute>
               }
             />
             <Route
               path="/stock/in"
               element={
-                <PrivateRoute>
                   <StockEntry />
-                </PrivateRoute>
               }
             />
             <Route
               path="/stock/out"
               element={
-                <PrivateRoute>
                   <StockOut />
-                </PrivateRoute>
               }
             />
             <Route
               path="/residents"
               element={
-                <PrivateRoute>
                   <Resident />
-                </PrivateRoute>
               }
             />
             <Route
               path="/residents/register"
               element={
-                <PrivateRoute>
                   <RegisterResident />
-                </PrivateRoute>
               }
             />
             <Route
               path="/residents/edit"
               element={
-                <PrivateRoute>
                   <EditResident />
-                </PrivateRoute>
               }
             />
             <Route
               path="/inputs"
               element={
-                <PrivateRoute>
                   <Inputs />
-                </PrivateRoute>
               }
             />
             <Route
               path="/inputs/register"
               element={
-                <PrivateRoute>
                   <RegisterInput />
-                </PrivateRoute>
               }
             />
             <Route
               path="/inputs/edit"
               element={
-                <PrivateRoute>
                   <EditInput />
-                </PrivateRoute>
               }
             />
             <Route
               path="/cabinets"
               element={
-                <PrivateRoute>
                   <Cabinets />
-                </PrivateRoute>
               }
             />
             <Route
               path="/cabinets/register"
               element={
-                <PrivateRoute>
                   <RegisterCabinet />
-                </PrivateRoute>
               }
             />
             <Route
               path="/cabinets/edit"
               element={
-                <PrivateRoute>
                   <EditCabinet />
-                </PrivateRoute>
               }
             />
             <Route
               path="/user/profile"
               element={
-                <PrivateRoute>
                   <Profile />
-                </PrivateRoute>
               }
             />
             <Route path="/user/forgot-password" element={<ForgotPassword />} />

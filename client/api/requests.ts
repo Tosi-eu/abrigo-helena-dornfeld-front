@@ -30,7 +30,7 @@ export const deleteResident = (casela: string | number) =>
 export const getReport = (type: string) => api.get(`/relatorios?tipo=${type}`);
 
 export const login = (login: string, password: string) =>
-  api.post("/login/authenticate", { login, password });
+  api.post("/login/auth", { login, password });
 
 export const register = (login: string, password: string) =>
   api.post("/login", { login, password });
@@ -52,12 +52,7 @@ export const updateResident = (casela: string | number, data: any) =>
 
 export const updateUser = (
   userId: number,
-  payload: {
-    login: string;
-    password: string;
-    currentLogin: string;
-    currentPassword: string;
-  },
+  payload: { login: string; password: string }
 ) => api.put(`/login/${userId}`, payload);
 
 export const createCabinet = (numero: number, categoria: string) =>
@@ -81,8 +76,8 @@ export const createMedicine = (
     estoque_minimo: Number(estoque_minimo) ?? null,
   });
 
-export const createResident = (nome: string, casela: string) =>
-  api.post("/residentes", { nome, casela: parseInt(casela) });
+export const createResident = (name: string, casela: number) =>
+  api.post("/residentes", { name, casela });
 
 export const createStockOut = (payload: {
   estoqueId: number;

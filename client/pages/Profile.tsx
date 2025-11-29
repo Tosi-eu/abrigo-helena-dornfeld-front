@@ -9,8 +9,6 @@ export default function Profile() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [currentEmail, setCurrentEmail] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [userId, setUserId] = useState<number | null>(null);
@@ -22,7 +20,7 @@ export default function Profile() {
       const raw = localStorage.getItem("user");
       if (raw) {
         const u = JSON.parse(raw);
-        setCurrentEmail(u.login || "");
+        console.log(u)  
         setNewEmail(u.login || "");
         setUserId(u.id || null);
       }
@@ -38,23 +36,17 @@ export default function Profile() {
     setLoading(true);
 
     try {
-      if (!currentPassword)
-        throw new Error("Senha atual é obrigatória para autenticar");
       if (!newPassword) throw new Error("Informe a nova senha");
 
-      const { data } = await updateUser(userId, {
+      const data = await updateUser(userId, {
         login: newEmail,
         password: newPassword,
-        currentLogin: currentEmail,
-        currentPassword,
       });
 
       localStorage.setItem("user", JSON.stringify(data));
 
-      toast({ title: "Perfil atualizado", variant: "success" });
-      setCurrentPassword("");
+      toast({ title: data.message ?? "Perfil atualizado", variant: "success" });
       setNewPassword("");
-      setCurrentEmail(data.login || "");
       setNewEmail(data.login || "");
     } catch (err: any) {
       toast({ title: "Erro", description: err.message, variant: "error" });
@@ -80,40 +72,6 @@ export default function Profile() {
             </h2>
 
             <form onSubmit={handleUpdate} className="space-y-5">
-              <div className="mb-2">
-                <label
-                  htmlFor="currentEmail"
-                  className="block text-sm font-medium text-slate-700 mb-2"
-                >
-                  E-mail atual
-                </label>
-                <input
-                  id="currentEmail"
-                  type="email"
-                  value={currentEmail}
-                  onChange={(e) => setCurrentEmail(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 bg-white"
-                  placeholder="fulana_de_tal@gmail.com"
-                  required
-                />
-
-                <label
-                  htmlFor="currentPassword"
-                  className="block text-sm font-medium text-slate-700 mt-3 mb-2"
-                >
-                  Senha atual
-                </label>
-                <input
-                  id="currentPassword"
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 bg-white"
-                  placeholder="••••••••••••"
-                  required
-                />
-              </div>
-
               <div className="mb-2">
                 <label
                   htmlFor="newEmail"
