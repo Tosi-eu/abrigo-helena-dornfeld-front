@@ -4,35 +4,54 @@ import { toast } from "@/hooks/use-toast";
 import { OperationType } from "@/enums/enums";
 import { StockOutForm } from "@/components/StockOutForm";
 import LoadingModal from "@/components/LoadingModal";
-import { useAuth } from "@/hooks/use-auth";
-import { createMovement, createStockOut, getStock } from "@/api/requests";
+import {
+  getMedicines,
+  getInputs,
+  getCabinets,
+  getResidents,
+  createStockOutInsumo,
+} from "@/api/requests";
 import { useNavigate } from "react-router-dom";
 
 export default function StockOut() {
-  const [operationType, setOperationType] = useState<OperationType | "Selecione">("Selecione");
+  const [operationType, setOperationType] =
+    useState<OperationType | "Selecione">("Selecione");
+
   const [medicines, setMedicines] = useState<any[]>([]);
   const [inputs, setInputs] = useState<any[]>([]);
+  const [cabinets, setCabinets] = useState<any[]>([]);
+  const [residents, setResidents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const { user } = useAuth();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchStock = async () => {
+    const loadData = async () => {
       setLoading(true);
+
       try {
-        const data = await getStock();
+        const [medRes, inpRes, cabRes, resRes] = await Promise.all([
+          getMedicines(),
+          getInputs(),
+          getCabinets(),
+          getResidents(),
+        ]);
 
-        const meds = data.filter((item: any) => item.tipo_item === "medicamento");
-        const ins = data.filter((item: any) => item.tipo_item === "insumo");
+        setMedicines(medRes);
+        setInputs(inpRes);
+        setResidents(resRes);
 
-        setMedicines(meds);
-        setInputs(ins);
+        setCabinets(
+          cabRes.map((c: any) => ({
+            label: c.numero,
+            value: c.numero,
+          }))
+        );
       } catch (err) {
-        console.error("Erro ao buscar estoque:", err);
+        console.error("Erro ao carregar dados:", err);
         toast({
-          title: "Erro ao carregar estoque",
-          description: "Não foi possível carregar os dados do estoque.",
+          title: "Erro ao carregar informações",
+          description: "Não foi possível carregar medicamentos, insumos ou armários.",
           variant: "error",
         });
       } finally {
@@ -40,39 +59,41 @@ export default function StockOut() {
       }
     };
 
-    fetchStock();
+    loadData();
   }, []);
 
   const handleStockOut = async (payload: any) => {
     if (!payload) return;
 
-    try {
-      await createStockOut({
-        estoqueId: payload.estoqueId, 
-        tipo: payload.tipoItem,   
-        quantidade: Number(payload.quantity),
-      });
+    console.log(payload)
+    const tipoItem =
+      operationType === OperationType.MEDICINE
+        ? "medicamento"
+        : "insumo";
 
-      await createMovement({
-        tipo: "saida",
-        login_id: user?.id,
+    let finalPayload: any;
+
+    if (tipoItem === "insumo") {
+      finalPayload = {
+        insumo_id: payload.itemId,
         armario_id: payload.armarioId,
-        casela_id: payload.caselaId ?? null,
-        quantidade: Number(payload.quantity),
-        ...(payload.tipo_item === "medicamento" && payload.validity
-          ? { expirationDate: new Date(payload.validity) }
-          : {}),
-        ...(payload.tipo_item === "medicamento"
-          ? {
-              medicamento_id: payload.itemId,
-              validade_medicamento: payload.validity ? new Date(payload.validity).toISOString() : null,
-            }
-          : { insumo_id: payload.itemId }),
+        quantidade: payload.quantity,
+      };
+    } else {
+      toast({
+        title: "Funcionalidade não disponível",
+        description: "Ainda não existe API para saída de medicamentos.",
+        variant: "error",
       });
+      return;
+    }
+
+    try {
+      await createStockOutInsumo(finalPayload);
 
       toast({
         title: "Saída registrada com sucesso!",
-        description: `${payload.tipoItem === "medicamento" ? "Medicamento" : "Insumo"} removido do estoque.`,
+        description: `Insumo removido do estoque.`,
         variant: "success",
       });
 
@@ -88,11 +109,17 @@ export default function StockOut() {
 
   return (
     <Layout title="Saída de Estoque">
-      <LoadingModal open={loading} title="Aguarde" description="Carregando dados..." />
+      <LoadingModal
+        open={loading}
+        title="Aguarde"
+        description="Carregando dados..."
+      />
 
       {!loading && (
         <div className="max-w-5xl mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm space-y-6">
-          <h2 className="text-lg font-semibold text-slate-800">Registrar Saída</h2>
+          <h2 className="text-lg font-semibold text-slate-800">
+            Registrar Saída
+          </h2>
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -111,36 +138,19 @@ export default function StockOut() {
 
           {operationType === OperationType.MEDICINE && (
             <StockOutForm
-              items={medicines.map((m) => ({
-                tipo_item: m.tipo_item,
-                estoque_id: m.estoque_id,
-                item_id: m.item_id,
-                nome: m.nome,
-                detalhes: `${m.principio_ativo}`,
-                quantidade: Number(m.quantidade),
-                validade: m.validade,
-                origem: m.origem,
-                armario_id: m.armario_id,
-                casela_id: m.casela_id,
-                paciente: m.paciente,
-              }))}
-              onSubmit={(data) => handleStockOut(data)}
+              items={medicines}
+              cabinets={cabinets}
+              residents={residents}
+              onSubmit={handleStockOut}
             />
           )}
 
           {operationType === OperationType.INPUT && (
             <StockOutForm
-              items={inputs.map((i) => ({
-                tipo_item: i.tipo_item,
-                estoque_id: i.estoque_id,
-                item_id: i.item_id,
-                nome: i.nome,
-                quantidade: Number(i.quantidade),
-                origem: i.origem,
-                armario_id: i.armario_id,
-                casela_id: i.casela_id,
-              }))}
-              onSubmit={(data) => handleStockOut(data)}
+              items={inputs}
+              cabinets={cabinets}
+              residents={residents}
+              onSubmit={handleStockOut}
             />
           )}
         </div>

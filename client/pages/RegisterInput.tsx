@@ -9,6 +9,7 @@ export default function RegisterInput() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
+    min_stock: 0,
     category: "",
   });
   const [saving, setSaving] = useState(false);
@@ -28,14 +29,14 @@ export default function RegisterInput() {
     setSaving(true);
 
     try {
-      await createInput(formData.name, formData.category);
+      await createInput(formData.name, formData.min_stock, formData.category);
       toast({
         title: "Insumo cadastrado",
         description: `${formData.name} foi adicionado ao sistema.`,
         variant: "success",
       });
 
-      setFormData({ name: "", category: "" });
+      setFormData({ name: "", min_stock: 0, category: "" });
       navigate("/inputs");
     } catch (err) {
       console.error(err);
@@ -63,34 +64,57 @@ export default function RegisterInput() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {[
-            {
-              label: "Nome do Insumo",
-              field: "name",
-              placeholder: "Seringa 5ml",
-            },
-            {
-              label: "Categoria",
-              field: "category",
-              placeholder: "Material de Injeção",
-            },
-          ].map(({ label, field, placeholder }) => (
-            <div key={field}>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                {label}
-              </label>
-              <input
-                type="text"
-                value={formData[field as keyof typeof formData]}
-                onChange={(e) =>
-                  setFormData({ ...formData, [field]: e.target.value })
-                }
-                placeholder={placeholder}
-                className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
-                disabled={saving}
-              />
-            </div>
-          ))}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Nome do Insumo
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              placeholder="Seringa 5ml"
+              className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
+              disabled={saving}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Categoria
+            </label>
+            <input
+              type="text"
+              value={formData.category}
+              onChange={(e) =>
+                setFormData({ ...formData, category: e.target.value })
+              }
+              placeholder="Material de Injeção"
+              className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
+              disabled={saving}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Estoque Mínimo
+            </label>
+            <input
+              type="number"
+              min={0}
+              value={formData.min_stock}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  min_stock: Number(e.target.value),
+                })
+              }
+              placeholder="0"
+              className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
+              disabled={saving}
+            />
+          </div>
 
           <div className="flex justify-between pt-4">
             <button

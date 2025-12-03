@@ -155,24 +155,6 @@ export interface StockItem {
   stockType: StockType;
 }
 
-export interface StockOutFormProps {
-  items: {
-    id: string;
-    nome: string;
-    detalhes?: string;
-  }[];
-  cabinets: {
-    value: string;
-    label: string;
-  }[];
-  onSubmit: (data: {
-    itemId: string;
-    armarioId: string;
-    caselaId?: string;
-    quantity: number;
-  }) => void;
-}
-
 export interface InputFormProps {
   inputs: Input[];
   cabinets: Cabinet[];
@@ -181,7 +163,6 @@ export interface InputFormProps {
     cabinetId: number;
     caselaId?: number;
     quantity: number;
-    validity: Date
   }) => void;
 }
 
