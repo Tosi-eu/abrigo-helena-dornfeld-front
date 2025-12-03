@@ -9,7 +9,8 @@ import LoadingModal from "@/components/LoadingModal";
 import { useAuth } from "@/hooks/use-auth";
 import {
   createMovement,
-  createStockIn,
+  createStockInInput,
+  createStockInMedicine,
   getCabinets,
   getInputs,
   getMedicines,
@@ -88,7 +89,6 @@ export default function StockIn() {
   const handleMedicineSubmit = async (data) => {
     try {
       const payload = {
-        tipo: data.stockType,
         medicamento_id: data.id,
         quantidade: data.quantity,
         armario_id: data.cabinet,
@@ -97,7 +97,7 @@ export default function StockIn() {
         origem: data.origin ?? null,
       };
 
-      await createStockIn(payload);
+      await createStockInMedicine(payload);
 
       await createMovement({
         tipo: "entrada",
@@ -115,37 +115,30 @@ export default function StockIn() {
         variant: "success",
       });
 
-       navigate("/stock");
-        
+      navigate("/stock");
     } catch (err: any) {
-      toast({
-        title: "Erro ao registrar",
-        description: err.message,
-        variant: "error",
-      });
+      toast({ title: "Erro ao registrar", description: err.message, variant: "error" });
     }
   };
 
   const handleInputSubmit = async (data) => {
-
     try {
       const payload = {
-        tipo: "insumo",
         insumo_id: data.inputId,
         quantidade: data.quantity,
         armario_id: data.cabinetId,
-        validade: data.validity
+        validade: data.validity ?? null,
       };
 
-      await createStockIn(payload);
+      await createStockInInput(payload);
 
-      await createMovement({
-        tipo: "entrada",
-        login_id: user?.id!,
-        insumo_id: data.inputId,
-        armario_id: data.cabinetId,
-        quantidade: data.quantity,
-      });
+      // await createMovement({
+      //   tipo: "entrada",
+      //   login_id: user?.id!,
+      //   insumo_id: data.inputId,
+      //   armario_id: data.cabinetId,
+      //   quantidade: data.quantity,
+      // });
 
       toast({
         title: "Entrada registrada!",
@@ -154,7 +147,6 @@ export default function StockIn() {
       });
 
       navigate("/stock");
-
     } catch (err: any) {
       toast({
         title: "Erro ao registrar entrada",

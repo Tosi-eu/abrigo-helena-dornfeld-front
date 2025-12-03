@@ -58,8 +58,8 @@ export const updateUser = (
 export const createCabinet = (numero: number, categoria: string) =>
   api.post("/armarios", { numero, categoria });
 
-export const createInput = (nome: string, descricao?: string) =>
-  api.post("/insumos", { nome, descricao: descricao ?? null });
+export const createInput = (nome: string, estoque_minimo: number, descricao?: string) =>
+  api.post("/insumos", { nome, descricao: descricao ?? null, estoque_minimo });
 
 export const createMedicine = (
   nome: string,
@@ -79,22 +79,26 @@ export const createMedicine = (
 export const createResident = (name: string, casela: number) =>
   api.post("/residentes", { name, casela });
 
-export const createStockOut = (payload: {
-  estoqueId: number;
-  tipo: OperationType;
-  quantidade: number;
-}) => api.post("/estoque/saida", payload);
 
-export const createStockIn = (payload: {
-  tipo: string;
-  medicamento_id?: number;
-  insumo_id?: number;
+export const createStockOutInsumo = (payload: {
+  insumo_id: number;
+  quantidade: number;
+  armario_id: number;
+}) => api.post("/estoque-insumos/saida", payload);
+
+export const createStockInInput = (payload: {
+  insumo_id: number;
+  quantidade: number;
+  armario_id: number;
+}) => api.post("/estoque-insumos/entrada", payload);
+
+export const createStockInMedicine = (payload: {
+  medicamento_id: number;
   quantidade: number;
   armario_id: number;
   casela_id?: number | null;
-  validade?: Date | null;
-  origem?: string | null;
-}) => api.post("/estoque/entrada", payload);
+  origem: string;
+}) => api.post("/estoque-medicamentos/entrada", payload);
 
 export const createMovement = (payload: {
   tipo: "entrada" | "saida";

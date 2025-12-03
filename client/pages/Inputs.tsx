@@ -12,7 +12,7 @@ export default function Inputs() {
 
   const columns = [
     { key: "nome", label: "Nome", editable: true },
-    { key: "descricao", label: "Descrição", editable: true },
+    { key: "estoque_minimo", label: "Estoque Mínimo", editable: true },
   ];
 
   useEffect(() => {
