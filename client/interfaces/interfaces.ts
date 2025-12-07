@@ -1,6 +1,7 @@
 import {
   CabinetCategory,
   MovementType,
+  OperationType,
   OriginType,
   StockType,
 } from "@/enums/enums";
@@ -51,8 +52,8 @@ export interface AuthContextType {
 }
 
 export interface Patient {
-  casela: number;
-  name: string;
+  num_casela: number;
+  nome: string;
 }
 
 export interface Medicine {
@@ -186,3 +187,33 @@ export interface LoadingModalProps {
   title?: string;
   description?: string;
 }
+
+export type StockMedicine = {
+  estoque_id: number; 
+  medicamento_id: number;
+  nome: string;
+  principio_ativo: string;
+  unidade_medida: string;
+  validade: string | null;
+  quantidade: number;
+  origem: string;
+  tipo: OperationType;
+  paciente: string | null;
+  armario_id: number | null;
+  casela_id: number | null;
+  tipo_item: string;
+};
+
+export type StockInput = {
+  id: number; 
+  insumo_id: number;
+  nome: string;
+  quantidade: number;
+  armario_id: number | null;
+  tipo_item: string;
+};
+
+export type StockItemRaw = StockMedicine | StockInput;
+
+
+

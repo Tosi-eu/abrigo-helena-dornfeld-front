@@ -2,7 +2,7 @@ import { useState } from "react";
 import Layout from "@/components/Layout";
 import { useNavigate } from "react-router-dom";
 import { CabinetCategory } from "@/enums/enums";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast.hook";
 import LoadingModal from "@/components/LoadingModal";
 import { createCabinet } from "@/api/requests";
 

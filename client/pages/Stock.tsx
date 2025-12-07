@@ -18,35 +18,46 @@ export default function Stock() {
   const [loading, setLoading] = useState(true);
 
   const formatStockItems = (raw: any[]): StockItem[] => {
+    return raw.map((item) => {
 
-    return raw.map((item) => ({
-      name: item.nome || "-",
-      description: item.principio_ativo || item.descricao || "-",
-      expiry: item.validade || "-",
-      quantity: Number(item.quantidade) || 0,
-      cabinet: item.armario_id ?? "-",
-      casela: item.casela_id ?? "-",
-      stockType: StockTypeLabels[item.tipo as StockType] ?? item.tipo,
-      patient: item.paciente || "-",
-      origin: item.origem || "-",
-      minimumStock: item.minimo || 0,
-    }));
+      const isMedicine = item.medicamento_id != null;
+
+      return {
+        name: isMedicine ? item.medicamento.nome : item.insumo?.nome || "-",
+        description: isMedicine
+          ? item.medicamento.principio_ativo || "-"
+          : "-",
+        expiry: isMedicine ? item.validade || "-" : "-",
+        quantity: Number(item.quantidade) || 0,
+        cabinet: item.armario_id ?? "-",
+        casela: item.casela_id ?? "-", 
+        stockType: isMedicine
+          ? StockTypeLabels[item.tipo as StockType] ?? item.tipo
+          : "insumo",
+        resident: isMedicine ? item.residente?.nome || "-" : "-",
+        origin: isMedicine ? item.origem || "-" : "-",
+        minimumStock: isMedicine ? item.minimo : undefined,
+      };
+    });
   };
 
   useEffect(() => {
     async function loadStock() {
       try {
-        if(data) {
+        setLoading(true);
+
+        if (data) {
           setItems(formatStockItems(data));
           return;
         }
 
-        setLoading(true);
-        let stockData: any[] = [];
+        const [medicamentos, insumos] = await Promise.all([
+          getStock("medicamento"),
+          getStock("insumo"),    
+        ]);
 
-        stockData = await getStock().then((res) => res);
-
-        setItems(formatStockItems(stockData));
+        const merged = [...medicamentos, ...insumos];
+        setItems(formatStockItems(merged));
       } catch (err) {
         console.error("Erro ao buscar estoque:", err);
       } finally {
@@ -55,7 +66,7 @@ export default function Stock() {
     }
 
     loadStock();
-  }, []);
+  }, [data]);
 
   const columns = [
     { key: "stockType", label: "Tipo de Estoque", editable: false },
@@ -67,7 +78,7 @@ export default function Stock() {
     },
     { key: "expiry", label: "Validade", editable: true },
     { key: "quantity", label: "Quantidade", editable: true },
-    { key: "patient", label: "Residente", editable: false },
+    { key: "resident", label: "Residente", editable: false },
     { key: "cabinet", label: "Armário", editable: false },
     { key: "casela", label: "Casela", editable: false },
     { key: "origin", label: "Origem", editable: false },

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast.hook";
 import LogoutConfirmDialog from "@/components/LogoutConfirmDialog";
 import Layout from "@/components/Layout";
 import { updateUser } from "@/api/requests";
@@ -20,7 +20,6 @@ export default function Profile() {
       const raw = localStorage.getItem("user");
       if (raw) {
         const u = JSON.parse(raw);
-        console.log(u)  
         setNewEmail(u.login || "");
         setUserId(u.id || null);
       }
