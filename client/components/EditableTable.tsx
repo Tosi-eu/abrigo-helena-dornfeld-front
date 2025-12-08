@@ -18,6 +18,7 @@ import {
   deleteMedicine,
   deleteResident,
 } from "@/api/requests";
+import { formatBRTDate } from "@/helpers/date.helper";
 
 const typeMap: Record<string, string> = {
   Medicamento: "medicines",
@@ -40,27 +41,12 @@ export default function EditableTable({
   useEffect(() => {
     if (!data) return;
 
-    const convertToBRT = (dateString: string) => {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return dateString;
-      return date.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        timeZone: "America/Sao_Paulo",
-      });
-    };
-
     const formatted = data.map((row) => {
       const updatedRow: Record<string, any> = {};
       for (const key in row) {
         const value = row[key];
-        if (
-          typeof value === "string" &&
-          (/^\d{4}-\d{2}-\d{2}/.test(value) ||
-            /^\d{4}\/\d{2}\/\d{2}/.test(value))
-        ) {
-          updatedRow[key] = convertToBRT(value);
+        if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+          updatedRow[key] = formatBRTDate(value); 
         } else {
           updatedRow[key] = value;
         }
@@ -125,7 +111,7 @@ export default function EditableTable({
       } else if (entityType === "medicines") {
         res = await deleteMedicine(rowToDelete.id);
       } else if (entityType === "residents") {
-        res = await deleteResident(rowToDelete.casela);
+        res = await deleteResident(rowToDelete.num_casela);
       } else {
         throw new Error("Entidade não suportada para deleção.");
       }
@@ -316,7 +302,7 @@ const renderQuantityTag = (row: any) => {
   let tooltipText = "";
 
   if (row.minimumStock != null) {
-    const margin = row.minimumStock * 0.2;
+    const margin = Math.ceil(row.minimumStock * 0.35);
 
     if (row.quantity > row.minimumStock * 2) {
       colorClasses = "bg-green-100 text-green-700 border border-green-300";

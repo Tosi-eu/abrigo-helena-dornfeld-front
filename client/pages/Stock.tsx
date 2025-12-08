@@ -2,7 +2,7 @@ import Layout from "@/components/Layout";
 import EditableTable from "@/components/EditableTable";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { StockItem } from "@/interfaces/interfaces";
+import { CanonicalStockItem } from "@/interfaces/interfaces";
 import ReportModal from "@/components/ReportModal";
 import LoadingModal from "@/components/LoadingModal";
 import { getStock } from "@/api/requests";
@@ -14,10 +14,10 @@ export default function Stock() {
   const { data } = location.state || {};
 
   const [reportModalOpen, setReportModalOpen] = useState(false);
-  const [items, setItems] = useState<StockItem[]>([]);
+  const [items, setItems] = useState<CanonicalStockItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const formatStockItems = (raw: any[]): StockItem[] => {
+  const formatStockItems = (raw: any[]): CanonicalStockItem[] => {
     return raw.map((item) => {
 
       const isMedicine = item.medicamento_id != null;
@@ -36,7 +36,7 @@ export default function Stock() {
           : "insumo",
         resident: isMedicine ? item.residente?.nome || "-" : "-",
         origin: isMedicine ? item.origem || "-" : "-",
-        minimumStock: isMedicine ? item.minimo : undefined,
+        minimumStock: isMedicine ? item.medicamento.estoque_minimo : item.insumo.estoque_minimo,
       };
     });
   };

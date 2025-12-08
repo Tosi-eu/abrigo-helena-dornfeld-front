@@ -9,15 +9,14 @@ export default function RegisterInput() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
-    min_stock: 0,
-    category: "",
+    min_stock: 0
   });
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.category) {
+    if (!formData.name) {
       toast({
         title: "Campos obrigatórios",
         description: "Preencha todos os campos para cadastrar o Insumo.",
@@ -29,14 +28,14 @@ export default function RegisterInput() {
     setSaving(true);
 
     try {
-      await createInput(formData.name, formData.min_stock, formData.category);
+      await createInput(formData.name, formData.min_stock);
       toast({
         title: "Insumo cadastrado",
         description: `${formData.name} foi adicionado ao sistema.`,
         variant: "success",
       });
 
-      setFormData({ name: "", min_stock: 0, category: "" });
+      setFormData({ name: "", min_stock: 0 });
       navigate("/inputs");
     } catch (err) {
       console.error(err);
@@ -75,22 +74,6 @@ export default function RegisterInput() {
                 setFormData({ ...formData, name: e.target.value })
               }
               placeholder="Seringa 5ml"
-              className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
-              disabled={saving}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Categoria
-            </label>
-            <input
-              type="text"
-              value={formData.category}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
-              placeholder="Material de Injeção"
               className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
               disabled={saving}
             />

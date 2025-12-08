@@ -17,7 +17,7 @@ export default function RegisterResident() {
     setLoading(true);
 
     try {
-      await createResident(name, Number(casela));
+      await createResident(Number(casela), name);
       toast({ title: "Residente cadastrado com sucesso!", variant: "success" });
       navigate("/residents");
     } catch (err: any) {

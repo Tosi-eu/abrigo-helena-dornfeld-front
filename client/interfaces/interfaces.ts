@@ -144,7 +144,7 @@ export interface PrepareMovementsParams {
   inputInventory: InputInventory[];
 }
 
-export interface StockItem {
+export interface CanonicalStockItem {
   name: string;
   description: string;
   expiry: string;
@@ -154,6 +154,16 @@ export interface StockItem {
   cabinet?: number | string;
   casela?: string | number;
   stockType: StockType;
+}
+
+export interface StockItem {
+  id: number;
+  armario_id: number | null;
+  tipo?: "geral" | "individual";
+  quantidade: number;
+  validade?: string;
+  medicamento?: { nome: string; estoque_minimo: number; principio_ativo?: string };
+  insumo?: { nome: string; estoque_minimo: number };
 }
 
 export interface InputFormProps {

@@ -4,9 +4,11 @@ import { useToast } from "@/hooks/use-toast.hook";
 import LogoutConfirmDialog from "@/components/LogoutConfirmDialog";
 import Layout from "@/components/Layout";
 import { updateUser } from "@/api/requests";
+import { useAuth } from "@/hooks/use-auth.hook";
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { toast } = useToast();
 
   const [newEmail, setNewEmail] = useState("");
@@ -17,14 +19,13 @@ export default function Profile() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("user");
+      const raw = user;
       if (raw) {
-        const u = JSON.parse(raw);
-        setNewEmail(u.login || "");
-        setUserId(u.id || null);
+        setNewEmail(raw.login || "");
+        setUserId(raw.id || null);
       }
     } catch (e) {
-      console.error("Erro ao ler usuário do localStorage", e);
+      console.error("Erro ao ler usuário do authContext", e);
     }
   }, []);
 
@@ -44,7 +45,7 @@ export default function Profile() {
 
       localStorage.setItem("user", JSON.stringify(data));
 
-      toast({ title: data.message ?? "Perfil atualizado", variant: "success" });
+      toast({ title: data?.message ?? "Perfil atualizado", variant: "success" });
       setNewPassword("");
       setNewEmail(data.login || "");
     } catch (err: any) {

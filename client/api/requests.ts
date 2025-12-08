@@ -1,4 +1,3 @@
-import { OperationType, OriginType } from "@/enums/enums";
 import { api } from "./canonical";
 
 export const getCabinets = () => api.get("/armarios");
@@ -58,8 +57,8 @@ export const updateUser = (
 export const createCabinet = (numero: number, categoria: string) =>
   api.post("/armarios", { numero, categoria });
 
-export const createInput = (nome: string, estoque_minimo: number, descricao?: string) =>
-  api.post("/insumos", { nome, descricao: descricao ?? null, estoque_minimo });
+export const createInput = (nome: string, estoque_minimo: number) =>
+  api.post("/insumos", { nome, estoque_minimo });
 
 export const createMedicine = (
   nome: string,
@@ -76,8 +75,8 @@ export const createMedicine = (
     estoque_minimo: Number(estoque_minimo) ?? null,
   });
 
-export const createResident = (name: string, casela: number) =>
-  api.post("/residentes", { name, casela });
+export const createResident = (num_casela: number, nome: string) =>
+  api.post("/residentes", { num_casela, nome });
 
 export const createMedicineStockOut = (payload: {
   estoque_id: number;
