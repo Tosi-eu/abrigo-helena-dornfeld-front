@@ -2,13 +2,12 @@ import Layout from "@/components/Layout";
 import { useState, useEffect } from "react";
 import { MedicineForm } from "@/components/MedicineForm";
 import { InputForm } from "@/components/EquipmentForm";
-import { OperationType } from "@/enums/enums";
-import { toast } from "@/hooks/use-toast";
+import { OperationType, StockType } from "@/enums/enums";
+import { toast } from "@/hooks/use-toast.hook";
 import { Input, Medicine, Patient, Cabinet } from "@/interfaces/interfaces";
 import LoadingModal from "@/components/LoadingModal";
-import { useAuth } from "@/hooks/use-auth";
+
 import {
-  createMovement,
   createStockInInput,
   createStockInMedicine,
   getCabinets,
@@ -19,68 +18,35 @@ import {
 import { useNavigate } from "react-router-dom";
 
 export default function StockIn() {
-  const [operationType, setOperationType] = useState<
-    OperationType | "Selecione"
-  >("Selecione");
+  const [operationType, setOperationType] = useState<OperationType | "Selecione">("Selecione");
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [inputs, setInputs] = useState<Input[]>([]);
   const [caselas, setCaselas] = useState<Patient[]>([]);
   const [cabinets, setCabinets] = useState<Cabinet[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchMedicines = async () => {
-      try {
-        await getMedicines().then((data) => {
-          setMedicines(data);
-        });
-      } catch (err) {
-        console.error("Erro ao buscar medicines:", err);
-      }
-    };
-
-    const fetchInputs = async () => {
-      try {
-        await getInputs().then((data) => {
-          setInputs(data);
-        });
-      } catch (err) {
-        console.error("Erro ao buscar inputs:", err);
-      }
-    };
-
-    const fetchCaselas = async () => {
-      try {
-        await getResidents().then((data) => {
-          setCaselas(data);
-        });
-      } catch (err) {
-        console.error("Erro ao buscar caselas:", err);
-      }
-    };
-
-    const fetchCabinets = async () => {
-      try {
-        await getCabinets().then((data) => {
-          setCabinets(data);
-        });
-      } catch (err) {
-        console.error("Erro ao buscar armários:", err);
-      }
-    };
-
     const fetchAll = async () => {
       setLoading(true);
-      await Promise.all([
-        fetchMedicines(),
-        fetchInputs(),
-        fetchCaselas(),
-        fetchCabinets(),
-      ]);
-      setLoading(false);
+      try {
+        const [medData, inputData, caselaData, cabinetData] = await Promise.all([
+          getMedicines(),
+          getInputs(),
+          getResidents(),
+          getCabinets(),
+        ]);
+
+        setMedicines(medData);
+        setInputs(inputData);
+        setCaselas(caselaData);
+        setCabinets(cabinetData);
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchAll();
@@ -88,26 +54,20 @@ export default function StockIn() {
 
   const handleMedicineSubmit = async (data) => {
     try {
+      const type = data.stockType === StockType.INDIVIDUAL ? StockType.INDIVIDUAL : StockType.GERAL;
+      const validity = data.expirationDate
+
       const payload = {
         medicamento_id: data.id,
-        quantidade: data.quantity,
         armario_id: data.cabinet,
-        casela_id: data.casela ?? null,
-        validade: data.expirationDate ?? null,
-        origem: data.origin ?? null,
+        quantidade: data.quantity,
+        validade: validity,
+        origem: data.origin,
+        paciente_casela: data.casela,
+        tipo: type,
       };
 
       await createStockInMedicine(payload);
-
-      await createMovement({
-        tipo: "entrada",
-        login_id: user?.id!,
-        medicamento_id: data.id,
-        armario_id: data.cabinet,
-        casela_id: data.casela ?? null,
-        quantidade: data.quantity,
-        validade_medicamento: data.expirationDate ?? null,
-      });
 
       toast({
         title: "Entrada registrada com sucesso!",
@@ -131,14 +91,6 @@ export default function StockIn() {
       };
 
       await createStockInInput(payload);
-
-      // await createMovement({
-      //   tipo: "entrada",
-      //   login_id: user?.id!,
-      //   insumo_id: data.inputId,
-      //   armario_id: data.cabinetId,
-      //   quantidade: data.quantity,
-      // });
 
       toast({
         title: "Entrada registrada!",
@@ -181,28 +133,17 @@ export default function StockIn() {
 
       {!loading && (
         <div className="max-w-lg mx-auto mt-10 bg-white border border-slate-200 rounded-xl p-8 shadow-sm space-y-6">
-          <h2 className="text-lg font-semibold text-slate-800">
-            Registrar Entrada
-          </h2>
+          <h2 className="text-lg font-semibold text-slate-800">Registrar Entrada</h2>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Tipo de entrada
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de entrada</label>
             <select
               value={operationType === "Selecione" ? "" : operationType}
-              onChange={(e) =>
-                setOperationType(e.target.value as OperationType)
-              }
+              onChange={(e) => setOperationType(e.target.value as OperationType)}
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-white text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-300 hover:border-slate-400"
             >
-              <option value="" disabled hidden>
-                Selecione
-              </option>
-
-              <option value={OperationType.MEDICINE}>
-                {OperationType.MEDICINE}
-              </option>
+              <option value="" disabled hidden>Selecione</option>
+              <option value={OperationType.MEDICINE}>{OperationType.MEDICINE}</option>
               <option value={OperationType.INPUT}>{OperationType.INPUT}</option>
             </select>
           </div>

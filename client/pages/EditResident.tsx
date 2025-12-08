@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast.hook";
 import LoadingModal from "@/components/LoadingModal";
 import { updateResident } from "@/api/requests";
 
@@ -20,8 +20,8 @@ export default function EditResident() {
   useEffect(() => {
     if (item) {
       setFormData({
-        num_casela: item.casela?.toString() || "",
-        nome: item.name || "",
+        num_casela: item.num_casela?.toString() || "",
+        nome: item.nome || "",
       });
     } else {
       toast({
@@ -52,12 +52,12 @@ export default function EditResident() {
 
     try {
       const updated = await updateResident(formData.num_casela, {
-        name: formData.nome,
+        nome: formData.nome,
       });
 
       toast({
         title: "Residente atualizado",
-        description: `O residente ${updated.name} foi atualizado com sucesso!`,
+        description: `O residente ${updated.nome} foi atualizado com sucesso!`,
         variant: "success",
       });
 

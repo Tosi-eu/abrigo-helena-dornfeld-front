@@ -2,7 +2,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { InputFormProps } from "@/interfaces/interfaces";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast.hook";
 
 export function InputForm({ inputs, cabinets, onSubmit }: InputFormProps) {
   const [formData, setFormData] = useState({

@@ -1,4 +1,3 @@
-import { OperationType } from "@/enums/enums";
 import { api } from "./canonical";
 
 export const getCabinets = () => api.get("/armarios");
@@ -58,8 +57,8 @@ export const updateUser = (
 export const createCabinet = (numero: number, categoria: string) =>
   api.post("/armarios", { numero, categoria });
 
-export const createInput = (nome: string, estoque_minimo: number, descricao?: string) =>
-  api.post("/insumos", { nome, descricao: descricao ?? null, estoque_minimo });
+export const createInput = (nome: string, estoque_minimo: number) =>
+  api.post("/insumos", { nome, estoque_minimo });
 
 export const createMedicine = (
   nome: string,
@@ -76,9 +75,14 @@ export const createMedicine = (
     estoque_minimo: Number(estoque_minimo) ?? null,
   });
 
-export const createResident = (name: string, casela: number) =>
-  api.post("/residentes", { name, casela });
+export const createResident = (num_casela: number, nome: string) =>
+  api.post("/residentes", { num_casela, nome });
 
+export const createMedicineStockOut = (payload: {
+  estoque_id: number;
+  armario_id: number;
+  quantidade: number;
+}) => api.post("/estoque-medicamentos/saida", payload);
 
 export const createStockOutInsumo = (payload: {
   insumo_id: number;
@@ -94,10 +98,12 @@ export const createStockInInput = (payload: {
 
 export const createStockInMedicine = (payload: {
   medicamento_id: number;
-  quantidade: number;
   armario_id: number;
-  casela_id?: number | null;
+  quantidade: number;
+  validade: Date;
   origem: string;
+  paciente_casela?: number | null;
+  tipo: string;
 }) => api.post("/estoque-medicamentos/entrada", payload);
 
 export const createMovement = (payload: {
@@ -111,4 +117,8 @@ export const createMovement = (payload: {
   insumo_id?: number;
 }) => api.post("/movimentacoes", payload);
 
-export const getStock = () => api.get("/estoque");
+export const getStock = async (type: "medicamento" | "insumo" = "medicamento") => {
+  const endpoint = type === "medicamento" ? "/estoque-medicamentos" : "/estoque-insumos";
+  const response = await api.get(endpoint);
+  return response;
+};

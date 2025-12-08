@@ -1,7 +1,7 @@
 import Layout from "@/components/Layout";
 import EditableTable from "@/components/EditableTable";
 import { useEffect, useState } from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast.hook";
 import LoadingModal from "@/components/LoadingModal";
 import { getMedicines } from "@/api/requests";
 

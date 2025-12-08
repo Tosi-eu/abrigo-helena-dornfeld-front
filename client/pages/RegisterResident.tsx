@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast.hook";
 import LoadingModal from "@/components/LoadingModal";
 import { createResident } from "@/api/requests";
 
@@ -17,7 +17,7 @@ export default function RegisterResident() {
     setLoading(true);
 
     try {
-      await createResident(name, Number(casela));
+      await createResident(Number(casela), name);
       toast({ title: "Residente cadastrado com sucesso!", variant: "success" });
       navigate("/residents");
     } catch (err: any) {

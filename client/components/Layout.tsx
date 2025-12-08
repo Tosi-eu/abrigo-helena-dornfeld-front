@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "/logo.png";
 import { LayoutProps } from "@/interfaces/interfaces";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth.hook";
 import { useState } from "react";
 import LogoutConfirmDialog from "./LogoutConfirmDialog";
 

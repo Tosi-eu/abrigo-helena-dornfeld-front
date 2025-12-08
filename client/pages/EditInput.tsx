@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { useNavigate, useLocation } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast.hook";
 import LoadingModal from "@/components/LoadingModal";
 import { updateInput } from "@/api/requests";
 
@@ -15,7 +15,7 @@ export default function EditInput() {
   const [formData, setFormData] = useState({
     id: "",
     nome: "",
-    descricao: "",
+    estoqueMinimo: 0,
   });
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function EditInput() {
     setFormData({
       id: item.id,
       nome: item.nome || "",
-      descricao: item.descricao || "",
+      estoqueMinimo: item.estoque_minimo || 0,
     });
 
     setLoading(false);
@@ -61,7 +61,7 @@ export default function EditInput() {
     try {
       await updateInput(parseInt(formData.id), {
         nome: formData.nome,
-        descricao: formData.descricao,
+        estoque_minimo: formData.estoqueMinimo,
       });
 
       toast({
@@ -122,12 +122,12 @@ export default function EditInput() {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Categoria
+              Estoque Mínimo
             </label>
             <input
               type="text"
-              value={formData.descricao}
-              onChange={(e) => handleChange("descricao", e.target.value)}
+              value={formData.estoqueMinimo}
+              onChange={(e) => handleChange("estoqueMinimo", e.target.value)}
               className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
               placeholder="Ex: Material de injeção"
             />

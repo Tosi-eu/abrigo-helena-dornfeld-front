@@ -12,7 +12,7 @@ import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import SignUpMedicine from "./pages/RegisterMedicine";
-import Transactions from "./pages/Transactions";
+import Transactions from "./pages/Movements";
 import Stock from "./pages/Stock";
 import StockEntry from "./pages/StockIn";
 import Resident from "./pages/Residents";
@@ -24,7 +24,7 @@ import EditInput from "./pages/EditInput";
 import Medicines from "./pages/Medicines";
 import Cabinets from "./pages/Cabinets";
 import RegisterCabinet from "./pages/RegisterCabinet";
-import EditCabinet from "./pages/EditCabinet";
+import EditCabinet from "./pages/EditCabinet";  
 import RegisterInput from "./pages/RegisterInput";
 import Inputs from "./pages/Inputs";
 

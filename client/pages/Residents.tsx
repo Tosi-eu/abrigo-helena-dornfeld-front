@@ -10,8 +10,8 @@ export default function Resident() {
   const [error, setError] = useState<string | null>(null);
 
   const columns = [
-    { key: "name", label: "Nome", editable: true },
-    { key: "casela", label: "Casela", editable: true },
+    { key: "nome", label: "Nome", editable: true },
+    { key: "num_casela", label: "Casela", editable: true },
   ];
 
   useEffect(() => {

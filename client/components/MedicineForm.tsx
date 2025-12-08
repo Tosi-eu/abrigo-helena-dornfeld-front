@@ -5,14 +5,11 @@ import "react-datepicker/dist/react-datepicker.css";
 import { OriginType, StockType, StockTypeLabels } from "@/enums/enums";
 import { useNavigate } from "react-router-dom";
 import { MedicineFormProps } from "@/interfaces/interfaces";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast.hook";
 
-export function MedicineForm({
-  medicines,
-  caselas,
-  cabinets,
-  onSubmit,
-}: MedicineFormProps) {
+export function MedicineForm({ medicines, caselas, cabinets, onSubmit }: MedicineFormProps) {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     id: null as number | null,
     quantity: "",
@@ -24,18 +21,16 @@ export function MedicineForm({
     origin: "" as OriginType | "",
   });
 
-  const navigate = useNavigate();
-
   const updateField = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleCaselaChange = (value: number) => {
-    const selected = caselas.find((c) => c.casela === value);
+    const selected = caselas.find((c) => c.num_casela === value);
     setFormData((prev) => ({
       ...prev,
       casela: value,
-      resident: selected ? selected.name : "",
+      resident: selected?.nome || "",
     }));
   };
 
@@ -69,41 +64,33 @@ export function MedicineForm({
     onSubmit({
       ...formData,
       quantity,
-      expirationDate: formData.expirationDate
-        ? new Date(formData.expirationDate)
-        : null,
+      expirationDate: formData.expirationDate || null,
     });
   };
 
   return (
     <div className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+      {/* Medicamento */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Medicamento
-        </label>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Medicamento</label>
         <select
           value={formData.id ?? ""}
-          onChange={(e) =>
-            updateField("id", e.target.value ? Number(e.target.value) : null)
-          }
+          onChange={(e) => updateField("id", e.target.value ? Number(e.target.value) : null)}
           className="w-full border bg-white rounded-lg p-2 text-sm focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >
-          <option value="" disabled hidden>
-            Selecione
-          </option>
+          <option value="" disabled hidden>Selecione</option>
           {medicines.map((med) => (
             <option key={med.id} value={med.id}>
-              {med.name} {med.dosage} {med.measurementUnit}
+              {med.name} {med.dosage || ""} {med.measurementUnit || ""}
             </option>
           ))}
         </select>
       </div>
 
+      {/* Quantidade e Validade */}
       <div className="flex gap-4">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Quantidade
-          </label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Quantidade</label>
           <input
             type="number"
             value={formData.quantity}
@@ -114,14 +101,10 @@ export function MedicineForm({
         </div>
 
         <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Validade
-          </label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Validade</label>
           <DatePicker
             selected={formData.expirationDate}
-            onChange={(date: Date | null) =>
-              updateField("expirationDate", date)
-            }
+            onChange={(date: Date | null) => updateField("expirationDate", date)}
             locale={ptBR}
             dateFormat="dd/MM/yyyy"
             placeholderText="Selecione a data"
@@ -130,55 +113,38 @@ export function MedicineForm({
         </div>
       </div>
 
+      {/* Tipo de estoque */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
-          Tipo de estoque
-        </label>
-
+        <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de estoque</label>
         <select
           value={formData.stockType}
-          onChange={(e) =>
-            updateField("stockType", e.target.value as StockType)
-          }
+          onChange={(e) => updateField("stockType", e.target.value as StockType)}
           className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
         >
-          <option value="" disabled hidden>
-            Selecione
-          </option>
-
+          <option value="" disabled hidden>Selecione</option>
           {Object.values(StockType).map((type) => (
-            <option key={type} value={type}>
-               {StockTypeLabels[type]}
-            </option>
+            <option key={type} value={type}>{StockTypeLabels[type]}</option>
           ))}
         </select>
       </div>
 
       <div className="flex gap-4">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Casela
-          </label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Casela</label>
           <select
             value={formData.casela ?? ""}
             onChange={(e) => handleCaselaChange(Number(e.target.value))}
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
-            <option value="" disabled hidden>
-              Selecione
-            </option>
+            <option value="" disabled hidden>Selecione</option>
             {caselas.map((c) => (
-              <option key={c.casela} value={c.casela}>
-                {c.casela}
-              </option>
+              <option key={c.num_casela} value={c.num_casela}>{c.num_casela}</option>
             ))}
           </select>
         </div>
 
         <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Residente
-          </label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Residente</label>
           <input
             type="text"
             value={formData.resident}
@@ -191,40 +157,30 @@ export function MedicineForm({
 
       <div className="flex gap-4">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Armário
-          </label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Armário</label>
           <select
             value={formData.cabinet ?? ""}
             onChange={(e) => updateField("cabinet", Number(e.target.value))}
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
-            <option value="" disabled hidden>
-              Selecione
-            </option>
+            <option value="" disabled hidden>Selecione</option>
             {cabinets.map((c) => (
-              <option key={c.numero} value={c.numero}>
-                {c.numero}
-              </option>
+              <option key={c.numero} value={c.numero}>{c.numero}</option>
             ))}
           </select>
         </div>
 
         <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Origem
-          </label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Origem</label>
           <select
             value={formData.origin}
             onChange={(e) => updateField("origin", e.target.value as OriginType)}
             className="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-sky-300 focus:outline-none"
           >
-            <option value="" disabled hidden>
-              Selecione
-            </option>
+            <option value="" disabled hidden>Selecione</option>
             {Object.values(OriginType).map((type) => (
               <option key={type} value={type}>
-                {type.charAt(0) + type.slice(1).toLowerCase()}
+                {type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()}
               </option>
             ))}
           </select>
