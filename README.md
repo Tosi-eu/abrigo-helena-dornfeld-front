@@ -7,29 +7,9 @@
    ```bash
    pnpm install
    ```
-
    Isso instalará todas as dependências necessárias do projeto.
 
-2. **Execute o projeto**
-
-   Após a instalação, use os scripts disponíveis (por exemplo):
-
-   ```bash
-   npm run dev
-   npm run dev:server
-   ```
-
-   > Consulte o `package.json` para ver todos os scripts disponíveis.
-
-3. **Execução do banco de dados de homologação**
-
-Diferentemente do banco de produção, o banco de homologação roda em um container postgreSQL.
-
-Após a instalação, use os scripts disponíveis (por exemplo):
-
-```bash
-npm run dev:server
-```
+2. **Configure as credenciais do banco**
 
 > Configure as credenciais de acesso do postgres no .env
    ```bash
@@ -39,11 +19,23 @@ npm run dev:server
    DB_HOST='<HOST>' --locahost ou outro domínio
    DB_NAME='<NOME_DATABASE>'
    ```
-> É possível também acessar o banco passando a url completa no .env, em vez de fornecer os dados seperadamente
+ É possível também acessar o banco passando a url completa no .env, em vez de fornecer os dados seperadamente
    ```bash
       HML_DATABASE_URL=postgresql://usuario:senha@dominio:porta/nome_db
       PROD_DATABASE_URL=postgresql://usuario:senha@dominio:porta/nome_db
    ```
+> Detalhe: o banco de dados pode ser acessado por container docker também. Executando **docker compose up** já sobe o container com o banco, podendo acessar pelas configurações passadas no .env
+
+3. **Execute o projeto**
+
+   Após a configuração do banco, use os scripts disponíveis (por exemplo):
+
+   ```bash
+   npm run dev
+   npm run dev:server
+   ```
+
+   > Consulte o `package.json` para ver todos os scripts disponíveis.
 ---
 
 ## Estrutura de Branches
