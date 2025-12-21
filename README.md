@@ -31,8 +31,19 @@ Após a instalação, use os scripts disponíveis (por exemplo):
 npm run dev:server
 ```
 
-> Configure as credenciais de acesso do postgres no docker-compose.yml
-
+> Configure as credenciais de acesso do postgres no .env
+   ```bash
+   NODE_ENV="production ou development"
+   DB_USER='<SEU_USER>'
+   DB_PASSWORD='<SUA_SENHA>'
+   DB_HOST='<HOST>' --locahost ou outro domínio
+   DB_NAME='<NOME_DATABASE>'
+   ```
+> É possível também acessar o banco passando a url completa no .env, em vez de fornecer os dados seperadamente
+   ```bash
+      HML_DATABASE_URL=postgresql://usuario:senha@dominio:porta/nome_db
+      PROD_DATABASE_URL=postgresql://usuario:senha@dominio:porta/nome_db
+   ```
 ---
 
 ## Estrutura de Branches
